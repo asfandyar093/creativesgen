@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Deletion — Creatives Gen</title>
+  <meta name="robots" content="index, follow" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #5b5ef4; --accent-h: #4547d4; --accent-l: #eef0ff; --accent-m: #c4c8fb;
+      --pink: #ec4899;
+      --text: #0d1117; --text2: #1f2937; --muted: #5a6478;
+      --bg: #f0f2f8; --surface: #ffffff; --border: #dde1ea;
+      --shadow: 0 2px 8px rgba(0,0,0,.09);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 40px; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .nav-brand { font-size: 1.15rem; font-weight: 900; color: var(--text); }
+    .nav-brand span { color: var(--accent); }
+
+    .page-header { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 52px 40px 44px; }
+    .page-header .inner { max-width: 760px; margin: 0 auto; }
+    .page-header .badge { font-size: 0.78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 14px; }
+    .page-header h1 { font-size: 2.4rem; font-weight: 900; margin-bottom: 12px; }
+    .page-header .meta { font-size: 0.88rem; color: var(--muted); }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 56px 40px 80px; }
+    .card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 32px 36px; margin-bottom: 28px; }
+    .card h2 { font-size: 1.2rem; font-weight: 900; margin-bottom: 14px; }
+    .card p { color: var(--text2); margin-bottom: 12px; }
+    .card p:last-child { margin-bottom: 0; }
+    .card ol, .card ul { padding-left: 22px; color: var(--text2); }
+    .card ol li, .card ul li { margin-bottom: 8px; }
+    .email-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 12px 24px; background: var(--accent); color: #fff; border-radius: 99px; font-weight: 800; font-size: 0.9rem; text-decoration: none; }
+    .email-btn:hover { background: var(--accent-h); }
+    .note { background: var(--accent-l); border: 1.5px solid var(--accent-m); border-radius: 12px; padding: 16px 20px; font-size: 0.88rem; color: var(--text2); margin-top: 16px; }
+
+    footer { text-align: center; padding: 32px; font-size: 0.82rem; color: var(--muted); border-top: 1.5px solid var(--border); background: var(--surface); margin-top: 40px; }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-icon">✨</div>
+    <div class="nav-brand">Creatives <span>Gen</span></div>
+  </a>
+</nav>
+
+<div class="page-header">
+  <div class="inner">
+    <div class="badge">Data &amp; Privacy</div>
+    <h1>Data Deletion Request</h1>
+    <p class="meta">Last updated: April 2025</p>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="card">
+    <h2>How to Delete Your Data</h2>
+    <p>You can request deletion of all personal data associated with your Creatives Gen account at any time. This includes your profile information, usage history, and any preferences stored in our system.</p>
+    <p>To submit a deletion request, email us at:</p>
+    <a href="mailto:hello@creativesgen.com?subject=Data Deletion Request" class="email-btn">
+      ✉️ hello@creativesgen.com
+    </a>
+    <div class="note">
+      <strong>Subject line:</strong> Data Deletion Request<br>
+      <strong>Include:</strong> The email address or name associated with your account.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What Gets Deleted</h2>
+    <p>Upon a verified deletion request, we will permanently remove:</p>
+    <ul>
+      <li>Your name, email address, and profile photo</li>
+      <li>Login provider information (Google / Facebook)</li>
+      <li>Image generation usage history</li>
+      <li>Subscription and plan data</li>
+      <li>Any brand preferences or settings stored in your account</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Timeline</h2>
+    <p>We will process your request within <strong>30 days</strong> of receiving it. You will receive a confirmation email once your data has been deleted.</p>
+    <p>Note: If you signed in via Facebook or Google, revoking app permissions from those platforms will also prevent future logins. You can do this in your Facebook or Google account security settings.</p>
+  </div>
+
+  <div class="card">
+    <h2>Revoke App Access</h2>
+    <p>You can also revoke Creatives Gen's access directly from your social accounts:</p>
+    <ul>
+      <li><strong>Facebook:</strong> Settings → Security and Login → Apps and Websites → Remove Creatives Gen</li>
+      <li><strong>Google:</strong> myaccount.google.com → Security → Third-party apps → Remove Creatives Gen</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2025 Creatives Gen. &nbsp;·&nbsp; <a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="/terms">Terms of Service</a> &nbsp;·&nbsp; <a href="mailto:hello@creativesgen.com">hello@creativesgen.com</a></p>
+</footer>
+
+</body>
+</html>

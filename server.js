@@ -4,7 +4,18 @@ const path = require('path');
 
 const app = express();
 app.use(express.json({ limit: '25mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Redirect /page.html → /page (clean URLs)
+app.use((req, res, next) => {
+  if (req.path.endsWith('.html')) {
+    const clean = req.path.slice(0, -5) || '/';
+    return res.redirect(301, clean);
+  }
+  next();
+});
+
+// Serve static files, fallback to .html extension
+app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
 const GEMINI_KEY  = process.env.GEMINI_API_KEY;
 const TEXT_MODEL  = process.env.TEXT_MODEL  || 'gemini-2.5-flash';
