@@ -348,12 +348,99 @@
     .history-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 0.85rem; }
 
     @media (max-width: 1000px) {
-      .tool-wrapper { grid-template-columns: 520px 1fr; }
+      .tool-wrapper { grid-template-columns: 480px 1fr; }
       body.chat-open .tool-wrapper { margin-right: 0; }
     }
-    @media (max-width: 800px) {
-      .tool-wrapper { grid-template-columns: 1fr; height: auto; }
-      .tool-tabs .tool-tab .t-label { display: none; }
+
+    @media (max-width: 768px) {
+      html { font-size: 16px; }
+
+      /* ── Header ── */
+      header { padding: 0 12px; height: 54px; gap: 6px; }
+      .h-brand { display: none; }
+      .h-divider { display: none; }
+      .h-back { display: none; }
+      .tool-tabs { gap: 2px; padding: 3px; }
+      .tool-tab { padding: 7px 9px; font-size: 0.78rem; gap: 3px; }
+      .trial-label { display: none; }
+      .chat-toggle-btn span:not(.ct-dot) { display: none; }
+      .chat-toggle-btn { padding: 6px 9px; }
+      #uName { display: none; }
+      .upgrade-btn { padding: 6px 10px; font-size: 0.68rem; }
+
+      /* ── App layout — column stack ── */
+      .app { height: auto; }
+      .tool-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: calc(100vh - 54px);
+      }
+      body.chat-open .tool-wrapper { margin-right: 0; }
+
+      /* ── Sidebar: form area scrollable, max 55vh ── */
+      .sidebar {
+        border-right: none;
+        border-bottom: 2px solid var(--border);
+        height: auto;
+        max-height: 55vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        flex-direction: column;
+      }
+      .sb-scroll { padding: 14px; flex: 1; overflow-y: auto; }
+      .sec { margin-bottom: 18px; }
+      .row2 { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .type-grid { grid-template-columns: repeat(4,1fr); gap: 6px; }
+      .type-btn { padding: 10px 4px; }
+      .type-btn .ti { font-size: 18px; }
+      .type-btn .tn { font-size: 0.62rem; }
+      .platform-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .plat-btn { padding: 12px 8px; }
+
+      /* ── Generate button sticky at bottom of sidebar ── */
+      .btn-go {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        border-radius: 0;
+        margin: 0;
+        padding: 16px;
+        font-size: 1rem;
+      }
+
+      /* ── Main output area: fills remaining screen ── */
+      .main-area {
+        flex: 1;
+        min-height: 45vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* ── Modals ── */
+      .modal { padding: 28px 20px; }
+      .paywall { width: 100%; }
+      .plans-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      /* ── Chat panel: full screen on mobile ── */
+      .chat-panel {
+        width: 100% !important;
+        right: 0 !important;
+        top: 54px !important;
+        border-left: none !important;
+        border-top: 1.5px solid var(--border);
+      }
+
+      /* ── Size checkboxes ── */
+      .sizes-wrap { grid-template-columns: repeat(2,1fr) !important; }
+    }
+
+    @media (max-width: 400px) {
+      .tool-tab { padding: 6px 6px; font-size: 0.72rem; }
+      .tool-tab span:first-child { font-size: 14px; }
+      .type-grid { grid-template-columns: repeat(4,1fr); }
+      .row2 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
