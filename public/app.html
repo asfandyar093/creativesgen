@@ -362,7 +362,7 @@
 <!-- ACCOUNT MODAL -->
 <div class="overlay" id="accountModal">
   <div class="modal" style="position:relative">
-    <button onclick="document.getElementById('accountModal').classList.add('hidden')" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;" title="Close">×</button>
+    <button onclick="window.location.href='/'" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);line-height:1;" title="Go back">×</button>
     <div class="modal-logo">✨</div>
     <h2>Creatives Gen</h2>
     <p class="sub">AI-powered images for social media, ads &amp; websites</p>
@@ -943,6 +943,7 @@ async function doGoogleSignIn() {
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     await fbAuth.signInWithPopup(provider);
+    window.location.reload();
   } catch(e) {
     setAuthBusy(false);
     if (e.code !== 'auth/popup-closed-by-user') showAuthError(e.message || 'Sign-in failed. Try again.');
@@ -953,6 +954,7 @@ async function doFacebookSignIn() {
   try {
     const provider = new firebase.auth.FacebookAuthProvider();
     await fbAuth.signInWithPopup(provider);
+    window.location.reload();
   } catch(e) {
     setAuthBusy(false);
     if (e.code === 'auth/account-exists-with-different-credential') {
