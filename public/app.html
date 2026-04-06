@@ -952,7 +952,11 @@ async function doGoogleSignIn() {
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     const result = await fbAuth.signInWithPopup(provider);
-    await handleSignIn(result.user);
+    const user = result.user;
+    // Open app immediately — don't wait for Firestore
+    initApp(user, { imagesUsed: 0, imagesAllowance: 15, plan: 'free' });
+    // Sync Firestore in background
+    ensureUserDoc(user).then(data => { userData = data; updateTrialUI(data.imagesUsed||0, data.imagesAllowance||15); }).catch(()=>{});
   } catch(e) {
     setAuthBusy(false);
     if (e.code !== 'auth/popup-closed-by-user') showAuthError(e.message || 'Sign-in failed. Try again.');
@@ -963,7 +967,9 @@ async function doFacebookSignIn() {
   try {
     const provider = new firebase.auth.FacebookAuthProvider();
     const result = await fbAuth.signInWithPopup(provider);
-    await handleSignIn(result.user);
+    const user = result.user;
+    initApp(user, { imagesUsed: 0, imagesAllowance: 15, plan: 'free' });
+    ensureUserDoc(user).then(data => { userData = data; updateTrialUI(data.imagesUsed||0, data.imagesAllowance||15); }).catch(()=>{});
   } catch(e) {
     setAuthBusy(false);
     if (e.code === 'auth/account-exists-with-different-credential') {
