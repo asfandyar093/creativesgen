@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Creatives Gen</title>
+  <meta name="description" content="Creatives Gen Terms of Service. Read our terms and conditions for using the AI image generation platform." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://creativesgen.com/terms.html" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #5b5ef4; --accent-h: #4547d4; --accent-l: #eef0ff; --accent-m: #c4c8fb;
+      --pink: #ec4899;
+      --text: #0d1117; --text2: #1f2937; --muted: #5a6478; --light: #8b95a7;
+      --bg: #f0f2f8; --surface: #ffffff; --border: #dde1ea;
+      --shadow: 0 2px 8px rgba(0,0,0,.09);
+      --yellow-l: #fffbeb; --yellow-m: #fde68a;
+    }
+    html { font-size: 17px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 40px; height: 70px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow); }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .nav-brand { font-size: 1.15rem; font-weight: 900; color: var(--text); }
+    .nav-brand span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-links a { padding: 8px 14px; border-radius: 8px; font-size: 0.87rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: all .15s; }
+    .nav-links a:hover { background: var(--accent-l); color: var(--accent); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost { padding: 9px 20px; border-radius: 99px; font-size: 0.87rem; font-weight: 700; color: var(--accent); text-decoration: none; border: 2px solid var(--accent-m); transition: all .15s; }
+    .btn-ghost:hover { background: var(--accent-l); }
+    .btn-primary { padding: 9px 20px; background: var(--accent); color: #fff; border-radius: 99px; font-size: 0.87rem; font-weight: 800; text-decoration: none; transition: all .15s; }
+    .btn-primary:hover { background: var(--accent-h); }
+
+    .page-header { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 52px 40px 44px; }
+    .page-header .inner { max-width: 760px; margin: 0 auto; }
+    .page-header .badge { font-size: 0.78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 14px; }
+    .page-header h1 { font-size: 2.4rem; font-weight: 900; margin-bottom: 12px; }
+    .page-header .meta { font-size: 0.88rem; color: var(--muted); }
+
+    .content { max-width: 760px; margin: 0 auto; padding: 56px 40px 80px; }
+    .notice-box { background: var(--yellow-l); border: 1.5px solid var(--yellow-m); border-radius: 12px; padding: 20px 24px; margin-bottom: 36px; }
+    .notice-box p { font-size: 0.92rem; color: #92400e; line-height: 1.65; }
+    .notice-box strong { color: #78350f; }
+
+    .toc { background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; padding: 26px 30px; margin-bottom: 48px; }
+    .toc h3 { font-size: 0.88rem; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc ol li { margin-bottom: 7px; }
+    .toc ol li a { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 600; }
+    .toc ol li a:hover { text-decoration: underline; }
+
+    .legal-section { margin-bottom: 48px; }
+    .legal-section h2 { font-size: 1.3rem; font-weight: 900; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--accent-l); color: var(--text); }
+    .legal-section p { font-size: 0.95rem; color: var(--text2); line-height: 1.78; margin-bottom: 14px; }
+    .legal-section ul, .legal-section ol { padding-left: 22px; margin-bottom: 14px; }
+    .legal-section li { font-size: 0.95rem; color: var(--text2); line-height: 1.75; margin-bottom: 7px; }
+    .legal-section strong { color: var(--text); font-weight: 700; }
+    .legal-section a { color: var(--accent); }
+
+    footer { background: var(--surface); border-top: 1.5px solid var(--border); padding: 32px 40px; }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-bottom p { font-size: 0.8rem; color: var(--light); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 0.8rem; color: var(--light); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .page-header h1 { font-size: 1.8rem; }
+      .content { padding: 40px 24px 60px; }
+    }
+    /* MOBILE NAV */
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px 6px; cursor: pointer; background: none; border: none; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--muted); border-radius: 2px; transition: all .25s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile { display: none; position: fixed; top: 72px; left: 0; right: 0; background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 12px 20px 20px; z-index: 99; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .nav-mobile.open { display: flex; flex-direction: column; gap: 2px; }
+    .nav-mobile a { padding: 11px 12px; font-size: 0.97rem; font-weight: 600; color: var(--text2); text-decoration: none; border-radius: 9px; transition: all .15s; }
+    .nav-mobile a:hover { background: var(--accent-l); color: var(--accent); }
+    .mob-divider { height: 1px; background: var(--border); margin: 8px 4px; }
+    .mob-cta { background: var(--accent) !important; color: #fff !important; text-align: center; font-weight: 800 !important; border-radius: 9px; }
+    .mob-cta:hover { background: var(--accent-h) !important; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    @media (max-width: 600px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-icon">✨</div>
+    <div class="nav-brand">Creatives <span>Gen</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="/social-posts.html">Social Posts</a>
+    <a href="/ad-creatives.html">Ad Creatives</a>
+    <a href="/website-images.html">Website Images</a>
+    <a href="/how-it-works.html">How It Works</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/about.html">About</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/app.html" class="btn-ghost">Log In</a>
+    <a href="/app.html" class="btn-primary">Get Started Free →</a>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="/social-posts.html">📱 Social Posts</a>
+  <a href="/ad-creatives.html">📣 Ad Creatives</a>
+  <a href="/website-images.html">🖼️ Website Images</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/pricing.html">Pricing</a>
+  <a href="/about.html">About</a>
+  <div class="mob-divider"></div>
+  <a href="/app.html">Log In</a>
+  <a href="/app.html" class="mob-cta">Get Started Free →</a>
+</div>
+
+<div class="page-header">
+  <div class="inner">
+    <div class="badge">Legal</div>
+    <h1>Terms of Service</h1>
+    <p class="meta">Last updated: April 5, 2025 · Effective date: April 5, 2025</p>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="notice-box">
+    <p><strong>Please read these Terms carefully before using Creatives Gen.</strong> By creating an account or using the service, you agree to be bound by these Terms of Service. If you do not agree, please do not use Creatives Gen.</p>
+  </div>
+
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li><a href="#t1">Acceptance of Terms</a></li>
+      <li><a href="#t2">Description of Service</a></li>
+      <li><a href="#t3">Account Registration</a></li>
+      <li><a href="#t4">Subscription Plans and Billing</a></li>
+      <li><a href="#t5">Acceptable Use</a></li>
+      <li><a href="#t6">Intellectual Property and Content Ownership</a></li>
+      <li><a href="#t7">AI-Generated Content</a></li>
+      <li><a href="#t8">Disclaimers and Limitation of Liability</a></li>
+      <li><a href="#t9">Third-Party Services</a></li>
+      <li><a href="#t10">Termination</a></li>
+      <li><a href="#t11">Governing Law</a></li>
+      <li><a href="#t12">Changes to Terms</a></li>
+      <li><a href="#t13">Contact</a></li>
+    </ol>
+  </div>
+
+  <div class="legal-section" id="t1">
+    <h2>1. Acceptance of Terms</h2>
+    <p>These Terms of Service ("Terms") constitute a legally binding agreement between you ("User," "you," or "your") and Creatives Gen ("Company," "we," "us," or "our") governing your access to and use of the Creatives Gen web application and related services (collectively, the "Service").</p>
+    <p>By accessing or using the Service, creating an account, or clicking "I Agree," you confirm that you are at least 13 years old (or 16 in the EU/EEA), have read and understood these Terms, and agree to be bound by them. If you are using the Service on behalf of an organization, you represent that you have the authority to bind that organization to these Terms.</p>
+  </div>
+
+  <div class="legal-section" id="t2">
+    <h2>2. Description of Service</h2>
+    <p>Creatives Gen is an AI-powered image generation platform that enables users to create social media posts, advertising creatives, and website images using artificial intelligence. The Service includes:</p>
+    <ul>
+      <li><strong>Social Posts Tool:</strong> Generation of Instagram carousels, single posts, stories, quote cards, infographics, and other social media image types</li>
+      <li><strong>Ad Creatives Tool:</strong> Generation of Meta (Facebook/Instagram) and Google Display Network advertising images in standard sizes</li>
+      <li><strong>Website Images Tool:</strong> Generation of images for use on websites in various formats and aspect ratios</li>
+    </ul>
+    <p>We reserve the right to modify, suspend, or discontinue any part of the Service at any time. We will provide reasonable notice of material changes where possible.</p>
+  </div>
+
+  <div class="legal-section" id="t3">
+    <h2>3. Account Registration</h2>
+    <p>To use Creatives Gen, you must create an account by providing your name and email address. You agree to:</p>
+    <ul>
+      <li>Provide accurate and truthful registration information</li>
+      <li>Keep your account information current</li>
+      <li>Maintain the security of your account</li>
+      <li>Not share your account credentials with others</li>
+      <li>Promptly notify us of any unauthorized access to your account</li>
+    </ul>
+    <p>Your account data (name, email, usage count, brand settings) is stored locally in your browser's localStorage and is not transmitted to our servers except as necessary to process image generation requests. Because data is stored locally, you are responsible for maintaining access to your account data. Clearing your browser data will delete your account information.</p>
+    <p>We reserve the right to terminate accounts that violate these Terms or engage in fraudulent or abusive behavior.</p>
+  </div>
+
+  <div class="legal-section" id="t4">
+    <h2>4. Subscription Plans and Billing</h2>
+    <p><strong>Free Trial:</strong> New users receive 15 free image generations with no credit card required. Free trial images do not roll over and are for personal evaluation purposes.</p>
+    <p><strong>Paid Plans:</strong> After exhausting the free trial, continued use requires a paid subscription. Available plans include:</p>
+    <ul>
+      <li>Starter: $19/month — 200 images</li>
+      <li>Pro: $59/month — 1,000 images</li>
+      <li>Agency: $199/month — 5,000 images</li>
+      <li>Enterprise: $499+/month — 15,000+ images (custom pricing)</li>
+    </ul>
+    <p><strong>Billing:</strong> Subscriptions are billed monthly in advance. All prices are in USD. Prices may change with 30 days' advance notice.</p>
+    <p><strong>Cancellation:</strong> You may cancel your subscription at any time. Cancellations take effect at the end of the current billing period. We do not provide refunds for partial months except where required by law.</p>
+    <p><strong>Image Credits:</strong> Image credits are allocated monthly and do not roll over to the next billing period. Credits are shared across all three tools. One generated image counts as one credit regardless of which tool generated it.</p>
+    <p><strong>Refund Policy:</strong> Due to the nature of AI-generated content (images are generated and consumed immediately upon use), we generally do not offer refunds. If you experience a technical failure that prevents image generation and debits your credits, contact us at hello@creativesgen.com for a manual credit adjustment.</p>
+  </div>
+
+  <div class="legal-section" id="t5">
+    <h2>5. Acceptable Use</h2>
+    <p>You agree to use Creatives Gen only for lawful purposes and in accordance with these Terms. You agree <strong>not</strong> to use the Service to:</p>
+    <ul>
+      <li>Generate content that is illegal, defamatory, obscene, pornographic, harassing, or hateful</li>
+      <li>Create images that infringe on the intellectual property rights of others, including copyrighted works or trademarks</li>
+      <li>Generate deceptive, misleading, or fraudulent content, including deepfakes or impersonations of real people or organizations</li>
+      <li>Produce content that promotes violence, self-harm, terrorism, or discrimination based on protected characteristics</li>
+      <li>Create content depicting minors in sexual or inappropriate contexts</li>
+      <li>Circumvent the Service's usage limits through automated requests, multiple accounts, or other means</li>
+      <li>Reverse engineer, scrape, or copy the Service's functionality or underlying technology</li>
+      <li>Use the Service in any way that could damage, disable, overburden, or impair our infrastructure</li>
+      <li>Resell or sublicense access to the Service without our written permission</li>
+    </ul>
+    <p>We reserve the right to suspend or terminate your account if we determine, in our sole discretion, that you have violated these guidelines. We may also report illegal activity to appropriate law enforcement authorities.</p>
+  </div>
+
+  <div class="legal-section" id="t6">
+    <h2>6. Intellectual Property and Content Ownership</h2>
+    <p><strong>Your Content:</strong> You retain ownership of the prompts, brand information, logos, and reference images you upload to Creatives Gen ("Input Content"). By using the Service, you grant us a limited, non-exclusive license to process your Input Content solely for the purpose of providing the Service.</p>
+    <p><strong>Generated Images:</strong> Subject to these Terms and your compliance with them, you own the images generated by Creatives Gen using your prompts and brand information ("Output Content"). You may use Output Content for commercial and personal purposes without restriction, including in advertisements, social media, and websites.</p>
+    <p><strong>Exceptions:</strong> Output Content that includes identifiable real people, protected trademarks, copyrighted materials, or other third-party rights may be subject to third-party intellectual property claims that we are not responsible for. You are solely responsible for ensuring your use of Output Content does not infringe third-party rights.</p>
+    <p><strong>Creatives Gen IP:</strong> The Creatives Gen platform, including its design, code, and branding, remains our exclusive intellectual property. Nothing in these Terms grants you any right to use our trademarks, logos, or proprietary technology.</p>
+  </div>
+
+  <div class="legal-section" id="t7">
+    <h2>7. AI-Generated Content</h2>
+    <p>Creatives Gen uses Google's Gemini AI to generate images. You acknowledge and agree that:</p>
+    <ul>
+      <li>AI-generated images may not always match your exact expectations and results can vary between generations</li>
+      <li>AI systems may occasionally produce unexpected, imperfect, or inconsistent outputs</li>
+      <li>We do not guarantee that generated images will be free from unintended elements, artifacts, or errors</li>
+      <li>Generated images are subject to Google's AI usage policies in addition to our Terms</li>
+      <li>You are responsible for reviewing generated content before using it for commercial, advertising, or public purposes</li>
+      <li>We are not liable for any harm resulting from your use of AI-generated content</li>
+    </ul>
+    <p>By using the Service, you agree not to hold Creatives Gen responsible for the specific content generated by the AI, provided that such content was generated in response to your lawful prompts.</p>
+  </div>
+
+  <div class="legal-section" id="t8">
+    <h2>8. Disclaimers and Limitation of Liability</h2>
+    <p><strong>Service Provided "As Is":</strong> THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. WE DISCLAIM ALL WARRANTIES INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+    <p><strong>No Guarantee of Availability:</strong> We do not guarantee that the Service will be available at all times. We may experience downtime, outages, or maintenance periods. AI model availability depends on third-party providers (Google) and may be interrupted without notice.</p>
+    <p><strong>Limitation of Liability:</strong> TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, POSTCRAFT AI SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR GOODWILL, ARISING FROM YOUR USE OF OR INABILITY TO USE THE SERVICE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+    <p>OUR TOTAL LIABILITY TO YOU FOR ANY CLAIMS ARISING FROM OR RELATED TO THESE TERMS OR THE SERVICE SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE TWELVE (12) MONTHS PRECEDING THE CLAIM, OR $100 USD IF YOU HAVE NOT MADE ANY PAYMENTS.</p>
+    <p>Some jurisdictions do not allow the exclusion or limitation of certain warranties or damages, so the above limitations may not apply to you in full.</p>
+  </div>
+
+  <div class="legal-section" id="t9">
+    <h2>9. Third-Party Services</h2>
+    <p>Creatives Gen integrates with third-party services, primarily Google's Gemini AI API. Your use of the Service is subject to the terms and privacy policies of these third-party providers. We are not responsible for the actions, content, policies, or practices of third-party services.</p>
+    <p>Links to third-party websites or services from our platform are provided for convenience only and do not constitute our endorsement of those sites or services.</p>
+  </div>
+
+  <div class="legal-section" id="t10">
+    <h2>10. Termination</h2>
+    <p><strong>By You:</strong> You may stop using the Service and cancel your subscription at any time. Clearing your browser's localStorage will delete your local account data.</p>
+    <p><strong>By Us:</strong> We reserve the right to suspend or terminate your access to the Service immediately and without notice if we reasonably believe you have violated these Terms, engaged in fraudulent activity, or pose a risk to the Service or other users.</p>
+    <p><strong>Effect of Termination:</strong> Upon termination, your right to use the Service ceases immediately. Any unused subscription credits are forfeited. Provisions of these Terms that by their nature should survive termination (including intellectual property, disclaimers, limitations of liability, and governing law) will survive.</p>
+  </div>
+
+  <div class="legal-section" id="t11">
+    <h2>11. Governing Law and Dispute Resolution</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which Creatives Gen operates, without regard to its conflict of law principles.</p>
+    <p>Any disputes arising from these Terms or your use of the Service shall first be attempted to be resolved informally by contacting us at hello@creativesgen.com. If informal resolution fails, disputes shall be resolved through binding arbitration, except where prohibited by law.</p>
+    <p>If arbitration is not available in your jurisdiction, disputes shall be subject to the exclusive jurisdiction of the courts in the governing jurisdiction.</p>
+    <p><strong>Class Action Waiver:</strong> You agree that any dispute resolution proceedings will be conducted on an individual basis only and not as a class action or representative proceeding.</p>
+  </div>
+
+  <div class="legal-section" id="t12">
+    <h2>12. Changes to These Terms</h2>
+    <p>We may update these Terms from time to time. When we make material changes, we will update the "Last updated" date at the top of this page. For significant changes, we will make reasonable efforts to notify you via the application or email.</p>
+    <p>Your continued use of Creatives Gen after changes are posted constitutes your acceptance of the revised Terms. If you do not agree to the updated Terms, you must stop using the Service.</p>
+  </div>
+
+  <div class="legal-section" id="t13">
+    <h2>13. Contact</h2>
+    <p>If you have questions about these Terms, please contact us:</p>
+    <ul>
+      <li><strong>Email:</strong> <a href="mailto:hello@creativesgen.com">hello@creativesgen.com</a></li>
+      <li><strong>Response time:</strong> We aim to respond to all legal inquiries within 5 business days.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    <p>© 2025 Creatives Gen. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/">App</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/pricing.html">Pricing</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:hello@creativesgen.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleMobileNav() {
+  document.getElementById('navHamburger').classList.toggle('open');
+  document.getElementById('navMobile').classList.toggle('open');
+}
+</script>
+</body>
+</html>

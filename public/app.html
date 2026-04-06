@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creatives Gen — Studio</title>
+  <meta name="robots" content="noindex" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    .btn-auth { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; padding:13px 16px; border:2px solid var(--border2); border-radius:var(--radius); background:#fff; font-size:0.95rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; color:var(--text); margin-bottom:10px; }
+    .btn-auth:hover { border-color:var(--accent); background:var(--accent-l); }
+    .btn-auth-fb { background:#1877F2; color:#fff; border-color:#1877F2; }
+    .btn-auth-fb:hover { background:#166FE5; border-color:#166FE5; }
+    .auth-divider { display:flex; align-items:center; gap:10px; margin:4px 0 14px; color:var(--light); font-size:0.8rem; }
+    .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .auth-error { background:var(--red-l); border:1.5px solid var(--red-m); border-radius:8px; padding:10px 14px; font-size:0.82rem; color:var(--red); margin-bottom:10px; display:none; }
+  </style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f0f2f8; --surface: #ffffff; --surface2: #f5f7fb; --surface3: #eef0f7;
+      --border: #dde1ea; --border2: #c8cdd8;
+      --accent: #5b5ef4; --accent-h: #4547d4; --accent-l: #eef0ff; --accent-m: #c4c8fb;
+      --green: #10b981; --green-l: #ecfdf5; --green-m: #6ee7b7;
+      --red: #ef4444; --red-l: #fef2f2; --red-m: #fca5a5;
+      --yellow: #f59e0b; --yellow-l: #fffbeb;
+      --pink: #ec4899;
+      --text: #0d1117; --text2: #1f2937; --muted: #5a6478; --light: #8b95a7;
+      --radius: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,.09), 0 1px 3px rgba(0,0,0,.05);
+      --shadow-md: 0 4px 20px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.05);
+      --chat-w: 400px;
+    }
+    html { font-size: 18px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+    /* ═══ MODALS ═══ */
+    .overlay { position: fixed; inset: 0; background: rgba(10,16,30,.72); display: flex; align-items: center; justify-content: center; z-index: 900; backdrop-filter: blur(8px); }
+    .overlay.hidden { display: none; }
+    .modal { background: var(--surface); border-radius: 20px; box-shadow: 0 28px 90px rgba(0,0,0,.26); padding: 48px; width: 460px; max-width: calc(100vw - 32px); }
+    .modal-logo { width: 60px; height: 60px; background: linear-gradient(135deg,var(--accent),var(--pink)); border-radius: 16px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+    .modal h2 { font-size: 1.7rem; font-weight: 800; text-align: center; margin-bottom: 7px; }
+    .modal .sub { color: var(--muted); font-size: 0.92rem; text-align: center; margin-bottom: 26px; }
+    .trial-badge { background: var(--green-l); border: 2px solid var(--green-m); border-radius: 12px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
+    .trial-badge .tb-icon { font-size: 24px; flex-shrink: 0; }
+    .trial-badge strong { display: block; font-size: 0.92rem; font-weight: 700; }
+    .trial-badge span { font-size: 0.78rem; color: var(--muted); }
+    .auth-tabs { display: flex; gap: 4px; background: var(--surface2); border-radius: 10px; padding: 4px; margin-bottom: 20px; }
+    .auth-tab { flex: 1; padding: 10px; border: none; background: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .15s; font-family: inherit; }
+    .auth-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+    .auth-form { display: flex; flex-direction: column; gap: 12px; }
+    .auth-form input { width: 100%; padding: 13px 16px; border: 2px solid var(--border2); border-radius: var(--radius); font-size: 0.95rem; outline: none; transition: border-color .2s; font-family: inherit; }
+    .auth-form input:focus { border-color: var(--accent); }
+    .btn-primary { width: 100%; padding: 14px; background: var(--accent); border: none; border-radius: var(--radius); color: #fff; font-size: 0.97rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-primary:hover { background: var(--accent-h); }
+    .modal-note { font-size: 0.72rem; color: var(--light); margin-top: 14px; text-align: center; }
+
+    /* Paywall */
+    .paywall { width: 700px; }
+    .plans-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin: 20px 0; }
+    .plan-card { border: 2px solid var(--border); border-radius: 14px; padding: 20px 16px; }
+    .plan-card.pop { border-color: var(--accent); background: var(--accent-l); }
+    .plan-badge { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); margin-bottom: 6px; }
+    .plan-name { font-weight: 800; font-size: 1rem; margin-bottom: 4px; }
+    .plan-price { font-size: 1.9rem; font-weight: 900; color: var(--accent); line-height: 1; margin-bottom: 2px; }
+    .plan-price span { font-size: 0.78rem; font-weight: 400; color: var(--muted); }
+    .plan-imgs { font-size: 0.75rem; font-weight: 700; color: var(--text2); margin-bottom: 10px; }
+    .plan-features { font-size: 0.73rem; color: var(--text2); line-height: 1.85; }
+    .plan-btn { width: 100%; margin-top: 12px; padding: 10px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-size: 0.8rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .plan-btn.outline { background: none; border: 2px solid var(--accent); color: var(--accent); }
+
+    /* ═══ HEADER ═══ */
+    header { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 24px; height: 72px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: var(--shadow); }
+    .h-left { display: flex; align-items: center; gap: 12px; }
+    .h-logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .h-logo { width: 38px; height: 38px; background: linear-gradient(135deg,var(--accent),var(--pink)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .h-brand { font-size: 1.1rem; font-weight: 900; color: var(--text); }
+    .h-brand span { color: var(--accent); }
+    .h-divider { width: 1px; height: 28px; background: var(--border); margin: 0 6px; }
+    .h-back { font-size: 0.78rem; color: var(--muted); text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .15s; }
+    .h-back:hover { background: var(--surface2); color: var(--text); }
+    .tool-tabs { display: flex; gap: 3px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 11px; padding: 4px; }
+    .tool-tab { padding: 9px 20px; border: none; background: none; border-radius: 8px; font-size: 0.88rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .2s; white-space: nowrap; font-family: inherit; display: flex; align-items: center; gap: 7px; position: relative; }
+    .tool-tab:hover { color: var(--text); background: rgba(255,255,255,.6); }
+    .tool-tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 2px 10px rgba(0,0,0,.12); font-weight: 800; }
+    .tool-tab.active::after { content: ''; position: absolute; bottom: 2px; left: 22%; right: 22%; height: 3px; background: var(--accent); border-radius: 2px; }
+    .tool-tab#tab-ads.active { color: #ec4899; }
+    .tool-tab#tab-ads.active::after { background: #ec4899; }
+    .tool-tab#tab-website.active { color: #10b981; }
+    .tool-tab#tab-website.active::after { background: #10b981; }
+    .h-right { display: flex; align-items: center; gap: 10px; }
+    .trial-pill { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 99px; padding: 5px 14px 5px 8px; font-size: 0.76rem; }
+    .trial-ring { width: 26px; height: 26px; flex-shrink: 0; }
+    .trial-ring svg { transform: rotate(-90deg); }
+    .ring-bg { fill: none; stroke: var(--border); stroke-width: 3; }
+    .ring-fg { fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset .5s; }
+    .trial-used { font-weight: 800; color: var(--text2); }
+    .trial-label { color: var(--muted); }
+    .upgrade-btn { padding: 7px 14px; background: var(--accent); border: none; border-radius: 99px; color: #fff; font-size: 0.75rem; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .upgrade-btn:hover { background: var(--accent-h); }
+    .chat-toggle-btn { display: flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--surface2); border: 1.5px solid var(--border); border-radius: 99px; color: var(--text2); font-size: 0.78rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .chat-toggle-btn:hover, .chat-toggle-btn.active { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+    .chat-toggle-btn .ct-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; flex-shrink: 0; }
+    .user-chip { display: flex; align-items: center; gap: 7px; padding: 4px 12px; border-radius: 99px; cursor: pointer; transition: background .15s; font-size: 0.8rem; color: var(--text2); }
+    .user-chip:hover { background: var(--surface2); }
+    .u-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),var(--pink)); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.75rem; font-weight: 900; }
+
+    /* ═══ APP LAYOUT ═══ */
+    .app { height: calc(100vh - 72px); display: flex; }
+    .tool-wrapper { display: grid; grid-template-columns: 600px 1fr; height: 100%; flex: 1; min-width: 0; transition: margin-right .3s; animation: toolFadeIn .22s ease; }
+    .tool-wrapper.hidden { display: none; }
+    @keyframes toolFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    body.chat-open .tool-wrapper { margin-right: var(--chat-w); }
+
+    /* ═══ SIDEBAR ═══ */
+    .sidebar { background: var(--surface); border-right: 1.5px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    #tool-social .sidebar { border-top: 3px solid var(--accent); }
+    #tool-ads .sidebar { border-top: 3px solid #ec4899; }
+    #tool-website .sidebar { border-top: 3px solid #10b981; }
+    .sb-scroll { flex: 1; overflow-y: auto; padding: 24px 22px; }
+    .sb-scroll::-webkit-scrollbar { width: 5px; }
+    .sb-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+    .sec { margin-bottom: 28px; }
+    .sec:last-child { margin-bottom: 0; }
+    .sec-title { font-size: 0.77rem; font-weight: 900; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 2px solid var(--accent-l); }
+    .sec-title span { font-weight: 600; font-size: 0.7rem; color: var(--light); text-transform: none; letter-spacing: 0; }
+    label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .opt-tag { font-size: 0.7rem; font-weight: 400; color: var(--light); margin-left: 4px; }
+    .hint { font-size: 0.75rem; color: var(--muted); margin-top: 5px; line-height: 1.45; }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    input[type="text"], input[type="email"], textarea, select { width: 100%; padding: 11px 14px; background: var(--surface); border: 2px solid var(--border2); border-radius: var(--radius); color: var(--text); font-size: 0.92rem; outline: none; transition: border-color .2s; font-family: inherit; line-height: 1.5; }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-l); }
+    textarea { resize: vertical; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a6478' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; -webkit-appearance: none; padding-right: 38px; }
+    hr.divider { border: none; border-top: 1.5px solid var(--border); margin: 4px 0; }
+    .type-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+    .type-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 13px 6px; background: var(--surface2); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: all .15s; font-family: inherit; }
+    .type-btn:hover, .type-btn.active { border-color: var(--accent); background: var(--accent-l); }
+    .type-btn .ti { font-size: 22px; }
+    .type-btn .tn { font-size: 0.68rem; font-weight: 800; color: var(--text2); }
+    .type-btn.active .tn { color: var(--accent); }
+    .platform-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .plat-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px; background: var(--surface2); border: 2px solid var(--border); border-radius: 13px; cursor: pointer; transition: all .15s; font-family: inherit; }
+    .plat-btn:hover, .plat-btn.active { border-color: var(--accent); }
+    .plat-btn.active { background: var(--accent-l); }
+    .plat-btn .pi { font-size: 22px; }
+    .plat-btn .pn { font-size: 0.85rem; font-weight: 800; color: var(--text2); }
+    .plat-btn.active .pn { color: var(--accent); }
+    .size-list { display: flex; flex-direction: column; gap: 8px; }
+    .size-check { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: var(--surface2); border: 2px solid var(--border); border-radius: 10px; cursor: pointer; transition: all .15s; }
+    .size-check:hover { border-color: var(--accent-m); }
+    .size-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+    .size-check .sc-label { flex: 1; }
+    .size-check .sc-name { font-size: 0.87rem; font-weight: 700; color: var(--text); }
+    .size-check .sc-dim { font-size: 0.71rem; color: var(--muted); margin-top: 1px; }
+    .size-check .sc-hint { font-size: 0.67rem; color: var(--light); margin-top: 1px; }
+    .size-check.checked { border-color: var(--accent); background: var(--accent-l); }
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .toggle-row label { margin: 0; }
+    .tgl { width: 44px; height: 24px; background: var(--border2); border-radius: 99px; cursor: pointer; border: none; padding: 0; position: relative; flex-shrink: 0; transition: background .2s; }
+    .tgl::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; box-shadow: 0 1px 4px rgba(0,0,0,.22); transition: transform .2s; }
+    .tgl.on { background: var(--accent); }
+    .tgl.on::after { transform: translateX(20px); }
+    .upload-zone { border: 2px dashed var(--border2); border-radius: var(--radius); padding: 18px; text-align: center; cursor: pointer; transition: all .2s; position: relative; }
+    .upload-zone:hover { border-color: var(--accent); background: var(--accent-l); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-zone .uz-icon { font-size: 24px; margin-bottom: 6px; }
+    .upload-zone p { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+    .logo-preview { display: none; position: relative; margin-top: 10px; text-align: center; }
+    .logo-preview img { max-height: 80px; max-width: 100%; border-radius: 8px; object-fit: contain; border: 2px solid var(--border); padding: 8px; background: #fafafa; }
+    .logo-remove { position: absolute; top: -8px; right: -4px; width: 24px; height: 24px; background: var(--red); border: none; border-radius: 50%; color: #fff; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .ctabs { display: flex; gap: 4px; background: var(--surface2); border-radius: 9px; padding: 3px; margin-bottom: 12px; border: 1.5px solid var(--border); }
+    .ctab-btn { flex: 1; padding: 7px; border: none; background: none; border-radius: 7px; font-size: 0.73rem; font-weight: 700; color: var(--muted); cursor: pointer; transition: all .15s; font-family: inherit; }
+    .ctab-btn.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+    .ctab-pane { display: none; }
+    .ctab-pane.active { display: block; }
+    .color-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .cpi { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .cpi label { font-size: 0.72rem; margin: 0; font-weight: 700; color: var(--muted); }
+    input[type="color"] { width: 52px; height: 40px; border: 2px solid var(--border2); border-radius: 10px; cursor: pointer; padding: 3px; background: #fff; outline: none; }
+    input[type="color"]:focus { border-color: var(--accent); }
+    .hex-lbl { font-size: 0.67rem; color: var(--muted); font-family: monospace; }
+    .swatches { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 12px; }
+    .swatch { width: 32px; height: 32px; border-radius: 8px; border: 2px solid var(--border); cursor: pointer; transition: transform .15s, border-color .15s; }
+    .swatch:hover { transform: scale(1.15); border-color: var(--accent); }
+    .swatch-hint { font-size: 0.7rem; color: var(--light); margin-top: 7px; }
+    .ratio-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+    .ratio-btn { background: var(--surface2); border: 2px solid var(--border); border-radius: var(--radius); cursor: pointer; padding: 11px 4px; text-align: center; transition: all .15s; font-family: inherit; }
+    .ratio-btn:hover, .ratio-btn.active { border-color: var(--accent); }
+    .ratio-btn.active { background: var(--accent-l); }
+    .ratio-btn .ri { margin: 0 auto 5px; background: currentColor; border-radius: 2px; opacity: .65; }
+    .ratio-btn .rl { font-size: 0.75rem; font-weight: 800; color: var(--text2); }
+    .ratio-btn.active .rl { color: var(--accent); }
+    .ratio-btn .rs { font-size: 0.64rem; color: var(--muted); margin-top: 2px; }
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    input[type="range"] { flex: 1; accent-color: var(--accent); height: 4px; padding: 0; cursor: pointer; }
+    .slider-val { background: var(--accent-l); border: 2px solid var(--accent-m); border-radius: 8px; padding: 5px 12px; font-size: 0.9rem; font-weight: 900; color: var(--accent); min-width: 38px; text-align: center; }
+    .sb-footer { border-top: 1.5px solid var(--border); padding: 18px 22px; background: var(--surface); }
+    .status-msg { font-size: 0.84rem; padding: 11px 14px; border-radius: 10px; border: 2px solid transparent; display: none; margin-bottom: 12px; line-height: 1.5; font-weight: 500; }
+    .status-msg.show { display: block; }
+    .status-msg.error { background: var(--red-l); border-color: var(--red-m); color: #b91c1c; }
+    .status-msg.success { background: var(--green-l); border-color: var(--green-m); color: #065f46; }
+    .status-msg.info { background: var(--accent-l); border-color: var(--accent-m); color: #4338ca; }
+    .progress-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; display: none; margin-bottom: 12px; }
+    .progress-bar.show { display: block; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--pink)); border-radius: 99px; transition: width .4s ease; width: 0%; }
+    .btn-go { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: var(--radius); color: #fff; font-size: 1.05rem; font-weight: 900; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 9px; font-family: inherit; }
+    .btn-go:hover:not(:disabled) { background: var(--accent-h); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(91,94,244,.38); }
+    .btn-go:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .main-area { overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; }
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 40px; text-align: center; }
+    .e-icon { font-size: 54px; margin-bottom: 4px; }
+    .empty-state h2 { font-size: 1.3rem; font-weight: 900; }
+    .empty-state p { font-size: 0.92rem; color: var(--muted); max-width: 340px; line-height: 1.7; }
+    .step-pills { display: flex; margin-top: 24px; border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border); }
+    .step-pill { display: flex; align-items: center; gap: 9px; padding: 12px 18px; background: var(--surface); font-size: 0.82rem; color: var(--text2); border-right: 1.5px solid var(--border); font-weight: 500; }
+    .step-pill:last-child { border-right: none; }
+    .sn { width: 24px; height: 24px; background: var(--accent-l); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; color: var(--accent); flex-shrink: 0; }
+    .plan-view { padding: 28px; display: none; flex-direction: column; gap: 18px; }
+    .pv-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .pv-header h2 { font-size: 1.1rem; font-weight: 900; }
+    .pv-header p { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    .btn-gen { padding: 11px 22px; background: var(--accent); border: none; border-radius: var(--radius); color: #fff; font-size: 0.88rem; font-weight: 800; cursor: pointer; transition: background .15s; white-space: nowrap; flex-shrink: 0; font-family: inherit; }
+    .btn-gen:hover { background: var(--accent-h); }
+    .btn-gen:disabled { opacity: .45; cursor: not-allowed; }
+    .plan-list { display: flex; flex-direction: column; gap: 12px; }
+    .spc { background: var(--surface); border: 1.5px solid var(--border); border-radius: 13px; overflow: hidden; box-shadow: var(--shadow); }
+    .spc-head { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1.5px solid var(--border); background: var(--surface2); }
+    .spc-num { font-size: 0.7rem; font-weight: 900; color: var(--muted); }
+    .type-pill { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; padding: 3px 9px; border-radius: 99px; }
+    .pill-hook { background: #fce7f3; color: #9d174d; }
+    .pill-content { background: var(--accent-l); color: #4338ca; }
+    .pill-cta { background: var(--green-l); color: #065f46; }
+    .pill-main { background: var(--yellow-l); color: #92400e; }
+    .regen-btn { margin-left: auto; padding: 5px 12px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 0.72rem; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .regen-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .regen-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .spc-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 11px; }
+    .spc-field label { font-size: 0.68rem; color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+    .spc-field input, .spc-field textarea { font-size: 0.88rem; padding: 9px 12px; border-radius: 9px; }
+    .spc-field textarea { resize: none; }
+    .cta-opt { font-size: 0.65rem; color: var(--light); font-weight: 400; text-transform: none; letter-spacing: 0; }
+    .results-view { padding: 28px; display: none; }
+    .rv-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 22px; gap: 14px; }
+    .rv-header h2 { font-size: 1.1rem; font-weight: 900; }
+    .rv-header span { font-size: 0.8rem; color: var(--muted); display: block; margin-top: 3px; }
+    .rv-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .btn-outline { padding: 9px 16px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); color: var(--text2); font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all .15s; font-family: inherit; }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .image-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); }
+    .image-card { background: var(--surface); border: 2px solid var(--border); border-radius: 13px; overflow: hidden; position: relative; box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s, border-color .2s; cursor: pointer; }
+    .image-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .image-card.focused { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-m), var(--shadow-md); }
+    .image-card img { width: 100%; display: block; object-fit: cover; }
+    .card-overlay { position: absolute; inset: 0; background: rgba(10,16,30,.55); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity .2s; }
+    .image-card:hover .card-overlay { opacity: 1; }
+    .card-btn { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.38); border-radius: 8px; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 0.74rem; font-weight: 700; backdrop-filter: blur(4px); transition: background .15s; font-family: inherit; }
+    .card-btn:hover { background: rgba(255,255,255,.3); }
+    .slide-badge { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,.93); color: var(--text); font-size: 0.66rem; font-weight: 800; padding: 4px 10px; border-radius: 99px; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+    .sdot { width: 7px; height: 7px; border-radius: 50%; }
+    .ad-size-label { position: absolute; bottom: 10px; left: 10px; background: rgba(10,16,30,.78); color: #fff; font-size: 0.62rem; font-weight: 700; padding: 3px 8px; border-radius: 7px; }
+    .focused-badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #fff; font-size: 0.6rem; font-weight: 800; padding: 3px 8px; border-radius: 99px; }
+    .skeleton { background: linear-gradient(90deg,var(--surface2) 25%,var(--border) 50%,var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 13px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner-sm { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(91,94,244,.3); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ═══ CHAT DRAWER ═══ */
+    .chat-drawer { position: fixed; right: 0; top: 72px; bottom: 0; width: var(--chat-w); background: var(--surface); border-left: 1.5px solid var(--border); transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1); z-index: 45; display: flex; flex-direction: column; box-shadow: -6px 0 32px rgba(0,0,0,.1); }
+    .chat-drawer.open { transform: translateX(0); }
+    .chat-header { padding: 16px 20px; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--surface); flex-shrink: 0; }
+    .chat-header h3 { font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .chat-header-btns { display: flex; gap: 6px; }
+    .chat-hbtn { padding: 5px 10px; border: 1.5px solid var(--border); border-radius: 7px; background: none; color: var(--muted); font-size: 0.72rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+    .chat-hbtn:hover { border-color: var(--accent); color: var(--accent); }
+    .chat-hbtn.active { background: var(--accent-l); border-color: var(--accent); color: var(--accent); }
+    .chat-ctx { margin: 0 16px 0; padding: 10px 14px; background: var(--accent-l); border: 1.5px solid var(--accent-m); border-radius: 10px; display: none; align-items: center; gap: 10px; font-size: 0.78rem; flex-shrink: 0; }
+    .chat-ctx .ctx-label { font-weight: 700; color: var(--accent); flex: 1; }
+    .ctx-clear { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; }
+    .ctx-clear:hover { color: var(--red); }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+    .chat-messages::-webkit-scrollbar { width: 4px; }
+    .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+    .chat-msg { display: flex; gap: 9px; align-items: flex-start; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 2px; }
+    .chat-avatar.ai-av { background: linear-gradient(135deg,var(--accent),var(--pink)); }
+    .chat-avatar.user-av { background: var(--surface3); border: 1.5px solid var(--border2); }
+    .chat-bubble { max-width: 82%; padding: 11px 14px; border-radius: 14px; font-size: 0.84rem; line-height: 1.55; }
+    .chat-bubble.ai { background: var(--surface2); border: 1.5px solid var(--border); color: var(--text2); border-top-left-radius: 4px; }
+    .chat-bubble.user { background: var(--accent); color: #fff; border-top-right-radius: 4px; }
+    .chat-bubble.action { background: var(--green-l); border: 1.5px solid var(--green-m); color: #065f46; font-size: 0.8rem; }
+    .chat-time { font-size: 0.62rem; color: var(--light); margin-top: 4px; text-align: right; }
+    .user .chat-time { text-align: left; }
+    .typing-dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+    .typing-dots span { width: 7px; height: 7px; background: var(--muted); border-radius: 50%; animation: dotbounce 1.2s infinite; }
+    .typing-dots span:nth-child(2) { animation-delay: .2s; }
+    .typing-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes dotbounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+    .chat-input-area { padding: 14px 16px; border-top: 1.5px solid var(--border); background: var(--surface); flex-shrink: 0; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 10px 14px; border: 2px solid var(--border2); border-radius: 12px; font-size: 0.85rem; outline: none; transition: border-color .2s; font-family: inherit; resize: none; height: 42px; line-height: 1.4; }
+    .chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-l); }
+    .chat-send { width: 42px; height: 42px; background: var(--accent); border: none; border-radius: 12px; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .15s; }
+    .chat-send:hover { background: var(--accent-h); }
+    .chat-send:disabled { opacity: .5; cursor: not-allowed; }
+    .chat-hint { font-size: 0.7rem; color: var(--light); margin-top: 7px; text-align: center; }
+
+    /* History view */
+    .history-view { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+    .history-view.active { display: flex; }
+    .history-item { padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+    .history-item:hover { background: var(--surface2); }
+    .history-item .hi-tool { font-size: 0.72rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: .07em; }
+    .history-item .hi-date { font-size: 0.78rem; font-weight: 600; color: var(--text2); margin: 3px 0; }
+    .history-item .hi-preview { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+    @media (max-width: 1000px) {
+      .tool-wrapper { grid-template-columns: 520px 1fr; }
+      body.chat-open .tool-wrapper { margin-right: 0; }
+    }
+    @media (max-width: 800px) {
+      .tool-wrapper { grid-template-columns: 1fr; height: auto; }
+      .tool-tabs .tool-tab .t-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ACCOUNT MODAL -->
+<div class="overlay" id="accountModal">
+  <div class="modal">
+    <div class="modal-logo">✨</div>
+    <h2>Creatives Gen</h2>
+    <p class="sub">AI-powered images for social media, ads &amp; websites</p>
+    <div class="trial-badge">
+      <div class="tb-icon">🎁</div>
+      <div>
+        <strong>Free trial — 15 images, no credit card</strong>
+        <span>Create social posts, ad creatives, and website images</span>
+      </div>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <button class="btn-auth" id="btnGoogle" onclick="doGoogleSignIn()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google"> Continue with Google
+    </button>
+    <button class="btn-auth btn-auth-fb" id="btnFacebook" onclick="doFacebookSignIn()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Continue with Facebook
+    </button>
+    <div class="auth-divider">or</div>
+    <p class="modal-note" style="font-size:0.78rem;color:var(--muted);margin-bottom:0;">By continuing you agree to our <a href="/terms.html" style="color:var(--accent)">Terms</a> &amp; <a href="/privacy.html" style="color:var(--accent)">Privacy Policy</a>.</p>
+  </div>
+</div>
+
+<!-- PAYWALL MODAL -->
+<div class="overlay hidden" id="paywallModal">
+  <div class="modal paywall">
+    <h2>🚀 Upgrade to keep creating</h2>
+    <p class="sub" style="text-align:left;margin-top:6px;">You've used your 15 free images. One subscription works across all tools.</p>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-badge">Tier 1</div>
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">$19<span>/mo</span></div>
+        <div class="plan-imgs">200 images</div>
+        <div class="plan-features">✓ All 3 tools<br>✓ All ad sizes<br>✓ Brand memory<br>✓ Chat history</div>
+        <button class="plan-btn outline" onclick="upgrade('starter')">Get Starter</button>
+      </div>
+      <div class="plan-card pop">
+        <div class="plan-badge">Most Popular ⭐</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$59<span>/mo</span></div>
+        <div class="plan-imgs">1,000 images</div>
+        <div class="plan-features">✓ Everything + Imagen 4<br>✓ Logo embedding<br>✓ Priority support</div>
+        <button class="plan-btn" onclick="upgrade('pro')">Get Pro</button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-badge">Tier 3</div>
+        <div class="plan-name">Agency</div>
+        <div class="plan-price">$199<span>/mo</span></div>
+        <div class="plan-imgs">5,000 images</div>
+        <div class="plan-features">✓ Multi-brand<br>✓ Team seats<br>✓ Dedicated support</div>
+        <button class="plan-btn outline" onclick="upgrade('agency')">Get Agency</button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-badge">Enterprise</div>
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price" style="font-size:1.5rem;">$499<span>+/mo</span></div>
+        <div class="plan-imgs">15,000+ images</div>
+        <div class="plan-features">✓ Custom limits<br>✓ SLA<br>✓ Onboarding</div>
+        <button class="plan-btn outline" onclick="upgrade('enterprise')">Contact Us</button>
+      </div>
+    </div>
+    <p class="modal-note">Cancel anytime · <a href="mailto:hello@creativesgen.com" style="color:var(--accent)">hello@creativesgen.com</a> · <a href="/pricing.html" style="color:var(--accent)">Full pricing →</a></p>
+    <div style="text-align:center;margin-top:10px;"><button style="background:none;border:none;color:var(--muted);font-size:0.82rem;cursor:pointer;font-family:inherit;" onclick="document.getElementById('paywallModal').classList.add('hidden')">← Go back</button></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="h-left">
+    <a href="/" class="h-logo-link">
+      <div class="h-logo">✨</div>
+      <div class="h-brand">Creatives <span>Gen</span></div>
+    </a>
+    <div class="h-divider"></div>
+    <a href="/" class="h-back">← Back to site</a>
+  </div>
+  <div class="tool-tabs">
+    <button class="tool-tab active" id="tab-social" onclick="switchTool('social')">
+      <span>📱</span><span class="t-label">Social Posts</span>
+    </button>
+    <button class="tool-tab" id="tab-ads" onclick="switchTool('ads')">
+      <span>📣</span><span class="t-label">Ad Creatives</span>
+    </button>
+    <button class="tool-tab" id="tab-website" onclick="switchTool('website')">
+      <span>🌐</span><span class="t-label">Website Images</span>
+    </button>
+  </div>
+  <div class="h-right">
+    <div class="trial-pill">
+      <div class="trial-ring"><svg width="26" height="26" viewBox="0 0 26 26"><circle class="ring-bg" cx="13" cy="13" r="10"/><circle class="ring-fg" id="ringFg" cx="13" cy="13" r="10" stroke-dasharray="62.83" stroke-dashoffset="0"/></svg></div>
+      <span class="trial-used" id="trialUsed">0</span>
+      <span class="trial-label">/ 15 used</span>
+    </div>
+    <button class="upgrade-btn" onclick="showPaywall()">Upgrade ↗</button>
+    <button class="chat-toggle-btn" id="chatToggleBtn" onclick="toggleChat()">
+      <span class="ct-dot"></span> AI Chat
+    </button>
+    <div class="user-chip" onclick="signOut()">
+      <div class="u-avatar" id="uAvatar">?</div>
+      <span id="uName">—</span>
+    </div>
+  </div>
+</header>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- TOOL 1: SOCIAL POSTS -->
+  <div class="tool-wrapper" id="tool-social">
+    <aside class="sidebar">
+      <div class="sb-scroll">
+        <div class="sec">
+          <div class="sec-title">1 · What are you creating?</div>
+          <div class="type-grid" id="socialTypeGrid">
+            <button class="type-btn active" data-type="carousel" data-ratio="1:1" data-slides="5" onclick="selectSocialType(this)"><span class="ti">🎠</span><span class="tn">Carousel</span></button>
+            <button class="type-btn" data-type="single" data-ratio="1:1" data-slides="1" onclick="selectSocialType(this)"><span class="ti">🖼️</span><span class="tn">Single Post</span></button>
+            <button class="type-btn" data-type="story" data-ratio="9:16" data-slides="1" onclick="selectSocialType(this)"><span class="ti">📖</span><span class="tn">Story</span></button>
+            <button class="type-btn" data-type="quote" data-ratio="1:1" data-slides="1" onclick="selectSocialType(this)"><span class="ti">💬</span><span class="tn">Quote</span></button>
+            <button class="type-btn" data-type="infographic" data-ratio="4:5" data-slides="1" onclick="selectSocialType(this)"><span class="ti">📊</span><span class="tn">Infographic</span></button>
+            <button class="type-btn" data-type="product" data-ratio="1:1" data-slides="1" onclick="selectSocialType(this)"><span class="ti">🛍️</span><span class="tn">Product</span></button>
+            <button class="type-btn" data-type="announcement" data-ratio="1:1" data-slides="1" onclick="selectSocialType(this)"><span class="ti">📣</span><span class="tn">Announce</span></button>
+            <button class="type-btn" data-type="tips" data-ratio="4:5" data-slides="5" onclick="selectSocialType(this)"><span class="ti">💡</span><span class="tn">Tips List</span></button>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">2 · Topic / Goal</div>
+          <div class="field">
+            <label>Describe your post topic</label>
+            <textarea id="s-topic" rows="3" placeholder="e.g. 5 tips for local service businesses to get more Google reviews and grow faster"></textarea>
+            <p class="hint">Be specific — the more context you give, the better the AI output.</p>
+          </div>
+          <div class="field">
+            <label>Style Inspiration <span class="opt-tag">Optional</span></label>
+            <input type="text" id="s-inspiration" placeholder="e.g. Clean bold typography, dark background, like Apple ads" />
+          </div>
+          <div class="field">
+            <label>Example Image <span class="opt-tag">Optional — upload for style reference</span></label>
+            <div class="upload-zone" id="s-exZone">
+              <input type="file" accept="image/*" onchange="handleExampleImage(this,'s')" />
+              <div class="uz-icon">🖼️</div>
+              <p><strong>Click or drag</strong> an example image — AI will match this style</p>
+            </div>
+            <div class="logo-preview" id="s-exPreview"><img id="s-exImg" src="" alt="Example" /><button class="logo-remove" onclick="removeExample('s')">✕</button></div>
+          </div>
+          <div class="field">
+            <label>Avoid in Images <span class="opt-tag">Optional</span></label>
+            <input type="text" id="s-avoid" placeholder="e.g. People, dark backgrounds, cluttered layouts" />
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">3 · Brand <span>(remembered between sessions)</span></div>
+          <div class="row2">
+            <div class="field"><label>Business Name</label><input id="s-brand" type="text" placeholder="e.g. FreshCut" /></div>
+            <div class="field"><label>Industry</label><input id="s-industry" type="text" placeholder="e.g. Lawn care" /></div>
+          </div>
+          <div class="field"><label>Target Audience</label><input id="s-audience" type="text" placeholder="e.g. Homeowners 30-50, suburban areas" /></div>
+          <div class="field">
+            <label>Brand Tone</label>
+            <select id="s-tone">
+              <option value="professional and trustworthy">Professional &amp; Trustworthy</option>
+              <option value="bold and energetic">Bold &amp; Energetic</option>
+              <option value="playful and fun">Playful &amp; Fun</option>
+              <option value="luxurious and premium">Luxurious &amp; Premium</option>
+              <option value="minimalist and clean">Minimalist &amp; Clean</option>
+              <option value="warm and approachable">Warm &amp; Approachable</option>
+              <option value="edgy and disruptive">Edgy &amp; Disruptive</option>
+            </select>
+          </div>
+          <div class="toggle-row">
+            <label>Include brand logo?</label>
+            <button class="tgl" id="s-logoTgl" onclick="toggleSection('s-logoTgl','s-logoSec')"></button>
+          </div>
+          <div id="s-logoSec" style="display:none;" class="field">
+            <div class="upload-zone"><input type="file" accept="image/*" onchange="handleLogo(this,'s')" /><div class="uz-icon">📁</div><p><strong>Upload logo</strong> — PNG with transparent background preferred</p></div>
+            <div class="logo-preview" id="s-logoPrev"><img id="s-logoImg" src="" alt="Logo" /><button class="logo-remove" onclick="removeLogo('s')">✕</button></div>
+          </div>
+          <div class="field" style="margin-top:6px;">
+            <label>Brand Colors</label>
+            <div class="ctabs"><button class="ctab-btn active" onclick="switchCtab('s','pick',this)">Color Picker</button><button class="ctab-btn" onclick="switchCtab('s','img',this)">From Image</button><button class="ctab-btn" onclick="switchCtab('s','hex',this)">Hex Codes</button></div>
+            <div id="s-ctab-pick" class="ctab-pane active"><div class="color-row"><div class="cpi"><label>Primary</label><input type="color" id="s-c1" value="#6366f1" oninput="updateHex('s-c1','s-h1')"><div class="hex-lbl" id="s-h1">#6366f1</div></div><div class="cpi"><label>Secondary</label><input type="color" id="s-c2" value="#ec4899" oninput="updateHex('s-c2','s-h2')"><div class="hex-lbl" id="s-h2">#ec4899</div></div><div class="cpi"><label>Background</label><input type="color" id="s-c3" value="#ffffff" oninput="updateHex('s-c3','s-h3')"><div class="hex-lbl" id="s-h3">#ffffff</div></div></div></div>
+            <div id="s-ctab-img" class="ctab-pane"><div class="upload-zone"><input type="file" accept="image/*" onchange="handleColorRef(this,'s')" /><p>Upload any image to extract brand colors</p></div><img id="s-colorRefPrev" style="width:100%;border-radius:8px;margin-top:8px;max-height:80px;object-fit:cover;display:none;" alt="" /><div class="swatches" id="s-swatches"></div><p class="swatch-hint" id="s-swHint" style="display:none;">Tap a swatch to apply as brand color</p></div>
+            <div id="s-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'s-c1','s-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'s-c2','s-h2')" /></div><div class="field"><label>Background</label><input type="text" placeholder="#ffffff" maxlength="7" oninput="syncHex(this,'s-c3','s-h3')" /></div></div>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">4 · Style &amp; Format</div>
+          <div class="field"><label>Visual Style</label>
+            <select id="s-style">
+              <option value="bold social media graphic, modern layout, strong typography, vibrant colors, high contrast">Social Media Bold (default)</option>
+              <option value="photorealistic, cinematic lighting, ultra detailed photography, professional">Photorealistic Photography</option>
+              <option value="clean flat design illustration, bold colors, vector art, modern">Flat Design / Illustration</option>
+              <option value="modern 3D render, soft studio lighting, product quality, premium">3D Render</option>
+              <option value="minimalist, elegant, generous white space, clean typography">Minimalist</option>
+              <option value="dark moody aesthetic, neon glow accents, cinematic, high contrast">Dark Aesthetic</option>
+              <option value="luxury magazine editorial, high fashion, premium feel, elegant">Luxury Editorial</option>
+              <option value="bold geometric shapes, graphic design poster, vivid colors, abstract">Bold Geometric</option>
+              <option value="watercolor illustration, artistic, soft brushstrokes, organic, hand-crafted">Watercolor / Artistic</option>
+            </select>
+          </div>
+          <div class="field" id="s-slideWrap"><label>Number of Slides</label><div class="slider-row"><input type="range" id="s-slideCount" min="3" max="10" value="5" oninput="document.getElementById('s-slideVal').textContent=this.value" /><div class="slider-val" id="s-slideVal">5</div></div></div>
+          <div class="field"><label>Aspect Ratio</label>
+            <div class="ratio-row" id="s-ratioRow">
+              <button class="ratio-btn active" onclick="selectRatio('s',this,'1:1')"><div class="ri" style="width:22px;height:22px;"></div><div class="rl">Square</div><div class="rs">1:1</div></button>
+              <button class="ratio-btn" onclick="selectRatio('s',this,'4:5')"><div class="ri" style="width:17px;height:22px;"></div><div class="rl">Portrait</div><div class="rs">4:5</div></button>
+              <button class="ratio-btn" onclick="selectRatio('s',this,'9:16')"><div class="ri" style="width:12px;height:22px;"></div><div class="rl">Story</div><div class="rs">9:16</div></button>
+            </div>
+          </div>
+          <div class="field"><label>Image Model</label>
+            <select id="s-model">
+              <option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option>
+              <option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option>
+              <option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option>
+              <option value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra (best quality)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="sb-footer">
+        <div id="s-status" class="status-msg"></div>
+        <div id="s-progress" class="progress-bar"><div id="s-pfill" class="progress-fill"></div></div>
+        <button class="btn-go" id="s-planBtn" onclick="socialPlan()">✨ Plan My Content</button>
+      </div>
+    </aside>
+    <main class="main-area" id="s-main">
+      <div class="empty-state" id="s-empty">
+        <div class="e-icon">📱</div>
+        <h2>Create stunning social media content</h2>
+        <p>Choose a post type, describe your topic, and AI writes all the copy and generates beautiful on-brand images — ready to post.</p>
+        <div class="step-pills">
+          <div class="step-pill"><div class="sn">1</div>Choose type &amp; topic</div>
+          <div class="step-pill"><div class="sn">2</div>AI writes slide copy</div>
+          <div class="step-pill"><div class="sn">3</div>Generate &amp; download</div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--light);margin-top:20px;">💡 Tip: Open <strong>AI Chat</strong> to edit images after generation</p>
+      </div>
+      <div class="plan-view" id="s-plan">
+        <div class="pv-header">
+          <div><h2 id="s-planTitle">Your Content Plan</h2><p id="s-planSub">Review and edit copy, then generate images</p></div>
+          <button class="btn-gen" id="s-genBtn" onclick="socialGenerateImages()">🎨 Generate Images</button>
+        </div>
+        <div class="plan-list" id="s-planList"></div>
+      </div>
+      <div class="results-view" id="s-results">
+        <div class="rv-header">
+          <div><h2 id="s-resTitle">Your Content</h2><span id="s-resSub"></span></div>
+          <div class="rv-actions">
+            <button class="btn-outline" onclick="showView('s','plan')">✏️ Edit Copy</button>
+            <button class="btn-outline" onclick="downloadAll('s')">⬇ Download ZIP</button>
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any image to select it, then use AI Chat to request changes.</p>
+        <div class="image-grid" id="s-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- TOOL 2: ADS -->
+  <div class="tool-wrapper hidden" id="tool-ads">
+    <aside class="sidebar">
+      <div class="sb-scroll">
+        <div class="sec">
+          <div class="sec-title">1 · Ad Platform</div>
+          <div class="platform-row">
+            <button class="plat-btn active" id="plat-meta" onclick="selectPlatform('meta')"><span class="pi">📘</span><span class="pn">Meta Ads<br><small style="font-weight:500;color:var(--muted);font-size:0.7rem;">Facebook &amp; Instagram</small></span></button>
+            <button class="plat-btn" id="plat-google" onclick="selectPlatform('google')"><span class="pi">🔍</span><span class="pn">Google Ads<br><small style="font-weight:500;color:var(--muted);font-size:0.7rem;">Display Network</small></span></button>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">2 · Ad Sizes</div>
+          <div id="a-meta-sizes" class="size-list">
+            <label class="size-check checked" id="ck-meta-11"><input type="checkbox" checked onchange="toggleSizeCheck(this,'meta-11')" /><div class="sc-label"><div class="sc-name">Square (Standard)</div><div class="sc-dim">1:1 · 1080×1080px · Feed &amp; Reels</div></div></label>
+            <label class="size-check checked" id="ck-meta-45"><input type="checkbox" checked onchange="toggleSizeCheck(this,'meta-45')" /><div class="sc-label"><div class="sc-name">Vertical (Preferred) ⭐</div><div class="sc-dim">4:5 · 1080×1350px · More screen space</div></div></label>
+            <label class="size-check" id="ck-meta-169"><input type="checkbox" onchange="toggleSizeCheck(this,'meta-169')" /><div class="sc-label"><div class="sc-name">Landscape</div><div class="sc-dim">1.91:1 · 1080×608px · Desktop feed</div></div></label>
+          </div>
+          <div id="a-google-sizes" class="size-list" style="display:none;">
+            <label class="size-check checked" id="ck-g-rect"><input type="checkbox" checked onchange="toggleSizeCheck(this,'g-rect')" /><div class="sc-label"><div class="sc-name">Medium Rectangle ⭐</div><div class="sc-dim">300×250px · Most common</div></div></label>
+            <label class="size-check" id="ck-g-lrect"><input type="checkbox" onchange="toggleSizeCheck(this,'g-lrect')" /><div class="sc-label"><div class="sc-name">Large Rectangle</div><div class="sc-dim">336×280px</div></div></label>
+            <label class="size-check" id="ck-g-board"><input type="checkbox" onchange="toggleSizeCheck(this,'g-board')" /><div class="sc-label"><div class="sc-name">Leaderboard</div><div class="sc-dim">728×90px · Top of page</div></div></label>
+            <label class="size-check" id="ck-g-half"><input type="checkbox" onchange="toggleSizeCheck(this,'g-half')" /><div class="sc-label"><div class="sc-name">Half Page</div><div class="sc-dim">300×600px · High impact</div></div></label>
+            <label class="size-check" id="ck-g-mobile"><input type="checkbox" onchange="toggleSizeCheck(this,'g-mobile')" /><div class="sc-label"><div class="sc-name">Large Mobile Banner</div><div class="sc-dim">320×100px</div></div></label>
+            <label class="size-check" id="ck-g-bill"><input type="checkbox" onchange="toggleSizeCheck(this,'g-bill')" /><div class="sc-label"><div class="sc-name">Billboard</div><div class="sc-dim">970×250px · Premium</div></div></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">3 · Ad Brief</div>
+          <div class="field"><label>Ad Objective</label>
+            <select id="a-objective">
+              <option value="brand awareness and reach">Brand Awareness</option>
+              <option value="website traffic and clicks">Website Traffic</option>
+              <option value="lead generation">Lead Generation</option>
+              <option value="sales and conversions">Sales &amp; Conversions</option>
+              <option value="app installs">App Installs</option>
+              <option value="event promotion">Event Promotion</option>
+              <option value="retargeting warm audience">Retargeting</option>
+            </select>
+          </div>
+          <div class="field"><label>What are you advertising?</label><input id="a-product" type="text" placeholder="e.g. 30% off lawn care services this spring" /></div>
+          <div class="field"><label>Headline <span class="opt-tag">Optional — AI generates if blank</span></label><input id="a-headline" type="text" placeholder="e.g. Transform Your Lawn This Spring" /></div>
+          <div class="field"><label>Body Copy <span class="opt-tag">Optional — AI generates if blank</span></label><textarea id="a-body" rows="2" placeholder="e.g. Professional lawn care starting at $49..."></textarea></div>
+          <div class="field"><label>CTA Button Text</label>
+            <select id="a-cta"><option>Learn More</option><option>Shop Now</option><option>Book Now</option><option>Get Quote</option><option>Sign Up</option><option>Download</option><option>Contact Us</option><option>Get Offer</option><option>Watch Now</option></select>
+          </div>
+          <div class="field"><label>Target Audience <span class="opt-tag">Optional</span></label><input id="a-audience" type="text" placeholder="e.g. Homeowners 30-55, suburban" /></div>
+          <div class="field"><label>Style Inspiration <span class="opt-tag">Optional</span></label><input id="a-inspiration" type="text" placeholder="e.g. Clean minimal like Apple, bold like Nike" /></div>
+          <div class="field"><label>Example Ad <span class="opt-tag">Optional</span></label>
+            <div class="upload-zone" id="a-exZone"><input type="file" accept="image/*" onchange="handleExampleImage(this,'a')" /><div class="uz-icon">🖼️</div><p><strong>Upload</strong> an ad you like</p></div>
+            <div class="logo-preview" id="a-exPreview"><img id="a-exImg" src="" alt="" /><button class="logo-remove" onclick="removeExample('a')">✕</button></div>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">4 · Brand</div>
+          <div class="row2"><div class="field"><label>Business Name</label><input id="a-brand" type="text" placeholder="FreshCut" /></div><div class="field"><label>Industry</label><input id="a-industry" type="text" placeholder="Lawn care" /></div></div>
+          <div class="toggle-row"><label>Include brand logo?</label><button class="tgl" id="a-logoTgl" onclick="toggleSection('a-logoTgl','a-logoSec')"></button></div>
+          <div id="a-logoSec" style="display:none;" class="field"><div class="upload-zone"><input type="file" accept="image/*" onchange="handleLogo(this,'a')" /><div class="uz-icon">📁</div><p><strong>Upload logo</strong></p></div><div class="logo-preview" id="a-logoPrev"><img id="a-logoImg" src="" alt="Logo" /><button class="logo-remove" onclick="removeLogo('a')">✕</button></div></div>
+          <div class="field"><label>Brand Colors</label>
+            <div class="ctabs"><button class="ctab-btn active" onclick="switchCtab('a','pick',this)">Color Picker</button><button class="ctab-btn" onclick="switchCtab('a','img',this)">From Image</button><button class="ctab-btn" onclick="switchCtab('a','hex',this)">Hex Codes</button></div>
+            <div id="a-ctab-pick" class="ctab-pane active"><div class="color-row"><div class="cpi"><label>Primary</label><input type="color" id="a-c1" value="#6366f1" oninput="updateHex('a-c1','a-h1')"><div class="hex-lbl" id="a-h1">#6366f1</div></div><div class="cpi"><label>Secondary</label><input type="color" id="a-c2" value="#ec4899" oninput="updateHex('a-c2','a-h2')"><div class="hex-lbl" id="a-h2">#ec4899</div></div><div class="cpi"><label>Background</label><input type="color" id="a-c3" value="#ffffff" oninput="updateHex('a-c3','a-h3')"><div class="hex-lbl" id="a-h3">#ffffff</div></div></div></div>
+            <div id="a-ctab-img" class="ctab-pane"><div class="upload-zone"><input type="file" accept="image/*" onchange="handleColorRef(this,'a')" /><p>Upload image to extract colors</p></div><img id="a-colorRefPrev" style="width:100%;border-radius:8px;margin-top:8px;max-height:80px;object-fit:cover;display:none;" alt="" /><div class="swatches" id="a-swatches"></div><p class="swatch-hint" id="a-swHint" style="display:none;">Tap to apply</p></div>
+            <div id="a-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'a-c1','a-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'a-c2','a-h2')" /></div></div>
+          </div>
+          <div class="field"><label>Visual Style</label>
+            <select id="a-style">
+              <option value="professional advertising creative, bold headline, clear CTA button, high contrast">Professional Ad (default)</option>
+              <option value="photorealistic product photography, clean background, studio lighting">Product Photography</option>
+              <option value="bold graphic design, geometric shapes, vivid colors, eye-catching">Bold Graphic</option>
+              <option value="minimalist, clean white space, elegant typography, subtle">Minimalist</option>
+              <option value="dark premium aesthetic, luxury feel, sophisticated">Dark Premium</option>
+              <option value="bright cheerful, lifestyle photography, warm tones, approachable">Lifestyle / Bright</option>
+            </select>
+          </div>
+          <div class="field"><label>Image Model</label>
+            <select id="a-model"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option><option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option><option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="sb-footer">
+        <div id="a-status" class="status-msg"></div>
+        <div id="a-progress" class="progress-bar"><div id="a-pfill" class="progress-fill"></div></div>
+        <button class="btn-go" id="a-genBtn" onclick="adsGenerate()">🎯 Generate Ad Creatives</button>
+      </div>
+    </aside>
+    <main class="main-area" id="a-main">
+      <div class="empty-state" id="a-empty">
+        <div class="e-icon">📣</div>
+        <h2>Generate professional ad creatives</h2>
+        <p>Choose Meta or Google, select your sizes, fill in your brief, and AI generates ready-to-use ads for every size.</p>
+        <div class="step-pills">
+          <div class="step-pill"><div class="sn">1</div>Choose platform &amp; sizes</div>
+          <div class="step-pill"><div class="sn">2</div>Fill ad brief</div>
+          <div class="step-pill"><div class="sn">3</div>Download all sizes</div>
+        </div>
+      </div>
+      <div class="results-view" id="a-results">
+        <div class="rv-header">
+          <div><h2 id="a-resTitle">Your Ad Creatives</h2><span id="a-resSub"></span></div>
+          <div class="rv-actions"><button class="btn-outline" onclick="downloadAll('a')">⬇ Download ZIP</button></div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any ad to select it, then use AI Chat to request changes.</p>
+        <div class="image-grid" id="a-grid"></div>
+      </div>
+    </main>
+  </div>
+
+  <!-- TOOL 3: WEBSITE IMAGES -->
+  <div class="tool-wrapper hidden" id="tool-website">
+    <aside class="sidebar">
+      <div class="sb-scroll">
+        <div class="sec">
+          <div class="sec-title">1 · Page Type</div>
+          <div class="field">
+            <label>Which section is this for?</label>
+            <select id="w-pagetype" onchange="updateWebPageHint()">
+              <option value="homepage hero">Homepage Hero</option>
+              <option value="about us / team">About Us</option>
+              <option value="services / features">Services / Features</option>
+              <option value="blog article header">Blog / Article</option>
+              <option value="product showcase">Product Showcase</option>
+              <option value="contact / CTA section">Contact / CTA</option>
+              <option value="landing page">Landing Page</option>
+              <option value="testimonials / social proof">Testimonials</option>
+              <option value="FAQ section">FAQ</option>
+              <option value="pricing page">Pricing Page</option>
+              <option value="other">Other (describe below)</option>
+            </select>
+          </div>
+          <div class="field" id="w-otherWrap" style="display:none;">
+            <label>Describe the section type</label>
+            <input id="w-custompage" type="text" placeholder="e.g. Team bios section, Portfolio gallery, Event page..." />
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">2 · Page Content</div>
+          <div class="field"><label>Page Headline or Key Message</label><input id="w-headline" type="text" placeholder="e.g. Professional Lawn Care for a Perfect Yard" /></div>
+          <div class="field"><label>Page Copy <span class="opt-tag">Optional — paste your content</span></label><textarea id="w-copy" rows="4" placeholder="e.g. We provide reliable, eco-friendly lawn care for homeowners in the Dallas area..."></textarea><p class="hint">AI uses this context to create more relevant, on-brand images.</p></div>
+          <div class="field"><label>Images per Format</label><div class="slider-row"><input type="range" id="w-count" min="1" max="6" value="2" oninput="document.getElementById('w-countVal').textContent=this.value;updateWebTotal()" /><div class="slider-val" id="w-countVal">2</div></div><p class="hint" id="w-totalHint">Total: 4 images (2 formats × 2 each)</p></div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">3 · Image Formats <span>(select all you need)</span></div>
+          <div class="size-list">
+            <label class="size-check checked" id="ck-w-169"><input type="checkbox" checked onchange="toggleWebFormat(this,'w-169')" /><div class="sc-label"><div class="sc-name">Banner / Hero</div><div class="sc-dim">16:9 · 1920×1080px</div><div class="sc-hint">Homepage heroes, headers</div></div></label>
+            <label class="size-check checked" id="ck-w-11"><input type="checkbox" checked onchange="toggleWebFormat(this,'w-11')" /><div class="sc-label"><div class="sc-name">Square ⭐</div><div class="sc-dim">1:1 · 1080×1080px</div><div class="sc-hint">Blog thumbnails, social</div></div></label>
+            <label class="size-check" id="ck-w-45"><input type="checkbox" onchange="toggleWebFormat(this,'w-45')" /><div class="sc-label"><div class="sc-name">Portrait / Card</div><div class="sc-dim">4:5 · 1080×1350px</div><div class="sc-hint">Service cards, team photos</div></div></label>
+            <label class="size-check" id="ck-w-916"><input type="checkbox" onchange="toggleWebFormat(this,'w-916')" /><div class="sc-label"><div class="sc-name">Mobile / Full Screen</div><div class="sc-dim">9:16 · 1080×1920px</div><div class="sc-hint">Mobile heroes, app screens</div></div></label>
+            <label class="size-check" id="ck-w-219"><input type="checkbox" onchange="toggleWebFormat(this,'w-219')" /><div class="sc-label"><div class="sc-name">Ultra-Wide Banner</div><div class="sc-dim">21:9 · 2560×1080px</div><div class="sc-hint">Full-width backgrounds</div></div></label>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">4 · Image Style</div>
+          <div class="field"><label>Visual Style</label>
+            <select id="w-imgtype">
+              <option value="photorealistic, professional photography, cinematic lighting, sharp details">Photorealistic Photography</option>
+              <option value="clean graphic illustration, modern flat design, bold shapes">Graphic / Illustration</option>
+              <option value="modern 3D render, soft lighting, premium product quality">3D Render</option>
+              <option value="abstract geometric art, artistic background, dynamic composition">Abstract / Background</option>
+              <option value="lifestyle photography, real people, warm and approachable, candid">Lifestyle Photography</option>
+              <option value="minimalist, generous white space, clean composition, elegant">Minimalist / Clean</option>
+            </select>
+          </div>
+          <div class="field"><label>Style Inspiration <span class="opt-tag">Optional</span></label><input id="w-inspiration" type="text" placeholder="e.g. Clean like Stripe, bold like Shopify" /></div>
+          <div class="field"><label>Example Image <span class="opt-tag">Optional — AI matches this style</span></label>
+            <div class="upload-zone"><input type="file" accept="image/*" onchange="handleExampleImage(this,'w')" /><div class="uz-icon">🖼️</div><p><strong>Upload</strong> a website image you like</p></div>
+            <div class="logo-preview" id="w-exPreview"><img id="w-exImg" src="" alt="" /><button class="logo-remove" onclick="removeExample('w')">✕</button></div>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">5 · Brand</div>
+          <div class="row2"><div class="field"><label>Business Name</label><input id="w-brand" type="text" placeholder="FreshCut" /></div><div class="field"><label>Industry</label><input id="w-industry" type="text" placeholder="Lawn care" /></div></div>
+          <div class="toggle-row"><label>Include brand logo?</label><button class="tgl" id="w-logoTgl" onclick="toggleSection('w-logoTgl','w-logoSec')"></button></div>
+          <div id="w-logoSec" style="display:none;" class="field"><div class="upload-zone"><input type="file" accept="image/*" onchange="handleLogo(this,'w')" /><div class="uz-icon">📁</div><p><strong>Upload logo</strong></p></div><div class="logo-preview" id="w-logoPrev"><img id="w-logoImg" src="" alt="Logo" /><button class="logo-remove" onclick="removeLogo('w')">✕</button></div></div>
+          <div class="field"><label>Brand Colors</label>
+            <div class="ctabs"><button class="ctab-btn active" onclick="switchCtab('w','pick',this)">Color Picker</button><button class="ctab-btn" onclick="switchCtab('w','img',this)">From Image</button><button class="ctab-btn" onclick="switchCtab('w','hex',this)">Hex Codes</button></div>
+            <div id="w-ctab-pick" class="ctab-pane active"><div class="color-row"><div class="cpi"><label>Primary</label><input type="color" id="w-c1" value="#6366f1" oninput="updateHex('w-c1','w-h1')"><div class="hex-lbl" id="w-h1">#6366f1</div></div><div class="cpi"><label>Secondary</label><input type="color" id="w-c2" value="#ec4899" oninput="updateHex('w-c2','w-h2')"><div class="hex-lbl" id="w-h2">#ec4899</div></div><div class="cpi"><label>Background</label><input type="color" id="w-c3" value="#ffffff" oninput="updateHex('w-c3','w-h3')"><div class="hex-lbl" id="w-h3">#ffffff</div></div></div></div>
+            <div id="w-ctab-img" class="ctab-pane"><div class="upload-zone"><input type="file" accept="image/*" onchange="handleColorRef(this,'w')" /><p>Upload image to extract colors</p></div><img id="w-colorRefPrev" style="width:100%;border-radius:8px;margin-top:8px;max-height:80px;object-fit:cover;display:none;" alt="" /><div class="swatches" id="w-swatches"></div><p class="swatch-hint" id="w-swHint" style="display:none;">Tap to apply</p></div>
+            <div id="w-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'w-c1','w-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'w-c2','w-h2')" /></div></div>
+          </div>
+          <div class="field"><label>Image Model</label>
+            <select id="w-model"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option><option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option><option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="sb-footer">
+        <div id="w-status" class="status-msg"></div>
+        <div id="w-progress" class="progress-bar"><div id="w-pfill" class="progress-fill"></div></div>
+        <button class="btn-go" id="w-genBtn" onclick="websiteGenerate()">🌐 Generate Website Images</button>
+      </div>
+    </aside>
+    <main class="main-area" id="w-main">
+      <div class="empty-state" id="w-empty">
+        <div class="e-icon">🌐</div>
+        <h2>Generate professional website images</h2>
+        <p>Choose your page type and formats, and AI generates beautiful on-brand images for every size you need — all at once.</p>
+        <div class="step-pills">
+          <div class="step-pill"><div class="sn">1</div>Choose page &amp; formats</div>
+          <div class="step-pill"><div class="sn">2</div>Add content &amp; style</div>
+          <div class="step-pill"><div class="sn">3</div>Download all sizes</div>
+        </div>
+      </div>
+      <div class="results-view" id="w-results">
+        <div class="rv-header">
+          <div><h2 id="w-resTitle">Website Images</h2><span id="w-resSub"></span></div>
+          <div class="rv-actions"><button class="btn-outline" onclick="downloadAll('w')">⬇ Download ZIP</button></div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any image to select it, then use AI Chat to request changes.</p>
+        <div class="image-grid" id="w-grid"></div>
+      </div>
+    </main>
+  </div>
+
+</div><!-- /app -->
+
+<!-- CHAT DRAWER -->
+<div class="chat-drawer" id="chatDrawer">
+  <div class="chat-header">
+    <h3>✨ AI Assistant</h3>
+    <div class="chat-header-btns">
+      <button class="chat-hbtn" id="historyBtn" onclick="toggleHistoryView()">History</button>
+      <button class="chat-hbtn" onclick="clearChat()">Clear</button>
+      <button class="chat-hbtn" onclick="toggleChat()">✕</button>
+    </div>
+  </div>
+  <div class="chat-ctx" id="chatContext">
+    <span class="ctx-label" id="ctxLabel">No image selected</span>
+    <button class="ctx-clear" onclick="clearFocus()" title="Clear selection">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="history-view" id="historyView"></div>
+  <div class="chat-input-area">
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chatInput" placeholder="Ask to edit an image, change style, or ask anything…" rows="1" onkeydown="chatKeydown(event)"></textarea>
+      <button class="chat-send" id="chatSendBtn" onclick="sendChatMessage()">➤</button>
+    </div>
+    <p class="chat-hint">Click an image first → then describe changes here</p>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const TRIAL_LIMIT = 15;
+let activeTool = 'social';
+let ratios = { s:'1:1', a:'1:1', w:'1:1' };
+let logos  = { s:null, a:null, w:null };
+let examples = { s:null, a:null, w:null };
+let slidePlan = [];
+let generatedImages = { s:[], a:[], w:[] };
+let generatedPrompts = { s:[], a:[], w:[] }; // stored prompts for editing
+let adsPlatform = 'meta';
+let conversation = [];
+let focusedImage = null; // {prefix, idx}
+let chatMessages = [];
+let chatOpen = false;
+let showingHistory = false;
+
+const AD_SIZES = {
+  'meta-11':  {label:'Square 1:1',      ratio:'1:1',  dim:'1080×1080px'},
+  'meta-45':  {label:'Vertical 4:5',    ratio:'4:5',  dim:'1080×1350px'},
+  'meta-169': {label:'Landscape 1.91:1',ratio:'16:9', dim:'1080×608px'},
+  'g-rect':   {label:'Medium Rectangle',ratio:'1:1',  dim:'300×250px'},
+  'g-lrect':  {label:'Large Rectangle', ratio:'1:1',  dim:'336×280px'},
+  'g-board':  {label:'Leaderboard',     ratio:'16:9', dim:'728×90px'},
+  'g-half':   {label:'Half Page',       ratio:'9:16', dim:'300×600px'},
+  'g-mobile': {label:'Mobile Banner',   ratio:'16:9', dim:'320×100px'},
+  'g-bill':   {label:'Billboard',       ratio:'16:9', dim:'970×250px'},
+};
+let selectedAdSizes = new Set(['meta-11','meta-45']);
+
+const W_FORMATS = {
+  'w-169': {label:'Banner / Hero',    ratio:'16:9', dim:'1920×1080px'},
+  'w-11':  {label:'Square',          ratio:'1:1',  dim:'1080×1080px'},
+  'w-45':  {label:'Portrait / Card', ratio:'4:5',  dim:'1080×1350px'},
+  'w-916': {label:'Mobile / Full',   ratio:'9:16', dim:'1080×1920px'},
+  'w-219': {label:'Ultra-Wide',      ratio:'16:9', dim:'2560×1080px'},
+};
+let selectedWebFormats = new Set(['w-169','w-11']);
+
+const SOCIAL_TYPES = {
+  carousel:     {label:'Carousel',     multi:true,  hint:'multi-slide Instagram carousel'},
+  single:       {label:'Single Post',  multi:false, hint:'single Instagram post graphic'},
+  story:        {label:'Story',        multi:false, hint:'full-screen Instagram/Facebook story (9:16)'},
+  quote:        {label:'Quote Card',   multi:false, hint:'inspirational quote card for Instagram'},
+  infographic:  {label:'Infographic',  multi:false, hint:'clean detailed infographic (4:5)'},
+  product:      {label:'Product Post', multi:false, hint:'product showcase Instagram post'},
+  announcement: {label:'Announcement', multi:false, hint:'bold eye-catching announcement post'},
+  tips:         {label:'Tips List',    multi:true,  hint:'numbered tips Instagram carousel'},
+};
+let socialType = 'carousel';
+
+// ════════════════════════════════════════
+// ACCOUNT — Firebase Auth + Firestore
+// ════════════════════════════════════════
+let currentUser = null;
+let userData = null;
+
+function setAuthBusy(busy) {
+  ['btnGoogle','btnFacebook'].forEach(id=>{const b=document.getElementById(id);if(b)b.disabled=busy;});
+}
+function showAuthError(msg) {
+  const el=document.getElementById('authError');
+  if (!el) return;
+  el.textContent=msg; el.style.display='block';
+  setTimeout(()=>el.style.display='none', 5000);
+}
+
+async function doGoogleSignIn() {
+  setAuthBusy(true);
+  try {
+    const { signInWithGoogle } = await import('./auth.js');
+    await signInWithGoogle();
+  } catch(e) {
+    setAuthBusy(false);
+    if (e.code !== 'auth/popup-closed-by-user') showAuthError(e.message || 'Sign-in failed. Try again.');
+  }
+}
+async function doFacebookSignIn() {
+  setAuthBusy(true);
+  try {
+    const { signInWithFacebook } = await import('./auth.js');
+    await signInWithFacebook();
+  } catch(e) {
+    setAuthBusy(false);
+    if (e.code === 'auth/account-exists-with-different-credential') {
+      showAuthError('An account with this email already exists. Try signing in with Google instead.');
+    } else if (e.code !== 'auth/popup-closed-by-user') {
+      showAuthError(e.message || 'Sign-in failed. Try again.');
+    }
+  }
+}
+
+async function signOut() {
+  if (!confirm('Sign out?')) return;
+  const { logout } = await import('./auth.js');
+  await logout();
+  currentUser = null; userData = null;
+  document.getElementById('accountModal').classList.remove('hidden');
+}
+
+function initApp(user, data) {
+  currentUser = user; userData = data;
+  const name = user.displayName || user.email || 'User';
+  document.getElementById('uName').textContent = name.split(' ')[0];
+  const avatar = document.getElementById('uAvatar');
+  if (user.photoURL) {
+    avatar.innerHTML = `<img src="${user.photoURL}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;">`;
+    avatar.style.background = 'none';
+  } else {
+    avatar.textContent = name[0].toUpperCase();
+  }
+  updateTrialUI(data.imagesUsed || 0, data.imagesAllowance || 15);
+  document.getElementById('accountModal').classList.add('hidden');
+  loadBrandMemory();
+  const tool = new URLSearchParams(location.search).get('tool');
+  if (tool && ['social','ads','website'].includes(tool)) switchTool(tool);
+}
+
+function updateTrialUI(used, allowance) {
+  allowance = allowance || 15;
+  const pct=Math.min(used/allowance,1), c=62.83;
+  document.getElementById('trialUsed').textContent=used;
+  document.querySelector('.trial-label').textContent=`/ ${allowance} used`;
+  const fg=document.getElementById('ringFg');
+  fg.style.strokeDashoffset=c*(1-pct);
+  fg.style.stroke=used>=allowance?'#ef4444':used>=(allowance*0.7)?'#f59e0b':'#10b981';
+}
+
+function canGenerate(n) {
+  if (!userData) return false;
+  if (userData.plan && userData.plan !== 'free') return true;
+  return (userData.imagesUsed || 0) + n <= (userData.imagesAllowance || 15);
+}
+
+async function consumeImages(n) {
+  if (!currentUser || !userData) return;
+  const { consumeImage } = await import('./auth.js');
+  for (let i = 0; i < n; i++) await consumeImage(currentUser.uid);
+  userData.imagesUsed = (userData.imagesUsed || 0) + n;
+  updateTrialUI(userData.imagesUsed, userData.imagesAllowance || 15);
+}
+
+function showPaywall() { document.getElementById('paywallModal').classList.remove('hidden'); }
+function upgrade(plan) { alert(`Redirecting to ${plan} checkout…\n(Connect Stripe here)`); }
+
+// ════════════════════════════════════════
+// BRAND MEMORY
+// ════════════════════════════════════════
+function saveBrandMemory() {
+  const m={brand:document.getElementById('s-brand').value,industry:document.getElementById('s-industry').value,audience:document.getElementById('s-audience').value,tone:document.getElementById('s-tone').value,c1:document.getElementById('s-c1').value,c2:document.getElementById('s-c2').value,c3:document.getElementById('s-c3').value,style:document.getElementById('s-style').value};
+  localStorage.setItem('cg_brand',JSON.stringify(m));
+  ['a','w'].forEach(p=>{
+    const b=document.getElementById(`${p}-brand`),i=document.getElementById(`${p}-industry`);
+    if(b&&!b.value&&m.brand) b.value=m.brand;
+    if(i&&!i.value&&m.industry) i.value=m.industry;
+    ['c1','c2','c3'].forEach(c=>{const el=document.getElementById(`${p}-${c}`),hl=document.getElementById(`${p}-${c.replace('c','h')}`);if(el&&m[c]){el.value=m[c];if(hl)hl.textContent=m[c];}});
+  });
+}
+function loadBrandMemory() {
+  try {
+    const m=JSON.parse(localStorage.getItem('cg_brand')||'null'); if(!m) return;
+    [['s-brand',m.brand],['s-industry',m.industry],['s-audience',m.audience],['a-brand',m.brand],['a-industry',m.industry],['w-brand',m.brand],['w-industry',m.industry]].forEach(([id,val])=>{if(val){const el=document.getElementById(id);if(el)el.value=val;}});
+    if(m.tone) document.getElementById('s-tone').value=m.tone;
+    if(m.style) document.getElementById('s-style').value=m.style;
+    ['s','a','w'].forEach(p=>{['c1','c2','c3'].forEach(c=>{const el=document.getElementById(`${p}-${c}`),hl=document.getElementById(`${p}-${c.replace('c','h')}`);if(el&&m[c]){el.value=m[c];if(hl)hl.textContent=m[c];}});});
+    setStatus('s','Brand loaded from memory.','info'); setTimeout(()=>clearStatus('s'),2500);
+  } catch {}
+}
+
+// ════════════════════════════════════════
+// TOOL SWITCHING
+// ════════════════════════════════════════
+function switchTool(tool) {
+  activeTool=tool;
+  ['social','ads','website'].forEach(t=>{
+    const panel=document.getElementById(`tool-${t}`);
+    const wasHidden=panel.classList.contains('hidden');
+    panel.classList.toggle('hidden',t!==tool);
+    if(t===tool && wasHidden){
+      // re-trigger fade animation
+      panel.style.animation='none';
+      panel.offsetHeight; // reflow
+      panel.style.animation='';
+    }
+    document.getElementById(`tab-${t}`).classList.toggle('active',t===tool);
+  });
+  clearFocus();
+}
+
+// ════════════════════════════════════════
+// VIEW MANAGEMENT
+// ════════════════════════════════════════
+function showView(prefix,view) {
+  const views={s:['empty','plan','results'],a:['empty','results'],w:['empty','results']};
+  (views[prefix]||['empty','results']).forEach(v=>{const el=document.getElementById(`${prefix}-${v}`);if(el) el.style.display=(v===view)?(v==='plan'?'flex':'block'):'none';});
+  if(prefix==='s'&&view==='empty') document.getElementById('s-empty').style.display='flex';
+}
+
+// ════════════════════════════════════════
+// STATUS / PROGRESS
+// ════════════════════════════════════════
+function setStatus(p,msg,type='') { const el=document.getElementById(`${p}-status`);if(!el)return;el.textContent=msg;el.className=`status-msg show ${type}`; }
+function clearStatus(p) { const el=document.getElementById(`${p}-status`);if(el)el.className='status-msg'; }
+function setProgress(p,pct) { const bar=document.getElementById(`${p}-progress`),fill=document.getElementById(`${p}-pfill`);if(!bar||!fill)return;if(pct===null){bar.classList.remove('show');fill.style.width='0%';}else{bar.classList.add('show');fill.style.width=pct+'%';} }
+function getColors(p) { return {primary:document.getElementById(`${p}-c1`).value,secondary:document.getElementById(`${p}-c2`).value,bg:document.getElementById(`${p}-c3`).value}; }
+
+// ════════════════════════════════════════
+// FORM HELPERS
+// ════════════════════════════════════════
+function updateHex(cid,hid) { document.getElementById(hid).textContent=document.getElementById(cid).value; }
+function syncHex(input,cid,hid) { if(/^#[0-9a-fA-F]{6}$/.test(input.value.trim())){document.getElementById(cid).value=input.value.trim();document.getElementById(hid).textContent=input.value.trim();} }
+function switchCtab(prefix,tab,btn) { const base=`${prefix}-ctab`;btn.closest('.ctabs').querySelectorAll('.ctab-btn').forEach(b=>b.classList.toggle('active',b===btn));['pick','img','hex'].forEach(t=>{const el=document.getElementById(`${base}-${t}`);if(el)el.classList.toggle('active',t===tab);}); }
+function toggleSection(tglId,secId) { const tgl=document.getElementById(tglId),sec=document.getElementById(secId);tgl.classList.toggle('on');sec.style.display=tgl.classList.contains('on')?'block':'none'; }
+function selectRatio(prefix,btn,ratio) { btn.closest('.ratio-row').querySelectorAll('.ratio-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');ratios[prefix]=ratio; }
+function updateWebPageHint() { const val=document.getElementById('w-pagetype').value;document.getElementById('w-otherWrap').style.display=val==='other'?'block':'none'; }
+function getWebPageType() { const val=document.getElementById('w-pagetype').value;if(val==='other'){const custom=document.getElementById('w-custompage').value.trim();return custom||'custom section';}return val; }
+
+// ════════════════════════════════════════
+// WEBSITE FORMAT MULTI-SELECT
+// ════════════════════════════════════════
+function toggleWebFormat(cb,key) { cb.checked?selectedWebFormats.add(key):selectedWebFormats.delete(key);cb.closest('.size-check').classList.toggle('checked',cb.checked);updateWebTotal(); }
+function updateWebTotal() { const count=parseInt(document.getElementById('w-count').value)||2,formats=selectedWebFormats.size,total=count*formats,hint=document.getElementById('w-totalHint');if(hint){if(!formats) hint.textContent='Select at least one format above';else hint.textContent=`Total: ${total} image${total!==1?'s':''} (${formats} format${formats!==1?'s':''} × ${count} each)`;} }
+
+// ════════════════════════════════════════
+// LOGO & UPLOADS
+// ════════════════════════════════════════
+function handleLogo(input,prefix) { const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const dataUrl=e.target.result;logos[prefix]={b64:dataUrl.split(',')[1],mimeType:file.type||'image/png',dataUrl};document.getElementById(`${prefix}-logoImg`).src=dataUrl;document.getElementById(`${prefix}-logoPrev`).style.display='block';extractColors(dataUrl,prefix,true);};reader.readAsDataURL(file); }
+function removeLogo(prefix) { logos[prefix]=null;document.getElementById(`${prefix}-logoImg`).src='';document.getElementById(`${prefix}-logoPrev`).style.display='none'; }
+function handleExampleImage(input,prefix) { const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{const dataUrl=e.target.result;examples[prefix]={b64:dataUrl.split(',')[1],mimeType:file.type||'image/png',dataUrl};document.getElementById(`${prefix}-exImg`).src=dataUrl;document.getElementById(`${prefix}-exPreview`).style.display='block';};reader.readAsDataURL(file); }
+function removeExample(prefix) { examples[prefix]=null;document.getElementById(`${prefix}-exImg`).src='';document.getElementById(`${prefix}-exPreview`).style.display='none'; }
+function handleColorRef(input,prefix) { const file=input.files[0];if(!file)return;const url=URL.createObjectURL(file);const prev=document.getElementById(`${prefix}-colorRefPrev`);if(prev){prev.src=url;prev.style.display='block';}extractColors(url,prefix,false); }
+function extractColors(src,prefix,autoApply) {
+  const img=new Image();img.crossOrigin='anonymous';
+  img.onload=()=>{const canvas=document.createElement('canvas');const s=Math.min(80/img.width,80/img.height);canvas.width=Math.round(img.width*s);canvas.height=Math.round(img.height*s);const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,canvas.width,canvas.height);const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;const buckets={};for(let i=0;i<data.length;i+=4){if(data[i+3]<128)continue;const r=Math.round(data[i]/24)*24,g=Math.round(data[i+1]/24)*24,b=Math.round(data[i+2]/24)*24;const k=`${r},${g},${b}`;buckets[k]=(buckets[k]||0)+1;}const top=Object.entries(buckets).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k])=>{const[r,g,b]=k.split(',').map(Number);return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;});if(autoApply&&top.length>=2){document.getElementById(`${prefix}-c1`).value=top[0];document.getElementById(`${prefix}-h1`).textContent=top[0];document.getElementById(`${prefix}-c2`).value=top[1];document.getElementById(`${prefix}-h2`).textContent=top[1];}const sw=document.getElementById(`${prefix}-swatches`),hint=document.getElementById(`${prefix}-swHint`);if(sw){sw.innerHTML='';if(hint)hint.style.display='block';top.forEach((hex,i)=>{const d=document.createElement('div');d.className='swatch';d.style.background=hex;d.title=hex;d.onclick=()=>{if(i===0){document.getElementById(`${prefix}-c1`).value=hex;document.getElementById(`${prefix}-h1`).textContent=hex;}else if(i===1){document.getElementById(`${prefix}-c2`).value=hex;document.getElementById(`${prefix}-h2`).textContent=hex;}else{document.getElementById(`${prefix}-c3`).value=hex;document.getElementById(`${prefix}-h3`).textContent=hex;}};sw.appendChild(d);});}if(src.startsWith('blob:'))URL.revokeObjectURL(src);};img.src=src;
+}
+
+// ════════════════════════════════════════
+// SOCIAL TYPE
+// ════════════════════════════════════════
+function selectSocialType(btn) {
+  document.querySelectorAll('#socialTypeGrid .type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  socialType=btn.dataset.type;
+  const config=SOCIAL_TYPES[socialType];
+  document.getElementById('s-slideWrap').style.display=config.multi?'block':'none';
+  if(config.multi){document.getElementById('s-slideCount').value=btn.dataset.slides;document.getElementById('s-slideVal').textContent=btn.dataset.slides;}
+  document.querySelectorAll('#s-ratioRow .ratio-btn').forEach(b=>{const match=b.getAttribute('onclick').includes(`'${btn.dataset.ratio}'`);b.classList.toggle('active',match);if(match)ratios['s']=btn.dataset.ratio;});
+}
+
+// ════════════════════════════════════════
+// ADS PLATFORM
+// ════════════════════════════════════════
+function selectPlatform(platform) {
+  adsPlatform=platform;
+  document.getElementById('plat-meta').classList.toggle('active',platform==='meta');
+  document.getElementById('plat-google').classList.toggle('active',platform==='google');
+  document.getElementById('a-meta-sizes').style.display=platform==='meta'?'flex':'none';
+  document.getElementById('a-google-sizes').style.display=platform==='google'?'flex':'none';
+  selectedAdSizes.clear();
+  if(platform==='meta'){selectedAdSizes.add('meta-11');selectedAdSizes.add('meta-45');}else{selectedAdSizes.add('g-rect');}
+  document.querySelectorAll('.size-check').forEach(el=>{const cb=el.querySelector('input[type="checkbox"]');const attr=cb.getAttribute('onchange');if(!attr||!attr.includes('toggleSizeCheck'))return;const key=attr.match(/'([^']+)'/)?.[1];if(key){const on=selectedAdSizes.has(key);cb.checked=on;el.classList.toggle('checked',on);}});
+}
+function toggleSizeCheck(cb,key) { cb.checked?selectedAdSizes.add(key):selectedAdSizes.delete(key);cb.closest('.size-check').classList.toggle('checked',cb.checked); }
+
+// ════════════════════════════════════════
+// SMART PROMPTS
+// ════════════════════════════════════════
+function buildSocialImagePrompt(slide, idx, count, config, brand, colors, style, inspir, avoid) {
+  const isHook = idx===0 && count>1;
+  const isCTA  = slide.type==='cta';
+  const isMulti = config.multi;
+  const platform = 'Instagram';
+
+  const roleDesc = isMulti
+    ? (isHook
+      ? 'HOOK SLIDE — Must stop the scroll within 0.3 seconds. Maximum visual drama, bold contrast, irresistible curiosity.'
+      : isCTA
+        ? 'CTA SLIDE — Drive the viewer to act right now. Urgency + benefit + clear action. Make it impossible to ignore.'
+        : `VALUE SLIDE ${idx+1} — Deliver one clear insight. Clean, educational, visually engaging. Easy to read at a glance.`)
+    : `STANDALONE ${config.label.toUpperCase()} — One image that communicates everything. Maximum impact, clear message.`;
+
+  return `You are an award-winning social media graphic designer creating a professional ${platform} ${config.hint}.
+
+═══ SLIDE ROLE ═══
+${roleDesc}
+
+═══ CONTENT TO DISPLAY ═══
+HEADLINE (MUST be the largest, most prominent element — bold, high contrast, instantly readable):
+"${slide.headline}"
+${slide.body ? `SUPPORTING COPY (smaller, secondary — reinforces the headline):
+"${slide.body}"` : ''}
+${slide.cta ? `CALL TO ACTION (high contrast element, button or prominent text):
+"${slide.cta}"` : ''}
+${brand.name ? `BRAND (subtle placement, corner or bottom):
+"${brand.name}"` : ''}
+
+═══ BRAND IDENTITY ═══
+Brand: ${brand.name||'Company'} | Industry: ${brand.industry||'Business'} | Audience: ${brand.audience||'General'}
+Tone: ${brand.tone}
+Color System:
+- Primary (dominant brand color): ${colors.primary}
+- Secondary (accent, highlights): ${colors.secondary}
+- Background base: ${colors.bg}
+
+═══ VISUAL DESIGN SYSTEM ═══
+Style: ${style}
+${inspir ? `Design inspiration: ${inspir}` : ''}
+Typography hierarchy: Headline → maximum size, maximum contrast | Body → clean, readable | CTA → impossible to miss
+Composition: Professional graphic design — NOT a plain photograph
+Visual balance: Create eye-stopping asymmetry and visual tension for scroll-stopping effect
+Quality: This must look like it was designed by a top-tier creative agency
+
+${isHook ? '═══ HOOK RULES ═══\nDRAMA: Maximum visual contrast and energy. Use bold diagonals, strong color blocking, or dramatic lighting.\nPSYCHOLOGY: Create a curiosity gap. The viewer MUST swipe to learn more.\nCONTRAST: Make the headline fight for attention against the background — and win.' : ''}
+${isCTA ? '═══ CTA RULES ═══\nACTION: The CTA button/element must be the #1 thing the eye lands on after the headline.\nURGENCY: Design should feel immediate and rewarding — action now = good outcome.\nCLARITY: Zero ambiguity about what the viewer should do next.' : ''}
+${avoid ? `DO NOT include: ${avoid}` : ''}
+${logos['s'] ? 'Brand logo provided as reference — incorporate its aesthetic, place subtly in corner' : ''}
+${examples['s'] ? 'Style reference image provided — match this visual language and aesthetic closely' : ''}
+Slide ${idx+1} of ${count} — ensure visual consistency with the series.`;
+}
+
+function buildAdPrompt(product, sizeInfo, platform, objective, headline, bodyCopy, cta, audience, style, colors, brand, inspir) {
+  const platformRules = platform==='meta'
+    ? `META ADS RULES:
+- Mobile-first: 67% of Meta impressions are mobile — design for thumb-stopping impact
+- Text ratio: Keep text concise — heavy text reduces delivery reach
+- Hook within 1.5 seconds: Bold visual contrast, vibrant colors, clear value proposition
+- Emotional appeal: Tap into desire, FOMO, or aspiration relevant to your audience
+- Social proof signals: Trust badges, numbers, results if applicable`
+    : `GOOGLE DISPLAY RULES:
+- Must work at small sizes (300×250 is most common) — keep it simple and readable
+- Brand prominence: Logo and brand name must be immediately identifiable
+- Clear hierarchy: Headline → Key visual → CTA (in that visual order)
+- Professional credibility: Clean, trustworthy, polished corporate aesthetic
+- CTA button: Highly visible, contrasting color, clear action text`;
+
+  return `You are a conversion-focused advertising creative director. Create a high-performing ${platform==='meta'?'Meta (Facebook/Instagram)':'Google Display'} advertisement.
+
+═══ AD SPECIFICATIONS ═══
+Size: ${sizeInfo.label} — ${sizeInfo.dim}
+Objective: ${objective.toUpperCase()}
+Product/Service: ${product}
+
+═══ AD CONTENT ═══
+HEADLINE (dominant visual element — bold, large, impossible to miss):
+"${headline||`Generate a compelling, benefit-driven headline for: ${product}`}"
+BODY COPY (supporting, concise):
+"${bodyCopy||`Write high-converting ad copy for ${product} targeting ${audience||'potential customers'} — focus on the #1 benefit`}"
+CTA BUTTON: "${cta}" (must stand out with high contrast color)
+Brand: ${brand.name||'Brand'} | ${brand.industry||''}
+Target Audience: ${audience||'Ideal customers'}
+
+═══ BRAND & DESIGN ═══
+Visual style: ${style}
+${inspir ? `Style inspiration: ${inspir}` : ''}
+Colors — Primary: ${colors.primary} | Secondary: ${colors.secondary} | Background: ${colors.bg}
+Design standard: Premium ad creative — matches quality of Fortune 500 advertising
+
+═══ PLATFORM OPTIMIZATION ═══
+${platformRules}
+
+═══ CONVERSION PSYCHOLOGY ═══
+Attention: Interrupt the scroll with the strongest possible visual element
+Interest: Make the headline spark immediate relevance to the audience's desire
+Desire: Show or suggest the outcome/transformation the product delivers
+Action: Make "${cta}" feel like the obvious next step
+
+This is a DESIGNED GRAPHIC — not a plain photo. Professional typography, strong visual hierarchy, brand-aligned composition.
+${logos['a'] ? 'Brand logo provided — include prominently and professionally' : ''}
+${examples['a'] ? 'Reference ad provided — closely match this visual style and approach' : ''}`;
+}
+
+function buildWebsiteImagePrompt(pageType, headline, copy, brand, colors, imgType, inspir, fInfo, imgIdx, perFormat) {
+  const pageContext = {
+    'homepage hero': 'The most important image on the site — creates the first impression and establishes brand credibility immediately',
+    'about us / team': 'Builds human connection and trust — warm, authentic, professional',
+    'services / features': 'Illustrates capabilities and outcomes — professional, results-focused',
+    'blog article header': 'Draws readers in — relevant, editorial quality, visually engaging',
+    'product showcase': 'Makes the product irresistible — clean, high-quality, desire-inducing',
+    'contact / CTA section': 'Encourages action — inviting, warm, low-friction feeling',
+    'landing page': 'Converts visitors — benefit-focused, credibility-building, action-oriented',
+    'testimonials / social proof': 'Builds trust — authentic, warm, community feel',
+    'FAQ section': 'Reduces friction — clear, friendly, informative',
+    'pricing page': 'Supports conversion decision — confident, value-focused',
+  };
+  const contextHint = pageContext[pageType] || 'Professional website section image';
+  const imageContexts = ['Primary hero/feature image — lead visual for this section','Supporting visual that reinforces the key message','Secondary illustration showing a key benefit or use case','Accent visual for visual variety and depth','Lifestyle image showing brand in real-world context','Call-to-action supporting image'];
+  const imgContext = imageContexts[imgIdx] || `Supporting image ${imgIdx+1}`;
+
+  return `You are a senior UX-focused art director creating professional website imagery.
+
+═══ IMAGE PURPOSE ═══
+Section: ${pageType}
+Context: ${contextHint}
+Image role: ${imgContext} (${imgIdx+1} of ${perFormat} in ${fInfo.label} format)
+Format: ${fInfo.label} — ${fInfo.dim} (${fInfo.ratio} aspect ratio — compose specifically for this shape)
+
+═══ CONTENT CONTEXT ═══
+Page headline: "${headline}"
+${copy ? `Page content: "${copy.slice(0,500)}"` : ''}
+Brand: ${brand.name||'Company'} | Industry: ${brand.industry||'Business'}
+
+═══ VISUAL REQUIREMENTS ═══
+Image style: ${imgType}
+${inspir ? `Style inspiration: ${inspir}` : ''}
+Color palette:
+- Primary: ${colors.primary} (use as dominant or accent)
+- Secondary: ${colors.secondary} (complementary accent)
+- Background: ${colors.bg} (base tone)
+
+CRITICAL RULES:
+1. NO text, typography, or words in the image — the website's HTML handles all text
+2. Compose specifically for ${fInfo.ratio} aspect ratio — key elements must be centered or safely within crop zones
+3. Leave visual "breathing room" where text overlays will be placed (typically center or bottom third)
+4. This is for a PROFESSIONAL BUSINESS WEBSITE — credibility and polish are paramount
+5. ${imgType.includes('photo') ? 'Professional photography quality — sharp, well-lit, editorial standard' : 'Clean graphic design quality — modern, scalable, contemporary'}
+6. Visual consistency with other images in this set — same mood, palette, and quality level
+
+${logos['w'] ? 'Brand logo provided for style reference — use its color language and aesthetic throughout' : ''}
+${examples['w'] ? 'Example website image provided — closely match this visual language and quality' : ''}`;
+}
+
+// ════════════════════════════════════════
+// SOCIAL — PLAN
+// ════════════════════════════════════════
+async function socialPlan() {
+  const topic=document.getElementById('s-topic').value.trim();
+  if(!topic){setStatus('s','Please describe your topic first.','error');return;}
+  const btn=document.getElementById('s-planBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Planning…';
+  setStatus('s','AI is writing your slide copy…','info');setProgress('s',40);
+  const config=SOCIAL_TYPES[socialType];
+  const count=config.multi?parseInt(document.getElementById('s-slideCount').value):1;
+  const brand={name:document.getElementById('s-brand').value.trim(),industry:document.getElementById('s-industry').value.trim(),audience:document.getElementById('s-audience').value.trim(),tone:document.getElementById('s-tone').value};
+  const brandCtx=[brand.name&&`Business: ${brand.name}`,brand.industry&&`Industry: ${brand.industry}`,brand.audience&&`Audience: ${brand.audience}`].filter(Boolean).join(' | ')||'General business';
+  const inspiration=document.getElementById('s-inspiration').value.trim();
+  const avoid=document.getElementById('s-avoid').value.trim();
+  const prompt=!config.multi
+    ?`You are an expert Instagram content strategist and copywriter. Write copy for ONE high-impact ${config.label} post.
+TOPIC: ${topic}
+BRAND: ${brandCtx} | TONE: ${brand.tone}
+${inspiration?`STYLE INSPIRATION: ${inspiration}`:''}
+${avoid?`AVOID: ${avoid}`:''}
+Create copy that instantly hooks the audience and drives action. Use psychological triggers (curiosity, social proof, benefit-first framing).
+Return ONLY a JSON array with exactly 1 object (no markdown, no explanation):
+[{"type":"main","headline":"Punchy benefit-driven headline, max 8 words, scroll-stopping","body":"1-2 power sentences that create desire or solve a pain point","cta":"Strong action-oriented CTA or empty string"}]`
+    :`You are a world-class Instagram content strategist. Create a ${count}-slide ${config.label} content plan.
+TOPIC: ${topic}
+BRAND: ${brandCtx} | TONE: ${brand.tone}
+${inspiration?`STYLE INSPIRATION: ${inspiration}`:''}
+SLIDE STRUCTURE:
+- Slide 1 (hook): Must stop the scroll in 0.3 seconds — use a bold claim, provocative question, or surprising stat
+- Slides 2-${count-1} (value): Each delivers ONE specific, actionable insight — concrete, not generic
+- Slide ${count} (CTA): Clear, compelling next step — follow, save, comment, DM, or book
+Return ONLY a JSON array with exactly ${count} objects (no markdown, no explanation):
+[{"type":"hook|content|cta","headline":"Max 7 words, punchy and specific","body":"1-2 sentences, concrete value — no fluff","cta":"Only for hook and CTA slides, else empty string"}]`;
+  try {
+    const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data?.error?.message||data.error||`HTTP ${r.status}`);
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const match=raw.match(/\[[\s\S]*\]/);
+    if(!match) throw new Error('Unexpected AI response. Try again.');
+    slidePlan=JSON.parse(match[0]);
+    addConv('user',`${config.label} about: ${topic}`);
+    addConv('ai',`Planned ${slidePlan.length} slides`);
+    saveBrandMemory();
+    renderPlanCards(slidePlan);
+    showView('s','plan');
+    document.getElementById('s-planTitle').textContent=`${config.label} Plan`;
+    document.getElementById('s-planSub').textContent=`${slidePlan.length} slide${slidePlan.length>1?'s':''} · Review copy, then generate images`;
+    clearStatus('s');setProgress('s',null);
+  } catch(err) { setStatus('s',`Error: ${err.message}`,'error');setProgress('s',null); }
+  finally { btn.disabled=false;btn.innerHTML='✨ Plan My Content'; }
+}
+function addConv(role,content) { conversation.push({role,content});if(conversation.length>20)conversation.shift(); }
+function renderPlanCards(plan) {
+  const list=document.getElementById('s-planList');list.innerHTML='';
+  plan.forEach((slide,idx)=>{
+    const pillClass=slide.type==='hook'?'pill-hook':slide.type==='cta'?'pill-cta':slide.type==='main'?'pill-main':'pill-content';
+    const typeLabel=slide.type==='hook'?'🪝 Hook':slide.type==='cta'?'📣 CTA':slide.type==='main'?'⭐ Main':'💡 Content';
+    const card=document.createElement('div');card.className='spc';
+    card.innerHTML=`<div class="spc-head"><span class="spc-num">SLIDE ${idx+1}</span><span class="type-pill ${pillClass}">${typeLabel}</span><button class="regen-btn" id="rb-${idx}" onclick="regenSlide(${idx})">↻ Rewrite</button></div><div class="spc-body"><div class="spc-field"><label>Headline</label><input type="text" value="${esc(slide.headline)}" oninput="slidePlan[${idx}].headline=this.value" /></div><div class="spc-field"><label>Body Copy</label><textarea rows="2" oninput="slidePlan[${idx}].body=this.value">${esc(slide.body)}</textarea></div><div class="spc-field"><label>CTA <span class="cta-opt">(leave blank if none)</span></label><input type="text" value="${esc(slide.cta||'')}" placeholder="e.g. Follow for more · Book a call · Link in bio" oninput="slidePlan[${idx}].cta=this.value" /></div></div>`;
+    list.appendChild(card);
+  });
+}
+async function regenSlide(idx) {
+  const slide=slidePlan[idx];const btn=document.getElementById(`rb-${idx}`);
+  const brand={name:document.getElementById('s-brand').value.trim(),industry:document.getElementById('s-industry').value.trim(),tone:document.getElementById('s-tone').value};
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner-sm"></span>';}
+  try {
+    const prompt=`Rewrite this Instagram slide with a fresh angle. Keep the same type (${slide.type}) but use a completely different approach, hook, or perspective.
+Topic: ${document.getElementById('s-topic').value} | Brand: ${brand.name}|${brand.industry} | Tone: ${brand.tone}
+Return ONLY JSON (no markdown): {"headline":"max 7 words, specific and punchy","body":"1-2 sentences, concrete value","cta":"only if hook/cta type, else empty string"}`;
+    const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data=await r.json();const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';const match=raw.match(/\{[\s\S]*\}/);if(!match)throw new Error('Bad response');
+    slidePlan[idx]={...slide,...JSON.parse(match[0])};renderPlanCards(slidePlan);
+  } catch(e){setStatus('s',`Rewrite failed: ${e.message}`,'error');}
+  finally{if(btn){btn.disabled=false;btn.textContent='↻ Rewrite';}}
+}
+
+// ════════════════════════════════════════
+// SOCIAL — GENERATE IMAGES
+// ════════════════════════════════════════
+async function socialGenerateImages() {
+  if(!slidePlan.length) return;
+  const count=slidePlan.length;
+  if(!canGenerate(count)){showPaywall();return;}
+  const btn=document.getElementById('s-genBtn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
+  const model=document.getElementById('s-model').value;
+  const style=document.getElementById('s-style').value;
+  const brand={name:document.getElementById('s-brand').value.trim(),industry:document.getElementById('s-industry').value.trim(),audience:document.getElementById('s-audience').value.trim(),tone:document.getElementById('s-tone').value};
+  const colors=getColors('s');
+  const config=SOCIAL_TYPES[socialType];
+  const avoid=document.getElementById('s-avoid').value.trim();
+  const inspir=document.getElementById('s-inspiration').value.trim();
+  generatedImages['s']=new Array(count).fill(null);
+  generatedPrompts['s']=new Array(count).fill('');
+  showView('s','results');
+  document.getElementById('s-resTitle').textContent='Generating…';
+  document.getElementById('s-resSub').textContent=`${count} slides · ${ratios['s']}`;
+  showSkeletons('s',count,ratios['s']);
+  setStatus('s',`Generating ${count} image${count>1?'s':''}…`,'info');setProgress('s',5);
+  let done=0,errors=[];
+  for(let i=0;i<count;i++){
+    setStatus('s',`Generating slide ${i+1} of ${count}…`,'info');
+    try{
+      const slide=slidePlan[i];
+      const prompt=buildSocialImagePrompt(slide,i,count,config,brand,colors,style,inspir,avoid);
+      generatedPrompts['s'][i]=prompt;
+      const parts=[];if(logos['s'])parts.push({mimeType:logos['s'].mimeType,data:logos['s'].b64});if(examples['s'])parts.push({mimeType:examples['s'].mimeType,data:examples['s'].b64});
+      const img=await callImageAPI(prompt,model,parts.length?parts:null,ratios['s']);
+      generatedImages['s'][i]=img;
+      renderCard('s',img,i,{label:slide.type==='hook'?'Hook':slide.type==='cta'?'CTA':'Content',dotColor:slide.type==='hook'?'#ec4899':slide.type==='cta'?'#10b981':'#6366f1',sub:`Slide ${i+1}`});
+      consumeImages(1);done++;setProgress('s',Math.round(((i+1)/count)*95));
+    }catch(err){errors.push(i+1);markError('s',i,err.message,()=>retrySocialSlide(i));console.error(`Slide ${i+1}:`,err);}
+  }
+  document.getElementById('s-resTitle').textContent=`Your ${config.label}`;
+  document.getElementById('s-resSub').textContent=`${done}/${count} generated · ${ratios['s']}`;
+  if(errors.length===0){setStatus('s',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');saveBrandMemory();}
+  else setStatus('s',`${done}/${count} done. Slides ${errors.join(', ')} failed — retry in the grid.`,'error');
+  setProgress('s',null);btn.disabled=false;btn.innerHTML='🎨 Generate Images';
+}
+async function retrySocialSlide(idx) {
+  if(!canGenerate(1)){showPaywall();return;}
+  const model=document.getElementById('s-model').value;const slide=slidePlan[idx];const config=SOCIAL_TYPES[socialType];
+  const brand={name:document.getElementById('s-brand').value.trim(),industry:document.getElementById('s-industry').value.trim(),audience:document.getElementById('s-audience').value.trim(),tone:document.getElementById('s-tone').value};
+  const colors=getColors('s');const style=document.getElementById('s-style').value;
+  const inspir=document.getElementById('s-inspiration').value.trim();const avoid=document.getElementById('s-avoid').value.trim();
+  showSkeleton('s',idx,ratios['s']);
+  try{
+    const prompt=buildSocialImagePrompt(slide,idx,slidePlan.length,config,brand,colors,style,inspir,avoid);
+    generatedPrompts['s'][idx]=prompt;
+    const img=await callImageAPI(prompt,model,null,ratios['s']);
+    generatedImages['s'][idx]=img;renderCard('s',img,idx,{label:'Content',dotColor:'#6366f1',sub:`Slide ${idx+1}`});consumeImages(1);setStatus('s','Slide regenerated!','success');
+  }catch(err){markError('s',idx,err.message,()=>retrySocialSlide(idx));setStatus('s',`Retry failed: ${err.message}`,'error');}
+}
+
+// ════════════════════════════════════════
+// ADS — GENERATE
+// ════════════════════════════════════════
+async function adsGenerate() {
+  const product=document.getElementById('a-product').value.trim();
+  if(!product){setStatus('a','Describe what you are advertising.','error');return;}
+  if(selectedAdSizes.size===0){setStatus('a','Select at least one ad size.','error');return;}
+  const sizesToGen=[...selectedAdSizes];
+  if(!canGenerate(sizesToGen.length)){showPaywall();return;}
+  const btn=document.getElementById('a-genBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
+  const model=document.getElementById('a-model').value;const style=document.getElementById('a-style').value;
+  const brand={name:document.getElementById('a-brand').value.trim(),industry:document.getElementById('a-industry').value.trim()};
+  const colors=getColors('a');const objective=document.getElementById('a-objective').value;
+  const headline=document.getElementById('a-headline').value.trim();const bodyCopy=document.getElementById('a-body').value.trim();
+  const cta=document.getElementById('a-cta').value;const audience=document.getElementById('a-audience').value.trim();
+  const inspir=document.getElementById('a-inspiration').value.trim();
+  generatedImages['a']=new Array(sizesToGen.length).fill(null);generatedPrompts['a']=new Array(sizesToGen.length).fill('');
+  showView('a','results');
+  document.getElementById('a-resTitle').textContent='Generating…';
+  document.getElementById('a-resSub').textContent=`${sizesToGen.length} ad sizes · ${adsPlatform==='meta'?'Meta Ads':'Google Display'}`;
+  showGridSkeletons('a',sizesToGen.map(k=>AD_SIZES[k]));setStatus('a',`Generating ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''}…`,'info');setProgress('a',5);
+  let done=0,errors=[];
+  for(let i=0;i<sizesToGen.length;i++){
+    const sizeKey=sizesToGen[i];const sizeInfo=AD_SIZES[sizeKey];
+    setStatus('a',`Generating ${sizeInfo.label} (${sizeInfo.dim})…`,'info');
+    try{
+      const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir);
+      generatedPrompts['a'][i]=prompt;
+      const parts=[];if(logos['a'])parts.push({mimeType:logos['a'].mimeType,data:logos['a'].b64});if(examples['a'])parts.push({mimeType:examples['a'].mimeType,data:examples['a'].b64});
+      const img=await callImageAPI(prompt,model,parts.length?parts:null,sizeInfo.ratio);
+      generatedImages['a'][i]=img;renderCard('a',img,i,{label:sizeInfo.label,dotColor:'#6366f1',sub:sizeInfo.dim,isAd:true});
+      consumeImages(1);done++;setProgress('a',Math.round(((i+1)/sizesToGen.length)*95));
+    }catch(err){errors.push(sizeInfo.label);markError('a',i,err.message,()=>retryAd(i,sizeKey));console.error(`Ad ${sizeKey}:`,err);}
+  }
+  document.getElementById('a-resTitle').textContent=`Your ${adsPlatform==='meta'?'Meta':'Google'} Ad Creatives`;
+  document.getElementById('a-resSub').textContent=`${done}/${sizesToGen.length} generated`;
+  if(errors.length===0)setStatus('a',`All ${done} ads ready! Click any ad then use AI Chat to refine.`,'success');
+  else setStatus('a',`${done} done. Failed: ${errors.join(', ')}.`,'error');
+  setProgress('a',null);btn.disabled=false;btn.innerHTML='🎯 Generate Ad Creatives';
+}
+async function retryAd(idx,sizeKey) {
+  if(!canGenerate(1)){showPaywall();return;}
+  const model=document.getElementById('a-model').value;const sizeInfo=AD_SIZES[sizeKey];
+  const product=document.getElementById('a-product').value.trim();
+  const brand={name:document.getElementById('a-brand').value.trim(),industry:document.getElementById('a-industry').value.trim()};
+  const colors=getColors('a');const style=document.getElementById('a-style').value;
+  const objective=document.getElementById('a-objective').value;const headline=document.getElementById('a-headline').value.trim();
+  const bodyCopy=document.getElementById('a-body').value.trim();const cta=document.getElementById('a-cta').value;
+  const audience=document.getElementById('a-audience').value.trim();const inspir=document.getElementById('a-inspiration').value.trim();
+  showSkeleton('a',idx,sizeInfo.ratio);
+  try{
+    const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir);
+    generatedPrompts['a'][idx]=prompt;
+    const img=await callImageAPI(prompt,model,null,sizeInfo.ratio);
+    generatedImages['a'][idx]=img;renderCard('a',img,idx,{label:sizeInfo.label,dotColor:'#6366f1',sub:sizeInfo.dim,isAd:true});consumeImages(1);setStatus('a','Ad regenerated!','success');
+  }catch(err){markError('a',idx,err.message,()=>retryAd(idx,sizeKey));}
+}
+
+// ════════════════════════════════════════
+// WEBSITE — GENERATE (multi-format)
+// ════════════════════════════════════════
+async function websiteGenerate() {
+  const headline=document.getElementById('w-headline').value.trim();
+  if(!headline){setStatus('w','Add at least a page headline.','error');return;}
+  if(selectedWebFormats.size===0){setStatus('w','Select at least one image format.','error');return;}
+  const perFormat=parseInt(document.getElementById('w-count').value);
+  const formatsArr=[...selectedWebFormats];
+  const total=perFormat*formatsArr.length;
+  if(!canGenerate(total)){showPaywall();return;}
+  const btn=document.getElementById('w-genBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
+  const model=document.getElementById('w-model').value;const imgType=document.getElementById('w-imgtype').value;
+  const pageType=getWebPageType();const copy=document.getElementById('w-copy').value.trim();
+  const brand={name:document.getElementById('w-brand').value.trim(),industry:document.getElementById('w-industry').value.trim()};
+  const colors=getColors('w');const inspir=document.getElementById('w-inspiration').value.trim();
+  const tasks=[];formatsArr.forEach(fKey=>{const fInfo=W_FORMATS[fKey];for(let i=0;i<perFormat;i++)tasks.push({fKey,fInfo,imgIdx:i});});
+  generatedImages['w']=new Array(tasks.length).fill(null);generatedPrompts['w']=new Array(tasks.length).fill('');
+  showView('w','results');
+  document.getElementById('w-resTitle').textContent='Generating…';
+  document.getElementById('w-resSub').textContent=`${total} image${total!==1?'s':''} · ${formatsArr.length} format${formatsArr.length!==1?'s':''}`;
+  showGridSkeletons('w',tasks.map(t=>t.fInfo));
+  setStatus('w',`Generating ${total} website image${total!==1?'s':''}…`,'info');setProgress('w',5);
+  let done=0,errors=[];
+  for(let i=0;i<tasks.length;i++){
+    const{fInfo,imgIdx}=tasks[i];setStatus('w',`Generating ${fInfo.label} image ${imgIdx+1}…`,'info');
+    try{
+      const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,imgIdx,perFormat);
+      generatedPrompts['w'][i]=prompt;
+      const parts=[];if(logos['w'])parts.push({mimeType:logos['w'].mimeType,data:logos['w'].b64});if(examples['w'])parts.push({mimeType:examples['w'].mimeType,data:examples['w'].b64});
+      const img=await callImageAPI(prompt,model,parts.length?parts:null,fInfo.ratio);
+      generatedImages['w'][i]=img;renderCard('w',img,i,{label:fInfo.label,dotColor:'#6366f1',sub:fInfo.dim,isAd:true});
+      consumeImages(1);done++;setProgress('w',Math.round(((i+1)/tasks.length)*95));
+    }catch(err){errors.push(i+1);markError('w',i,err.message,()=>retryWeb(i,tasks[i]));console.error(`Web img ${i+1}:`,err);}
+  }
+  document.getElementById('w-resTitle').textContent='Website Images';
+  document.getElementById('w-resSub').textContent=`${done}/${total} generated · ${pageType}`;
+  if(errors.length===0)setStatus('w',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');
+  else setStatus('w',`${done} done. Image${errors.length>1?'s':''} ${errors.join(', ')} failed.`,'error');
+  setProgress('w',null);btn.disabled=false;btn.innerHTML='🌐 Generate Website Images';
+}
+async function retryWeb(idx,task) {
+  if(!canGenerate(1)){showPaywall();return;}
+  const model=document.getElementById('w-model').value;const fInfo=task?task.fInfo:{ratio:'1:1',label:'Square',dim:'1080×1080px'};
+  showSkeleton('w',idx,fInfo.ratio);
+  try{
+    const pageType=getWebPageType();const headline=document.getElementById('w-headline').value.trim();
+    const copy=document.getElementById('w-copy').value.trim();const brand={name:document.getElementById('w-brand').value.trim(),industry:document.getElementById('w-industry').value.trim()};
+    const colors=getColors('w');const imgType=document.getElementById('w-imgtype').value;const inspir=document.getElementById('w-inspiration').value.trim();
+    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,task?.imgIdx||0,2);
+    generatedPrompts['w'][idx]=prompt;
+    const img=await callImageAPI(prompt,model,null,fInfo.ratio);
+    generatedImages['w'][idx]=img;renderCard('w',img,idx,{label:fInfo.label,dotColor:'#6366f1',sub:fInfo.dim,isAd:true});consumeImages(1);setStatus('w','Image regenerated!','success');
+  }catch(err){markError('w',idx,err.message,()=>retryWeb(idx,task));}
+}
+
+// ════════════════════════════════════════
+// API CALL
+// ════════════════════════════════════════
+async function callImageAPI(prompt,model,logoParts,aspectRatio,attempt=0) {
+  const isGemini=model.startsWith('gemini-');
+  try{
+    const r=await fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,model,aspectRatio:aspectRatio||'1:1',logoParts})});
+    const data=await r.json();if(!r.ok) throw new Error(data?.error?.message||data.error||`HTTP ${r.status}`);
+    if(isGemini){for(const c of data.candidates||[])for(const p of c.content?.parts||[])if(p.inlineData)return{b64:p.inlineData.data,mimeType:p.inlineData.mimeType||'image/png'};throw new Error('No image in response');}
+    else{const p=(data.predictions||[])[0];if(!p)throw new Error('No image in response');return{b64:p.bytesBase64Encoded,mimeType:p.mimeType||'image/png'};}
+  }catch(err){if(attempt<2&&err.message==='No image in response'){await new Promise(r=>setTimeout(r,1400));return callImageAPI(prompt,model,logoParts,aspectRatio,attempt+1);}throw err;}
+}
+
+// ════════════════════════════════════════
+// RENDER HELPERS
+// ════════════════════════════════════════
+function showSkeletons(prefix,count,ratio) {
+  const grid=document.getElementById(`${prefix}-grid`);grid.innerHTML='';
+  const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};const pt=am[ratio]||'100%';
+  for(let i=0;i<count;i++){const card=document.createElement('div');card.className='image-card';card.id=`${prefix}-ic-${i}`;card.innerHTML=`<div class="skeleton" style="padding-top:${pt}"></div>`;grid.appendChild(card);}
+}
+function showGridSkeletons(prefix,sizes) {
+  const grid=document.getElementById(`${prefix}-grid`);grid.innerHTML='';
+  const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};
+  sizes.forEach((size,i)=>{const pt=am[size.ratio]||'100%';const card=document.createElement('div');card.className='image-card';card.id=`${prefix}-ic-${i}`;card.innerHTML=`<div class="skeleton" style="padding-top:${pt}"></div><div class="ad-size-label">${size.label}</div>`;grid.appendChild(card);});
+}
+function showSkeleton(prefix,idx,ratio) { const card=document.getElementById(`${prefix}-ic-${idx}`);if(!card)return;const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};card.innerHTML=`<div class="skeleton" style="padding-top:${am[ratio]||'100%'}"></div>`; }
+function renderCard(prefix,img,idx,meta) {
+  const card=document.getElementById(`${prefix}-ic-${idx}`);if(!card)return;
+  const src=`data:${img.mimeType};base64,${img.b64}`;
+  const isFocused=focusedImage&&focusedImage.prefix===prefix&&focusedImage.idx===idx;
+  card.className='image-card'+(isFocused?' focused':'');
+  card.innerHTML=`<img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" /><div class="slide-badge"><span class="sdot" style="background:${meta.dotColor}"></span>${meta.label}</div>${meta.isAd?`<div class="ad-size-label">${meta.sub}</div>`:`<div class="slide-badge" style="left:auto;right:10px;top:10px;font-size:0.62rem;">${meta.sub}</div>`}${isFocused?'<div class="focused-badge">✎ Selected</div>':''}<div class="card-overlay"><button class="card-btn" onclick="dlSingle('${prefix}',${idx})">⬇ Save</button><button class="card-btn" onclick="copyImg('${prefix}',${idx})">📋 Copy</button><button class="card-btn" onclick="selectImageForEdit('${prefix}',${idx})">✎ Edit</button></div>`;
+  card.onclick=()=>selectImageForEdit(prefix,idx);
+}
+function markError(prefix,idx,msg,retryFn) {
+  const card=document.getElementById(`${prefix}-ic-${idx}`);if(!card)return;
+  const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};const ratio=ratios[prefix]||'1:1';const pt=am[ratio]||'100%';
+  card.innerHTML=`<div style="padding-top:${pt};position:relative;background:#fef2f2;border-radius:13px;"><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px;text-align:center;"><div style="font-size:26px;">⚠️</div><div style="font-size:0.8rem;color:#b91c1c;font-weight:800;">Failed to generate</div><div style="font-size:0.72rem;color:#6b7280;">${(msg||'').slice(0,90)}</div><button class="card-btn" style="background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4);color:#b91c1c;margin-top:4px;" onclick="(${retryFn.toString()})()">↻ Retry</button></div></div>`;
+}
+
+// ════════════════════════════════════════
+// DOWNLOAD
+// ════════════════════════════════════════
+function dlSingle(prefix,idx) { const img=generatedImages[prefix]?.[idx];if(!img)return;const ext=img.mimeType.split('/')[1]||'png';const a=document.createElement('a');a.href=`data:${img.mimeType};base64,${img.b64}`;a.download=`postcraft_${prefix}_${idx+1}.${ext}`;a.click(); }
+async function copyImg(prefix,idx) {
+  const img=generatedImages[prefix]?.[idx];if(!img)return;
+  try{const bytes=atob(img.b64),arr=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)arr[i]=bytes.charCodeAt(i);await navigator.clipboard.write([new ClipboardItem({[img.mimeType]:new Blob([arr],{type:img.mimeType})})]);setStatus(prefix,'Copied to clipboard!','success');}
+  catch(e){setStatus(prefix,'Copy failed: '+e.message,'error');}
+}
+async function downloadAll(prefix) {
+  const imgs=(generatedImages[prefix]||[]).filter(Boolean);if(!imgs.length){setStatus(prefix,'No images yet.','error');return;}
+  setStatus(prefix,'Preparing ZIP…','info');const zip=new JSZip();
+  imgs.forEach((img,i)=>{const ext=img.mimeType.split('/')[1]||'png';const bytes=atob(img.b64),arr=new Uint8Array(bytes.length);for(let j=0;j<bytes.length;j++)arr[j]=bytes.charCodeAt(j);zip.file(`image_${i+1}.${ext}`,arr);});
+  const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`postcraft_${prefix}_export.zip`;a.click();setStatus(prefix,`Downloaded ${imgs.length} images.`,'success');
+}
+
+// ════════════════════════════════════════
+// CHAT — CORE
+// ════════════════════════════════════════
+function toggleChat() {
+  chatOpen=!chatOpen;
+  document.getElementById('chatDrawer').classList.toggle('open',chatOpen);
+  document.getElementById('chatToggleBtn').classList.toggle('active',chatOpen);
+  document.body.classList.toggle('chat-open',chatOpen);
+  if(chatOpen && chatMessages.length===0) {
+    addAIMessage("👋 Hi! I'm your AI assistant.\n\nI can help you:\n• **Edit any generated image** — click an image first, then describe changes\n• **Regenerate with new styles** — \"make it darker\", \"use a sunset background\"\n• **Adjust copy** — \"change the headline tone to be more playful\"\n• **Answer questions** about your content\n\nTip: Click an image in the grid to select it for editing!");
+  }
+}
+function clearChat() { chatMessages=[];document.getElementById('chatMessages').innerHTML='';clearFocus(); }
+function chatKeydown(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChatMessage();} }
+
+function addAIMessage(content,isAction=false) {
+  const msg={role:'ai',content,ts:Date.now(),isAction};chatMessages.push(msg);renderChatMsg(msg);scrollChat();saveChatHistory();
+}
+function addUserMessage(content) {
+  const msg={role:'user',content,ts:Date.now()};chatMessages.push(msg);renderChatMsg(msg);scrollChat();saveChatHistory();
+}
+function renderChatMsg(msg) {
+  const container=document.getElementById('chatMessages');
+  const wrap=document.createElement('div');wrap.className=`chat-msg ${msg.role}`;
+  const av=document.createElement('div');av.className=`chat-avatar ${msg.role==='ai'?'ai-av':'user-av'}`;av.textContent=msg.role==='ai'?'✨':'👤';
+  const bubble=document.createElement('div');bubble.className=`chat-bubble ${msg.role}${msg.isAction?' action':''}`;
+  bubble.innerHTML=msg.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  wrap.appendChild(av);wrap.appendChild(bubble);container.appendChild(wrap);
+}
+function scrollChat() { const m=document.getElementById('chatMessages');m.scrollTop=m.scrollHeight; }
+function showTyping() {
+  const container=document.getElementById('chatMessages');
+  const wrap=document.createElement('div');wrap.className='chat-msg ai';wrap.id='typingIndicator';
+  const av=document.createElement('div');av.className='chat-avatar ai-av';av.textContent='✨';
+  const bubble=document.createElement('div');bubble.className='chat-bubble ai';bubble.innerHTML='<div class="typing-dots"><span></span><span></span><span></span></div>';
+  wrap.appendChild(av);wrap.appendChild(bubble);container.appendChild(wrap);scrollChat();
+}
+function removeTyping() { const el=document.getElementById('typingIndicator');if(el)el.remove(); }
+
+async function sendChatMessage() {
+  const input=document.getElementById('chatInput');const text=input.value.trim();if(!text)return;
+  const btn=document.getElementById('chatSendBtn');btn.disabled=true;input.value='';
+  addUserMessage(text);showTyping();
+  try { await processChat(text); }
+  catch(e) { removeTyping();addAIMessage(`Sorry, I hit an error: ${e.message}. Please try again.`); }
+  finally { btn.disabled=false; }
+}
+
+async function processChat(msg) {
+  const lower=msg.toLowerCase();
+  // Detect edit/regenerate intent
+  const isEditIntent=/\b(make|change|edit|modify|regenerate|redo|try|update|fix|improve|different|add|remove|darker|lighter|brighter|bolder|softer|more|less|better|warmer|cooler|vibrant|minimal|clean|bold|try again|new version)\b/i.test(msg);
+  // Detect which image number
+  const numMatch=msg.match(/\b(?:image|slide|photo|pic|ad|one|two|three|four|five|six|seven|eight|nine|ten|#?\s*(\d+))\b/i);
+  const explicitNum=msg.match(/#?\s*(\d+)/);
+
+  if (isEditIntent && focusedImage) {
+    removeTyping();
+    addAIMessage(`Got it! Editing ${focusedImage.prefix==='s'?`Slide ${focusedImage.idx+1}`:`Image ${focusedImage.idx+1}`} with your changes…`, true);
+    await editImageWithChat(focusedImage.prefix, focusedImage.idx, msg);
+    return;
+  }
+  if (isEditIntent && explicitNum) {
+    const idx=parseInt(explicitNum[1])-1;
+    const prefix=activeTool==='social'?'s':activeTool==='ads'?'a':'w';
+    if(generatedImages[prefix]?.[idx]) {
+      removeTyping();
+      selectImageForEdit(prefix,idx);
+      addAIMessage(`Editing Image ${idx+1} with your instruction…`, true);
+      await editImageWithChat(prefix,idx,msg);
+      return;
+    }
+  }
+
+  // General AI chat
+  const prefix=activeTool==='social'?'s':activeTool==='ads'?'a':'w';
+  const generated=(generatedImages[prefix]||[]).filter(Boolean).length;
+  const brand=document.getElementById(`${prefix}-brand`)?.value||'Not set';
+  const colors=getColors(prefix);
+  const contextInfo=`Active tool: ${activeTool}. Brand: ${brand}. Colors: ${colors.primary}/${colors.secondary}. Images generated: ${generated}. ${focusedImage?`Selected: Image ${focusedImage.idx+1}`:'No image selected.'}`;
+
+  const systemPrompt=`You are a friendly, expert AI assistant built into Creatives Gen — a professional social media and advertising image creation tool. You help users create better visual content.
+
+Current context: ${contextInfo}
+Recent conversation: ${chatMessages.slice(-4).map(m=>`${m.role}: ${m.content}`).join('\n')}
+
+User message: "${msg}"
+
+Instructions:
+- Be helpful, friendly, and concise (2-4 sentences max)
+- If user wants to edit/change an image but hasn't selected one, tell them to click an image first
+- Give specific, actionable advice about visual design, social media, or advertising
+- If they ask about colors, refer to their current brand colors
+- Use simple language, no jargon
+- If they ask what you can do, explain you can edit images they click on`;
+
+  const r=await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:systemPrompt})});
+  const data=await r.json();removeTyping();
+  const reply=data.candidates?.[0]?.content?.parts?.[0]?.text||"I'm here to help! Click any generated image and describe what you'd like to change.";
+  addAIMessage(reply);
+}
+
+// ════════════════════════════════════════
+// CHAT — IMAGE EDITING
+// ════════════════════════════════════════
+function selectImageForEdit(prefix,idx) {
+  // Remove previous focus
+  document.querySelectorAll('.image-card.focused').forEach(c=>c.classList.remove('focused'));
+  document.querySelectorAll('.focused-badge').forEach(b=>b.remove());
+  focusedImage={prefix,idx};
+  const card=document.getElementById(`${prefix}-ic-${idx}`);
+  if(card){
+    card.classList.add('focused');
+    const badge=document.createElement('div');badge.className='focused-badge';badge.textContent='✎ Selected';card.appendChild(badge);
+  }
+  // Show context in chat
+  const ctx=document.getElementById('chatContext');const lbl=document.getElementById('ctxLabel');
+  if(ctx&&lbl){ctx.style.display='flex';lbl.textContent=`Editing: ${prefix==='s'?'Slide':'Image'} ${idx+1}`;}
+  // Auto-open chat
+  if(!chatOpen) toggleChat();
+  document.getElementById('chatInput').focus();
+}
+function clearFocus() {
+  focusedImage=null;
+  document.querySelectorAll('.image-card.focused').forEach(c=>c.classList.remove('focused'));
+  document.querySelectorAll('.focused-badge').forEach(b=>b.remove());
+  const ctx=document.getElementById('chatContext');if(ctx)ctx.style.display='none';
+}
+
+async function editImageWithChat(prefix,idx,instruction) {
+  if(!canGenerate(1)){showPaywall();return;}
+  const originalPrompt=generatedPrompts[prefix]?.[idx]||'';
+  const prefix_full=prefix==='s'?'s':prefix==='a'?'a':'w';
+  const model=document.getElementById(`${prefix_full}-model`).value;
+  const ratio=prefix==='s'?ratios['s']:prefix==='a'?(AD_SIZES[([...selectedAdSizes])[idx]]?.ratio||'1:1'):W_FORMATS[([...selectedWebFormats])[0]]?.ratio||'1:1';
+  showSkeleton(prefix,idx,ratio);
+
+  const editPrompt=originalPrompt
+    ? `${originalPrompt}
+
+══════════════════════
+USER EDIT REQUEST: "${instruction}"
+Apply this modification to improve the image. Maintain the overall brand identity, composition style, and quality while incorporating the specific change requested.`
+    : `Create a professional image for ${activeTool} use.
+User request: "${instruction}"
+Style: Modern, professional, high-quality graphic design.`;
+
+  try{
+    const img=await callImageAPI(editPrompt,model,null,ratio);
+    generatedImages[prefix][idx]=img;
+    generatedPrompts[prefix][idx]=editPrompt;
+    const label=prefix==='s'?'Content':prefix==='a'?'Ad':'Website';
+    renderCard(prefix,img,idx,{label,dotColor:'#6366f1',sub:`Edited ${idx+1}`,isAd:prefix!=='s'});
+    consumeImages(1);
+    addAIMessage(`✅ Done! Image ${idx+1} has been updated with your changes.\n\nWant to refine it further? Just describe what else to change, or click another image to edit it.`);
+    // Keep the image selected
+    setTimeout(()=>selectImageForEdit(prefix,idx),100);
+  }catch(e){
+    markError(prefix,idx,e.message,()=>editImageWithChat(prefix,idx,instruction));
+    addAIMessage(`❌ Regeneration failed: ${e.message}\n\nTry rephrasing your request or use the retry button on the image.`);
+  }
+}
+
+// ════════════════════════════════════════
+// CHAT HISTORY
+// ════════════════════════════════════════
+function saveChatHistory() {
+  if(chatMessages.length===0)return;
+  const history=getChatHistory();
+  const today=new Date().toLocaleDateString();
+  const key=`${today}-${activeTool}`;
+  const existing=history.findIndex(h=>h.key===key);
+  const session={key,tool:activeTool,date:today,messages:chatMessages,preview:chatMessages.find(m=>m.role==='user')?.content?.slice(0,60)||''};
+  if(existing>=0) history[existing]=session;else history.unshift(session);
+  localStorage.setItem('cg_chat_history',JSON.stringify(history.slice(0,15)));
+}
+function getChatHistory() { try{return JSON.parse(localStorage.getItem('cg_chat_history')||'[]');}catch{return[];} }
+function toggleHistoryView() {
+  showingHistory=!showingHistory;
+  const msgs=document.getElementById('chatMessages');const hist=document.getElementById('historyView');const btn=document.getElementById('historyBtn');
+  if(showingHistory){
+    msgs.style.display='none';hist.classList.add('active');btn.classList.add('active');
+    const history=getChatHistory();hist.innerHTML='';
+    if(!history.length){hist.innerHTML='<div class="history-empty">No previous conversations yet.<br>Start chatting to build history!</div>';return;}
+    history.forEach(session=>{
+      const item=document.createElement('div');item.className='history-item';
+      item.innerHTML=`<div class="hi-tool">${session.tool} · ${session.messages.length} messages</div><div class="hi-date">${session.date}</div><div class="hi-preview">${esc(session.preview||'Chat session')}…</div>`;
+      item.onclick=()=>{chatMessages=[...session.messages];msgs.style.display='flex';hist.classList.remove('active');btn.classList.remove('active');showingHistory=false;msgs.innerHTML='';chatMessages.forEach(m=>renderChatMsg(m));scrollChat();};
+      hist.appendChild(item);
+    });
+  }else{msgs.style.display='flex';hist.classList.remove('active');btn.classList.remove('active');}
+}
+
+// ════════════════════════════════════════
+// MISC
+// ════════════════════════════════════════
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Size checkboxes initial state
+  document.querySelectorAll('.size-check input[type="checkbox"]').forEach(cb=>{if(cb.checked)cb.closest('.size-check').classList.add('checked');});
+  updateWebTotal();
+  // Keyboard shortcut
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')adsGenerate();else websiteGenerate();}});
+
+  // Firebase auth state listener
+  const { onAuthStateChanged, auth, getUserData } = await import('./auth.js');
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      let data = await getUserData(user.uid);
+      if (!data) data = { imagesUsed: 0, imagesAllowance: 15, plan: 'free' };
+      initApp(user, data);
+    } else {
+      currentUser = null; userData = null;
+      document.getElementById('accountModal').classList.remove('hidden');
+    }
+  });
+});
+</script>
+</body>
+</html>

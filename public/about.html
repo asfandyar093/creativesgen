@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us — Creatives Gen</title>
+  <meta name="description" content="Creatives Gen is an AI-powered image generator built for marketers, agencies, and businesses who need professional social media posts, ad creatives, and website images fast." />
+  <meta name="keywords" content="AI image generator for marketers, about Creatives Gen, AI social media tool for agencies, AI content creation platform, automated graphic design" />
+  <meta property="og:title" content="About Creatives Gen — AI Image Generator" />
+  <meta property="og:description" content="We built Creatives Gen to help businesses create professional visual content in minutes, not days." />
+  <meta property="og:type" content="website" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://creativesgen.com/about.html" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --accent: #5b5ef4; --accent-h: #4547d4; --accent-l: #eef0ff; --accent-m: #c4c8fb;
+      --pink: #ec4899; --green: #10b981; --green-l: #ecfdf5;
+      --text: #0d1117; --text2: #1f2937; --muted: #5a6478; --light: #8b95a7;
+      --bg: #f0f2f8; --surface: #ffffff; --border: #dde1ea;
+      --shadow: 0 2px 8px rgba(0,0,0,.09); --shadow-md: 0 8px 32px rgba(0,0,0,.12);
+    }
+    html { font-size: 17px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+    nav { background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 0 40px; height: 70px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,.09); }
+    .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .nav-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .nav-brand { font-size: 1.15rem; font-weight: 900; color: var(--text); }
+    .nav-brand span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 6px; }
+    .nav-links a { padding: 8px 14px; border-radius: 8px; font-size: 0.87rem; font-weight: 600; color: var(--muted); text-decoration: none; transition: all .15s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-l); color: var(--accent); }
+    .nav-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-ghost { padding: 9px 20px; border-radius: 99px; font-size: 0.87rem; font-weight: 700; color: var(--accent); text-decoration: none; border: 2px solid var(--accent-m); transition: all .15s; }
+    .btn-ghost:hover { background: var(--accent-l); }
+    .btn-primary { padding: 9px 20px; background: var(--accent); color: #fff; border-radius: 99px; font-size: 0.87rem; font-weight: 800; text-decoration: none; transition: all .15s; }
+    .btn-primary:hover { background: var(--accent-h); }
+
+    .hero { background: linear-gradient(135deg, var(--accent-l) 0%, #fdf2ff 100%); padding: 80px 40px 70px; text-align: center; border-bottom: 1.5px solid var(--border); }
+    .hero-badge { display: inline-block; background: var(--accent-l); border: 1.5px solid var(--accent-m); color: var(--accent); font-size: 0.8rem; font-weight: 800; padding: 6px 16px; border-radius: 99px; margin-bottom: 22px; text-transform: uppercase; letter-spacing: .08em; }
+    .hero h1 { font-size: 2.8rem; font-weight: 900; line-height: 1.2; margin-bottom: 20px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { font-size: 1.1rem; color: var(--muted); max-width: 580px; margin: 0 auto; }
+
+    .section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 0.78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 14px; }
+    .section h2 { font-size: 2rem; font-weight: 900; margin-bottom: 16px; }
+    .section > p { font-size: 1rem; color: var(--muted); max-width: 640px; line-height: 1.75; margin-bottom: 20px; }
+
+    .mission-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+    .mission-text p { font-size: 1rem; color: var(--muted); line-height: 1.8; margin-bottom: 18px; }
+    .mission-visual { background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 24px; padding: 48px; color: #fff; }
+    .mission-visual h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 22px; }
+    .mission-stat { margin-bottom: 20px; }
+    .mission-stat .num { font-size: 2.4rem; font-weight: 900; line-height: 1; }
+    .mission-stat .lbl { font-size: 0.88rem; opacity: .82; margin-top: 4px; }
+
+    .values-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 14px; }
+    .value-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 16px; padding: 30px 26px; }
+    .value-icon { font-size: 2rem; margin-bottom: 14px; }
+    .value-card h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 9px; }
+    .value-card p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+    .who-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+    .who-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; padding: 26px 22px; text-align: center; }
+    .who-icon { font-size: 2.2rem; margin-bottom: 12px; }
+    .who-card h3 { font-size: 0.95rem; font-weight: 800; margin-bottom: 8px; }
+    .who-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    .tech-section { background: var(--surface); border-top: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border); }
+    .tech-inner { max-width: 1100px; margin: 0 auto; padding: 64px 40px; }
+    .tech-inner h2 { font-size: 2rem; font-weight: 900; margin-bottom: 14px; }
+    .tech-inner > p { font-size: 1rem; color: var(--muted); max-width: 600px; margin-bottom: 40px; }
+    .tech-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .tech-item { padding: 22px; background: var(--bg); border-radius: 13px; border: 1.5px solid var(--border); }
+    .tech-item h4 { font-size: 0.92rem; font-weight: 800; margin-bottom: 7px; }
+    .tech-item p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+    .cta-block { background: linear-gradient(135deg, var(--accent), var(--pink)); border-radius: 24px; padding: 64px 48px; text-align: center; color: #fff; margin: 0 40px 80px; }
+    .cta-block h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 16px; }
+    .cta-block p { font-size: 1rem; opacity: .88; margin-bottom: 36px; }
+    .cta-block a { display: inline-block; padding: 14px 36px; background: #fff; color: var(--accent); border-radius: 12px; font-size: 1rem; font-weight: 900; text-decoration: none; }
+    .cta-block a:hover { transform: scale(1.04); }
+
+    footer { background: var(--surface); border-top: 1.5px solid var(--border); padding: 32px 40px; }
+    .footer-bottom { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
+    .footer-bottom p { font-size: 0.8rem; color: var(--light); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 0.8rem; color: var(--light); text-decoration: none; transition: color .15s; }
+    .footer-links a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      .hero h1 { font-size: 2rem; }
+      .mission-grid, .values-grid { grid-template-columns: 1fr; }
+      .who-grid { grid-template-columns: 1fr 1fr; }
+      .tech-grid { grid-template-columns: 1fr; }
+      .cta-block { margin: 0 20px 60px; padding: 48px 28px; }
+    }
+    /* MOBILE NAV */
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; padding: 8px 6px; cursor: pointer; background: none; border: none; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--muted); border-radius: 2px; transition: all .25s; }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+    .nav-mobile { display: none; position: fixed; top: 72px; left: 0; right: 0; background: var(--surface); border-bottom: 1.5px solid var(--border); padding: 12px 20px 20px; z-index: 99; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .nav-mobile.open { display: flex; flex-direction: column; gap: 2px; }
+    .nav-mobile a { padding: 11px 12px; font-size: 0.97rem; font-weight: 600; color: var(--text2); text-decoration: none; border-radius: 9px; transition: all .15s; }
+    .nav-mobile a:hover { background: var(--accent-l); color: var(--accent); }
+    .mob-divider { height: 1px; background: var(--border); margin: 8px 4px; }
+    .mob-cta { background: var(--accent) !important; color: #fff !important; text-align: center; font-weight: 800 !important; border-radius: 9px; }
+    .mob-cta:hover { background: var(--accent-h) !important; }
+    a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    @media (max-width: 768px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-icon">✨</div>
+    <div class="nav-brand">Creatives <span>Gen</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="/social-posts.html">Social Posts</a>
+    <a href="/ad-creatives.html">Ad Creatives</a>
+    <a href="/website-images.html">Website Images</a>
+    <a href="/how-it-works.html">How It Works</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/about.html" class="active">About</a>
+  </div>
+  <div class="nav-actions">
+    <a href="/app.html" class="btn-ghost">Log In</a>
+    <a href="/app.html" class="btn-primary">Get Started Free →</a>
+  </div>
+  <button class="nav-hamburger" id="navHamburger" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="/social-posts.html">📱 Social Posts</a>
+  <a href="/ad-creatives.html">📣 Ad Creatives</a>
+  <a href="/website-images.html">🖼️ Website Images</a>
+  <a href="/how-it-works.html">How It Works</a>
+  <a href="/pricing.html">Pricing</a>
+  <a href="/about.html" style="color:var(--accent);background:var(--accent-l)">About</a>
+  <div class="mob-divider"></div>
+  <a href="/app.html">Log In</a>
+  <a href="/app.html" class="mob-cta">Get Started Free →</a>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">About Us</div>
+  <h1>Built for businesses that need <span>great visuals fast</span></h1>
+  <p>Creatives Gen exists because creating professional marketing images shouldn't require a design team, expensive software, or days of back-and-forth.</p>
+</div>
+
+<div class="section">
+  <div class="mission-grid">
+    <div class="mission-text">
+      <div class="section-label">Our Mission</div>
+      <h2>Democratizing professional visual content</h2>
+      <p>Every business — big or small — deserves professional-quality visuals. For years, high-quality marketing images required a graphic designer, an expensive design suite like Adobe, or waiting days for creative work to come back.</p>
+      <p>We built Creatives Gen to change that. Using the latest generative AI from Google, we've made it possible for anyone — a solo entrepreneur, a small agency, a marketing manager — to create stunning on-brand images in minutes.</p>
+      <p>Whether you need Instagram carousels, Meta ads, Google Display banners, or website hero images, Creatives Gen handles the creative heavy lifting so you can focus on growing your business.</p>
+    </div>
+    <div class="mission-visual">
+      <h3>Creatives Gen by the numbers</h3>
+      <div class="mission-stat">
+        <div class="num">3</div>
+        <div class="lbl">Powerful tools in one subscription</div>
+      </div>
+      <div class="mission-stat">
+        <div class="num">14+</div>
+        <div class="lbl">Ad sizes supported (Meta + Google)</div>
+      </div>
+      <div class="mission-stat">
+        <div class="num">9</div>
+        <div class="lbl">Visual styles to match any brand</div>
+      </div>
+      <div class="mission-stat">
+        <div class="num">Free</div>
+        <div class="lbl">15 images to start — no card needed</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="background: var(--surface); border-top: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border);">
+  <div class="section" style="padding-top:64px;padding-bottom:64px;">
+    <div class="section-label">Our Values</div>
+    <h2>What we believe in</h2>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon">⚡</div>
+        <h3>Speed Over Perfection</h3>
+        <p>Good content published now beats perfect content published next week. We optimize for fast iteration and fast results.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🎯</div>
+        <h3>Brand Consistency</h3>
+        <p>Your brand matters. We remember your colors, tone, and logo across sessions so every image feels on-brand without repeating yourself.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🔒</div>
+        <h3>Privacy First</h3>
+        <p>We don't sell your data. Your account and brand settings are stored locally on your device, not on our servers.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">💡</div>
+        <h3>AI-Assisted, Human-Directed</h3>
+        <p>AI generates, but you're always in control. Edit every piece of copy before generating, and retry any image that misses the mark.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🌍</div>
+        <h3>Accessible Pricing</h3>
+        <p>Professional tools shouldn't cost a fortune. Our plans start at $19/month — far less than hiring a designer for even one project.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon">🛠️</div>
+        <h3>Continuous Improvement</h3>
+        <p>AI models improve rapidly. We update our integrations to give you access to the latest and best generation models as they ship.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">Who It's For</div>
+  <h2>Built for everyone who needs great visuals</h2>
+  <p style="margin-bottom: 40px;">From solo creators to full-service agencies — Creatives Gen fits into any workflow.</p>
+  <div class="who-grid">
+    <div class="who-card">
+      <div class="who-icon">👤</div>
+      <h3>Solo Entrepreneurs</h3>
+      <p>Run your social media presence like a brand with a full creative team behind you.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">📢</div>
+      <h3>Marketing Managers</h3>
+      <p>Generate campaign assets at scale without waiting on design resources.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">🏢</div>
+      <h3>Digital Agencies</h3>
+      <p>Produce client content faster. Our Agency plan handles 5,000 images per month.</p>
+    </div>
+    <div class="who-card">
+      <div class="who-icon">🛍️</div>
+      <h3>E-Commerce Brands</h3>
+      <p>Create product posts, ads, and website images for every campaign and season.</p>
+    </div>
+  </div>
+</div>
+
+<div class="tech-section">
+  <div class="tech-inner">
+    <div class="section-label">Technology</div>
+    <h2>Powered by Google Gemini AI</h2>
+    <p>Creatives Gen is built on top of Google's latest multimodal AI models, accessed securely through a private server so your API key is never exposed.</p>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <h4>Gemini 2.5 Flash</h4>
+        <p>Our default image model — fast, high-quality, and capable of following complex brand and style instructions.</p>
+      </div>
+      <div class="tech-item">
+        <h4>Imagen 4</h4>
+        <p>Google's flagship image generation model, available for users who need the highest output quality.</p>
+      </div>
+      <div class="tech-item">
+        <h4>Secure Backend Proxy</h4>
+        <p>All API calls go through our Node.js backend. Your API key and your content never touch the browser directly.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="cta-block">
+  <h2>Start creating today</h2>
+  <p>15 free images, no credit card required. See what Creatives Gen can do for your brand.</p>
+  <a href="/">Open Creatives Gen →</a>
+</div>
+
+<footer>
+  <div class="footer-bottom">
+    <p>© 2025 Creatives Gen. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="/">App</a>
+      <a href="/how-it-works.html">How It Works</a>
+      <a href="/pricing.html">Pricing</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="mailto:hello@creativesgen.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleMobileNav() {
+  document.getElementById('navHamburger').classList.toggle('open');
+  document.getElementById('navMobile').classList.toggle('open');
+}
+</script>
+</body>
+</html>

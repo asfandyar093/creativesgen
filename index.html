@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Carousel Generator</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f0f13; --surface: #1a1a24; --surface2: #24243a; --surface3: #2e2e48;
+      --border: #2e2e46; --accent: #8b5cf6; --accent2: #ec4899;
+      --green: #22c55e; --red: #ef4444;
+      --text: #e2e2f0; --muted: #8888aa; --radius: 12px;
+    }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 28px; display: flex; align-items: center; gap: 14px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { width: 38px; height: 38px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    header h1 { font-size: 1.2rem; font-weight: 700; background: linear-gradient(135deg, #c084fc, #f472b6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    header p { font-size: 0.72rem; color: var(--muted); }
+
+    .layout { display: grid; grid-template-columns: 340px 1fr; height: calc(100vh - 71px); }
+
+    /* ── Sidebar ── */
+    .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar-scroll { flex: 1; overflow-y: auto; padding: 20px 18px; display: flex; flex-direction: column; gap: 18px; }
+
+    .sec-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+
+    label { display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 4px; color: var(--text); }
+    .hint { font-size: 0.68rem; color: var(--muted); margin-top: 3px; }
+
+    input[type="text"], input[type="password"], textarea, select {
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text); font-size: 0.85rem; padding: 9px 12px;
+      outline: none; transition: border-color 0.2s; font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    textarea { resize: vertical; }
+    select option { background: var(--surface2); }
+    .field { margin-bottom: 10px; }
+    .field:last-child { margin-bottom: 0; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    .input-group { position: relative; }
+    .input-group input { padding-right: 36px; }
+    .toggle-btn { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; }
+
+    /* Color tabs */
+    .color-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+    .color-tab { flex: 1; padding: 6px 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 0.7rem; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; font-family: inherit; }
+    .color-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(139,92,246,0.1); }
+    .color-tab-content { display: none; }
+    .color-tab-content.active { display: block; }
+    .color-pickers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .cpi { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .cpi label { font-size: 0.68rem; margin: 0; color: var(--muted); }
+    input[type="color"] { width: 42px; height: 34px; border: 2px solid var(--border); border-radius: 8px; cursor: pointer; background: none; padding: 2px; outline: none; }
+    input[type="color"]:focus { border-color: var(--accent); }
+    .hex-label { font-size: 0.65rem; color: var(--muted); }
+
+    .upload-zone { border: 2px dashed var(--border); border-radius: 9px; padding: 16px; text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative; }
+    .upload-zone:hover { border-color: var(--accent); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-zone p { font-size: 0.75rem; color: var(--muted); }
+    .ref-img-preview { width: 100%; border-radius: 7px; margin-top: 8px; max-height: 110px; object-fit: cover; display: none; }
+    .swatches { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .swatch { width: 28px; height: 28px; border-radius: 5px; border: 2px solid var(--border); cursor: pointer; transition: transform 0.15s, border-color 0.15s; }
+    .swatch:hover { transform: scale(1.15); border-color: var(--accent); }
+
+    /* Ratio */
+    .ratio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .ratio-btn { background: var(--surface2); border: 2px solid var(--border); border-radius: 9px; color: var(--muted); cursor: pointer; padding: 9px 4px; text-align: center; transition: all 0.2s; font-family: inherit; }
+    .ratio-btn:hover { border-color: var(--accent); color: var(--text); }
+    .ratio-btn.active { border-color: var(--accent); background: rgba(139,92,246,0.15); color: var(--accent); }
+    .ratio-btn .icon { margin: 0 auto 3px; background: currentColor; border-radius: 2px; opacity: 0.7; }
+    .ratio-btn .lbl { font-size: 0.7rem; font-weight: 600; }
+    .ratio-btn .sub { font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
+
+    /* Slider */
+    .slider-row { display: flex; align-items: center; gap: 10px; }
+    input[type="range"] { flex: 1; accent-color: var(--accent); padding: 0; height: 4px; }
+    .slider-val { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 10px; font-size: 0.85rem; font-weight: 700; min-width: 32px; text-align: center; color: var(--accent); }
+
+    /* Footer */
+    .sidebar-footer { border-top: 1px solid var(--border); padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+    .status-bar { font-size: 0.78rem; color: var(--muted); padding: 8px 12px; border-radius: 8px; border: 1px solid transparent; display: none; line-height: 1.4; }
+    .status-bar.visible { display: block; }
+    .status-bar.error { border-color: rgba(239,68,68,0.4); color: #f87171; background: rgba(239,68,68,0.08); }
+    .status-bar.success { border-color: rgba(34,197,94,0.4); color: #4ade80; background: rgba(34,197,94,0.08); }
+    .progress-bar { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; display: none; }
+    .progress-bar.visible { display: block; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width 0.4s ease; width: 0%; }
+
+    .plan-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 10px; color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+    .plan-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .plan-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .check-btn { width: 100%; padding: 7px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; color: var(--muted); font-size: 0.72rem; cursor: pointer; font-family: inherit; transition: all 0.2s; margin-top: 6px; }
+    .check-btn:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── Main ── */
+    .main { overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; }
+
+    /* Empty state */
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); padding: 40px; }
+    .empty-state .icon { font-size: 50px; }
+    .empty-state h2 { font-size: 1rem; color: var(--text); }
+    .empty-state p { font-size: 0.82rem; text-align: center; max-width: 260px; line-height: 1.5; }
+
+    /* Plan view */
+    .plan-view { padding: 24px; flex: 1; display: flex; flex-direction: column; gap: 16px; display: none; }
+
+    .plan-header { display: flex; align-items: center; justify-content: space-between; }
+    .plan-header h2 { font-size: 1rem; font-weight: 700; }
+    .plan-header p { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+
+    .gen-images-btn { padding: 10px 22px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; border-radius: 9px; color: #fff; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; }
+    .gen-images-btn:hover { opacity: 0.88; }
+    .gen-images-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Slide plan cards */
+    .slide-plan-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .slide-plan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .spc-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .spc-num { font-size: 0.68rem; font-weight: 700; color: var(--muted); }
+    .type-pill { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 8px; border-radius: 99px; }
+    .pill-hook { background: rgba(236,72,153,0.2); color: #f472b6; }
+    .pill-content { background: rgba(139,92,246,0.2); color: #a78bfa; }
+    .pill-cta { background: rgba(34,197,94,0.2); color: #4ade80; }
+    .regen-btn { margin-left: auto; padding: 4px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--muted); font-size: 0.68rem; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .regen-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .regen-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .spc-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .spc-field label { font-size: 0.68rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .spc-field input, .spc-field textarea { font-size: 0.83rem; padding: 7px 10px; }
+    .spc-field textarea { resize: none; }
+    .cta-optional { font-size: 0.65rem; color: var(--muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+    /* Image results */
+    .results-view { padding: 24px; display: none; }
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .results-header h2 { font-size: 1rem; font-weight: 600; }
+    .results-header span { font-size: 0.75rem; color: var(--muted); }
+    .dl-all-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); cursor: pointer; padding: 8px 14px; font-size: 0.78rem; font-weight: 600; transition: all 0.2s; font-family: inherit; }
+    .dl-all-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .image-grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+    .image-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; position: relative; }
+    .image-card img { width: 100%; display: block; object-fit: cover; }
+    .image-card .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+    .image-card:hover .overlay { opacity: 1; }
+    .card-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 7px; color: #fff; cursor: pointer; padding: 7px 12px; font-size: 0.72rem; font-weight: 600; backdrop-filter: blur(4px); transition: background 0.2s; font-family: inherit; }
+    .card-btn:hover { background: rgba(255,255,255,0.25); }
+    .slide-badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.65); color: #fff; font-size: 0.63rem; font-weight: 700; padding: 3px 8px; border-radius: 99px; backdrop-filter: blur(4px); display: flex; align-items: center; gap: 4px; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; }
+
+    .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: var(--radius); }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    .divider { border: none; border-top: 1px solid var(--border); }
+
+    /* Spinner */
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">✨</div>
+  <div>
+    <h1>Carousel Generator</h1>
+    <p>AI writes your slides · You approve · Images generated</p>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- API Key -->
+      <div>
+        <p class="sec-label">🔑 API Key</p>
+        <div class="input-group">
+          <input id="apiKey" type="password" placeholder="AIza..." autocomplete="off" />
+          <button class="toggle-btn" onclick="toggleApiKey()">👁</button>
+        </div>
+        <p class="hint">Stored locally · never sent except to Google.</p>
+        <button class="check-btn" onclick="checkModels()">🔍 Check Available Models</button>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Topic -->
+      <div>
+        <p class="sec-label">📝 What's this carousel about?</p>
+        <div class="field">
+          <textarea id="topic" rows="3" placeholder="e.g. 5 tips for local service businesses to get more Google reviews"></textarea>
+          <p class="hint">Be specific — the more detail, the better the AI output.</p>
+        </div>
+      </div>
+
+      <!-- Brand (optional, collapsed-style) -->
+      <div>
+        <p class="sec-label">🏢 Brand Info <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:0.65rem;">(optional but improves results)</span></p>
+        <div class="row2">
+          <div class="field">
+            <label>Business Name</label>
+            <input id="brandName" type="text" placeholder="e.g. FreshCut" />
+          </div>
+          <div class="field">
+            <label>Industry</label>
+            <input id="industry" type="text" placeholder="e.g. Lawn care" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Target Audience</label>
+          <input id="audience" type="text" placeholder="e.g. Homeowners in suburban areas" />
+        </div>
+        <div class="field">
+          <label>Tone / Personality</label>
+          <select id="personality">
+            <option value="professional and trustworthy">Professional & Trustworthy</option>
+            <option value="bold and energetic">Bold & Energetic</option>
+            <option value="playful and fun">Playful & Fun</option>
+            <option value="luxurious and premium">Luxurious & Premium</option>
+            <option value="minimalist and clean">Minimalist & Clean</option>
+            <option value="warm and approachable">Warm & Approachable</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Color Scheme -->
+      <div>
+        <p class="sec-label">🎨 Color Scheme</p>
+        <div class="color-tabs">
+          <button class="color-tab active" onclick="switchColorTab('pick',this)">Pick</button>
+          <button class="color-tab" onclick="switchColorTab('upload',this)">Image</button>
+          <button class="color-tab" onclick="switchColorTab('hex',this)">Hex</button>
+        </div>
+
+        <div id="tab-pick" class="color-tab-content active">
+          <div class="color-pickers">
+            <div class="cpi">
+              <label>Primary</label>
+              <input type="color" id="c1" value="#8b5cf6" oninput="updateHex('c1','h1')" />
+              <div class="hex-label" id="h1">#8b5cf6</div>
+            </div>
+            <div class="cpi">
+              <label>Secondary</label>
+              <input type="color" id="c2" value="#ec4899" oninput="updateHex('c2','h2')" />
+              <div class="hex-label" id="h2">#ec4899</div>
+            </div>
+            <div class="cpi">
+              <label>Background</label>
+              <input type="color" id="c3" value="#0f0f13" oninput="updateHex('c3','h3')" />
+              <div class="hex-label" id="h3">#0f0f13</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-upload" class="color-tab-content">
+          <div class="upload-zone">
+            <input type="file" accept="image/*" onchange="handleRefImage(this)" />
+            <p>🖼️ <strong>Click or drag</strong> an image</p>
+            <p>Auto-extracts color palette</p>
+          </div>
+          <img id="refPreview" class="ref-img-preview" alt="" />
+          <div class="swatches" id="swatches"></div>
+        </div>
+
+        <div id="tab-hex" class="color-tab-content">
+          <div class="field"><label>Primary</label><input type="text" placeholder="#8b5cf6" maxlength="7" oninput="syncHex(this,'c1','h1')" /></div>
+          <div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'c2','h2')" /></div>
+          <div class="field"><label>Background</label><input type="text" placeholder="#0f0f13" maxlength="7" oninput="syncHex(this,'c3','h3')" /></div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div>
+        <p class="sec-label">⚙️ Settings</p>
+        <div class="field">
+          <label>Number of Slides</label>
+          <div class="slider-row">
+            <input type="range" id="slideCount" min="3" max="10" value="5" oninput="document.getElementById('slideVal').textContent=this.value" />
+            <div class="slider-val" id="slideVal">5</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Image Style</label>
+          <select id="style">
+            <option value="vibrant social media graphic, dynamic bold layout">Social Media (default)</option>
+            <option value="photorealistic, cinematic lighting, ultra detailed">Photorealistic</option>
+            <option value="flat design illustration, bold colors, clean vectors">Flat Design</option>
+            <option value="3D render, soft studio lighting, modern">3D Render</option>
+            <option value="minimalist, elegant, lots of white space">Minimalist</option>
+            <option value="dark aesthetic, neon glow accents, moody">Dark Aesthetic</option>
+            <option value="luxury magazine editorial, high-end">Luxury Editorial</option>
+            <option value="bold geometric shapes, graphic design poster">Bold Geometric</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Aspect Ratio</label>
+          <div class="ratio-grid">
+            <button class="ratio-btn active" onclick="selectRatio(this,'1:1')">
+              <div class="icon" style="width:24px;height:24px;"></div>
+              <div class="lbl">Square</div><div class="sub">1:1</div>
+            </button>
+            <button class="ratio-btn" onclick="selectRatio(this,'4:5')">
+              <div class="icon" style="width:18px;height:24px;"></div>
+              <div class="lbl">Portrait</div><div class="sub">4:5</div>
+            </button>
+            <button class="ratio-btn" onclick="selectRatio(this,'9:16')">
+              <div class="icon" style="width:13px;height:24px;"></div>
+              <div class="lbl">Story</div><div class="sub">9:16</div>
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Image Model</label>
+          <select id="model">
+            <option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option>
+            <option value="imagen-4.0-generate-001">Imagen 4</option>
+            <option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option>
+            <option value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra</option>
+            <option value="gemini-3-pro-image-preview">Gemini 3 Pro (preview)</option>
+            <option value="gemini-3.1-flash-image-preview">Gemini 3.1 Flash (preview)</option>
+          </select>
+        </div>
+      </div>
+
+    </div><!-- /sidebar-scroll -->
+
+    <div class="sidebar-footer">
+      <div id="statusBar" class="status-bar"></div>
+      <div id="progressBar" class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+      <button class="plan-btn" id="planBtn" onclick="planCarousel()">✨ Plan My Carousel</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main" id="mainArea">
+
+    <!-- Empty state -->
+    <div class="empty-state" id="emptyState">
+      <div class="icon">🎨</div>
+      <h2>Let AI do the work</h2>
+      <p>Describe your carousel topic, fill in a few brand details, then hit <strong>Plan My Carousel</strong>. AI writes all the slide copy — you just review and approve.</p>
+    </div>
+
+    <!-- Plan view: editable slide cards -->
+    <div class="plan-view" id="planView">
+      <div class="plan-header">
+        <div>
+          <h2>Your Carousel Plan</h2>
+          <p id="planSubtitle">Review and edit, then generate images</p>
+        </div>
+        <button class="gen-images-btn" id="genImagesBtn" onclick="generateImages()">🎨 Generate Images</button>
+      </div>
+      <div class="slide-plan-list" id="slidePlanList"></div>
+    </div>
+
+    <!-- Image results -->
+    <div class="results-view" id="resultsView">
+      <div class="results-header">
+        <div>
+          <h2 id="resultsTitle">Your Carousel</h2>
+          <span id="resultsSubtitle"></span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="dl-all-btn" onclick="showPlan()">✏️ Edit Plan</button>
+          <button class="dl-all-btn" onclick="downloadAll()">⬇ Download ZIP</button>
+        </div>
+      </div>
+      <div class="image-grid" id="imageGrid"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let selectedRatio = '1:1';
+let slidePlan = [];       // [{type, headline, body, cta}]
+let generatedImages = []; // [{b64, mimeType}]
+
+// ── Init ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('gemini_api_key');
+  if (saved) document.getElementById('apiKey').value = saved;
+});
+
+document.getElementById('apiKey').addEventListener('change', () => {
+  localStorage.setItem('gemini_api_key', document.getElementById('apiKey').value.trim());
+});
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function toggleApiKey() {
+  const el = document.getElementById('apiKey');
+  el.type = el.type === 'password' ? 'text' : 'password';
+}
+function selectRatio(btn, ratio) {
+  document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedRatio = ratio;
+}
+function setStatus(msg, type = '') {
+  const bar = document.getElementById('statusBar');
+  bar.textContent = msg;
+  bar.className = 'status-bar visible ' + type;
+}
+function clearStatus() {
+  document.getElementById('statusBar').className = 'status-bar';
+}
+function setProgress(pct) {
+  const bar = document.getElementById('progressBar');
+  const fill = document.getElementById('progressFill');
+  if (pct === null) { bar.classList.remove('visible'); fill.style.width = '0%'; }
+  else { bar.classList.add('visible'); fill.style.width = pct + '%'; }
+}
+function getColors() {
+  return {
+    primary: document.getElementById('c1').value,
+    secondary: document.getElementById('c2').value,
+    bg: document.getElementById('c3').value,
+  };
+}
+function updateHex(colorId, labelId) {
+  document.getElementById(labelId).textContent = document.getElementById(colorId).value;
+}
+function syncHex(input, colorId, labelId) {
+  if (/^#[0-9a-fA-F]{6}$/.test(input.value.trim())) {
+    document.getElementById(colorId).value = input.value.trim();
+    document.getElementById(labelId).textContent = input.value.trim();
+  }
+}
+
+// ── Color tabs ──────────────────────────────────────────────────────────────
+function switchColorTab(tab, btn) {
+  document.querySelectorAll('.color-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.color-tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ── Image color extraction ──────────────────────────────────────────────────
+function handleRefImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('refPreview');
+  const url = URL.createObjectURL(file);
+  preview.src = url;
+  preview.style.display = 'block';
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const s = Math.min(80 / img.width, 80 / img.height);
+    canvas.width = Math.round(img.width * s);
+    canvas.height = Math.round(img.height * s);
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const buckets = {};
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i + 3] < 128) continue;
+      const r = Math.round(data[i] / 24) * 24;
+      const g = Math.round(data[i+1] / 24) * 24;
+      const b = Math.round(data[i+2] / 24) * 24;
+      const k = `${r},${g},${b}`;
+      buckets[k] = (buckets[k] || 0) + 1;
+    }
+    const top = Object.entries(buckets).sort((a,b) => b[1]-a[1]).slice(0,8)
+      .map(([k]) => { const [r,g,b] = k.split(',').map(Number); return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`; });
+
+    // Auto-apply top 3
+    if (top[0]) { document.getElementById('c1').value = top[0]; document.getElementById('h1').textContent = top[0]; }
+    if (top[1]) { document.getElementById('c2').value = top[1]; document.getElementById('h2').textContent = top[1]; }
+    if (top[top.length-1]) { document.getElementById('c3').value = top[top.length-1]; document.getElementById('h3').textContent = top[top.length-1]; }
+
+    const sw = document.getElementById('swatches');
+    sw.innerHTML = '';
+    top.forEach((hex, i) => {
+      const d = document.createElement('div');
+      d.className = 'swatch'; d.style.background = hex; d.title = hex;
+      d.onclick = () => {
+        if (i === 0) { document.getElementById('c1').value = hex; document.getElementById('h1').textContent = hex; }
+        else if (i === 1) { document.getElementById('c2').value = hex; document.getElementById('h2').textContent = hex; }
+        else { document.getElementById('c3').value = hex; document.getElementById('h3').textContent = hex; }
+      };
+      sw.appendChild(d);
+    });
+    URL.revokeObjectURL(url);
+    setStatus('Colors extracted! Swatches applied.', 'success');
+  };
+  img.src = url;
+}
+
+// ── View switching ──────────────────────────────────────────────────────────
+function showEmpty() {
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('planView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'none';
+}
+function showPlan() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('planView').style.display = 'flex';
+  document.getElementById('resultsView').style.display = 'none';
+}
+function showResults() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('planView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+}
+
+// ── Step 1: Plan slides with Gemini text ────────────────────────────────────
+async function planCarousel() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const topic = document.getElementById('topic').value.trim();
+  if (!apiKey) { setStatus('Please enter your Gemini API key.', 'error'); return; }
+  if (!topic) { setStatus('Describe what your carousel is about.', 'error'); return; }
+
+  localStorage.setItem('gemini_api_key', apiKey);
+
+  const count = parseInt(document.getElementById('slideCount').value);
+  const brand = {
+    name: document.getElementById('brandName').value.trim(),
+    industry: document.getElementById('industry').value.trim(),
+    audience: document.getElementById('audience').value.trim(),
+  };
+  const personality = document.getElementById('personality').value;
+
+  const btn = document.getElementById('planBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Planning…';
+  setStatus('AI is writing your slide copy…');
+  setProgress(30);
+
+  try {
+    const plan = await generateSlidePlan(apiKey, topic, brand, personality, count);
+    slidePlan = plan;
+    renderPlanCards(plan);
+    showPlan();
+    document.getElementById('planSubtitle').textContent = `${plan.length} slides · Review and edit, then generate images`;
+    clearStatus();
+    setProgress(null);
+  } catch (err) {
+    setStatus(`Error: ${err.message}`, 'error');
+    setProgress(null);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Plan My Carousel';
+  }
+}
+
+async function generateSlidePlan(apiKey, topic, brand, personality, count) {
+  const brandCtx = [
+    brand.name && `Business: ${brand.name}`,
+    brand.industry && `Industry: ${brand.industry}`,
+    brand.audience && `Audience: ${brand.audience}`,
+  ].filter(Boolean).join(' | ') || 'General business';
+
+  const prompt = `You are an expert social media content strategist. Create a ${count}-slide Instagram carousel plan.
+
+TOPIC: ${topic}
+BRAND: ${brandCtx}
+TONE: ${personality}
+
+Return ONLY a valid JSON array with exactly ${count} objects. No markdown, no explanation, just the JSON.
+
+Format:
+[
+  {
+    "type": "hook",
+    "headline": "Short punchy headline max 7 words",
+    "body": "1-2 sentences of supporting copy that adds value.",
+    "cta": "Follow for more tips"
+  }
+]
+
+Rules:
+- Slide 1: type must be "hook" — bold, curiosity-provoking, makes people want to keep reading
+- Slides 2 to ${count - 1}: type "content" — each delivers one specific, actionable insight
+- Slide ${count}: type "cta" — strong call to action, create urgency or excitement
+- Headlines: punchy, specific, max 7 words — no generic fluff
+- Body: concrete, specific, genuinely useful — 1-2 sentences max
+- CTA field: only for hook and last slide, empty string "" for content slides
+- Match the tone: ${personality}
+- Make it feel native to Instagram, not corporate`;
+
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.85, responseMimeType: 'application/json' }
+      })
+    }
+  );
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${resp.status}`);
+  }
+
+  const data = await resp.json();
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  // Robust JSON extraction
+  const match = raw.match(/\[[\s\S]*\]/);
+  if (!match) throw new Error('AI returned unexpected format. Please try again.');
+  return JSON.parse(match[0]);
+}
+
+// ── Render editable plan cards ──────────────────────────────────────────────
+function renderPlanCards(plan) {
+  const list = document.getElementById('slidePlanList');
+  list.innerHTML = '';
+  plan.forEach((slide, idx) => {
+    const pillClass = slide.type === 'hook' ? 'pill-hook' : slide.type === 'cta' ? 'pill-cta' : 'pill-content';
+    const typeLabel = slide.type === 'hook' ? '🪝 Hook' : slide.type === 'cta' ? '📣 CTA' : `💡 Content`;
+
+    const card = document.createElement('div');
+    card.className = 'slide-plan-card';
+    card.dataset.idx = idx;
+    card.innerHTML = `
+      <div class="spc-header">
+        <span class="spc-num">SLIDE ${idx + 1}</span>
+        <span class="type-pill ${pillClass}">${typeLabel}</span>
+        <button class="regen-btn" onclick="regenSlide(${idx})" id="regenBtn-${idx}">↻ Regenerate</button>
+      </div>
+      <div class="spc-body">
+        <div class="spc-field">
+          <label>Headline</label>
+          <input type="text" value="${escHtml(slide.headline)}" oninput="slidePlan[${idx}].headline=this.value" />
+        </div>
+        <div class="spc-field">
+          <label>Body Copy</label>
+          <textarea rows="2" oninput="slidePlan[${idx}].body=this.value">${escHtml(slide.body)}</textarea>
+        </div>
+        <div class="spc-field">
+          <label>CTA <span class="cta-optional">(leave blank if none)</span></label>
+          <input type="text" value="${escHtml(slide.cta || '')}" placeholder="e.g. Follow for more · Book a free call · Link in bio" oninput="slidePlan[${idx}].cta=this.value" />
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Regenerate a single slide ───────────────────────────────────────────────
+async function regenSlide(idx) {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const topic = document.getElementById('topic').value.trim();
+  const personality = document.getElementById('personality').value;
+  const brand = {
+    name: document.getElementById('brandName').value.trim(),
+    industry: document.getElementById('industry').value.trim(),
+    audience: document.getElementById('audience').value.trim(),
+  };
+  const slide = slidePlan[idx];
+  const btn = document.getElementById(`regenBtn-${idx}`);
+  btn.disabled = true;
+  btn.textContent = '…';
+
+  try {
+    const prompt = `Write ONE Instagram carousel slide (slide ${idx + 1} of ${slidePlan.length}).
+Topic: ${topic}
+Brand: ${brand.name || ''} ${brand.industry || ''} | Audience: ${brand.audience || 'general'}
+Tone: ${personality}
+Slide type: ${slide.type}${slide.type === 'hook' ? ' — scroll-stopping hook, bold curiosity' : slide.type === 'cta' ? ' — strong call to action' : ' — one specific actionable tip'}
+
+Return ONLY valid JSON (no markdown):
+{"headline":"...","body":"...","cta":"..."}
+Headline: max 7 words. Body: 1-2 sentences. CTA: only if hook or cta type, else empty string.`;
+
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{responseMimeType:'application/json'} }) }
+    );
+    const data = await resp.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Bad response');
+    const updated = JSON.parse(match[0]);
+    slidePlan[idx] = { ...slide, ...updated };
+    renderPlanCards(slidePlan);
+  } catch (e) {
+    setStatus(`Regen failed: ${e.message}`, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Regenerate'; }
+  }
+}
+
+// ── Step 2: Generate images ─────────────────────────────────────────────────
+async function generateImages() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { setStatus('Please enter your Gemini API key.', 'error'); return; }
+  if (!slidePlan.length) return;
+
+  const model = document.getElementById('model').value;
+  const style = document.getElementById('style').value;
+  const personality = document.getElementById('personality').value;
+  const colors = getColors();
+  const count = slidePlan.length;
+  const brand = {
+    name: document.getElementById('brandName').value.trim(),
+    industry: document.getElementById('industry').value.trim(),
+    audience: document.getElementById('audience').value.trim(),
+  };
+
+  const btn = document.getElementById('genImagesBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating…';
+
+  generatedImages = new Array(count).fill(null);
+  showResults();
+  document.getElementById('resultsTitle').textContent = 'Generating…';
+  document.getElementById('resultsSubtitle').textContent = `${count} slides · ${selectedRatio} · ${model}`;
+  showSkeletons(count);
+  setStatus(`Generating ${count} images…`);
+  setProgress(5);
+
+  let done = 0;
+  const errors = [];
+  for (let i = 0; i < count; i++) {
+    try {
+      setStatus(`Generating slide ${i + 1} of ${count}…`);
+      const prompt = buildImagePrompt(slidePlan[i], i, count, brand, colors, style, personality);
+      const img = await callImageAPI(apiKey, prompt, model);
+      generatedImages[i] = img;
+      renderImageCard(img, i, slidePlan[i]);
+      done++;
+      setProgress(Math.round(((i + 1) / count) * 95));
+    } catch (err) {
+      errors.push(i + 1);
+      markSlideError(i, err.message);
+      console.error(`Slide ${i + 1} error:`, err);
+      // Continue to next slide — don't abort the whole batch
+    }
+  }
+
+  document.getElementById('resultsTitle').textContent = 'Your Carousel';
+  if (errors.length === 0) {
+    setStatus(`All ${done} slides ready!`, 'success');
+  } else if (done > 0) {
+    setStatus(`${done} of ${count} slides generated. Slide${errors.length > 1 ? 's' : ''} ${errors.join(', ')} failed — try regenerating.`, 'error');
+  } else {
+    setStatus(`Generation failed. Check your API key and model.`, 'error');
+  }
+  setProgress(null);
+
+  btn.disabled = false;
+  btn.innerHTML = '🎨 Generate Images';
+}
+
+// ── Smart image prompt builder ──────────────────────────────────────────────
+function buildImagePrompt(slide, idx, total, brand, colors, style, personality) {
+  const role = idx === 0
+    ? 'HOOK SLIDE — must be scroll-stopping, bold, dramatic. Creates immediate curiosity.'
+    : slide.type === 'cta'
+    ? 'CALL TO ACTION SLIDE — urgent, exciting, motivates the viewer to act now.'
+    : `CONTENT SLIDE ${idx} of ${total - 2} — visually engaging, clean layout, educational feel.`;
+
+  return `Instagram carousel social media graphic — Slide ${idx + 1} of ${total}.
+
+ROLE: ${role}
+
+TEXT TO DISPLAY ON THE IMAGE:
+• Headline (large, bold, prominent): "${slide.headline}"
+${slide.body ? `• Body copy (smaller, supporting): "${slide.body}"` : ''}
+${slide.cta ? `• CTA button or callout: "${slide.cta}"` : ''}
+
+BRAND: ${brand.name || 'business'} | ${brand.industry || ''} | Tone: ${personality}
+
+DESIGN:
+- Style: ${style}
+- Brand colors — Primary: ${colors.primary}, Secondary: ${colors.secondary}, Background: ${colors.bg}
+- This is a designed GRAPHIC, not a plain photo — text is overlaid as part of the design
+- The headline must be the most prominent element — large, bold, high-contrast typography
+- Professional social media layout with clear visual hierarchy
+- ${idx === 0 ? 'HOOK: Maximum visual impact — dramatic, eye-catching, instantly communicates the value. Make the viewer stop scrolling.' : ''}
+- ${slide.type === 'cta' ? 'Include a visually distinct CTA element — button, arrow, or highlighted text.' : ''}
+- Consistent aesthetic with the rest of this carousel series
+- High production value — looks designed by a professional, not a template`;
+}
+
+// ── API calls ────────────────────────────────────────────────────────────────
+async function callImageAPI(apiKey, prompt, model, attempt = 0) {
+  const isGemini = model.startsWith('gemini-');
+  try {
+    if (isGemini) {
+      const resp = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        { method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ contents:[{parts:[{text:prompt}]}], generationConfig:{responseModalities:['IMAGE','TEXT']} }) }
+      );
+      if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+      const data = await resp.json();
+      for (const c of data.candidates||[]) for (const p of c.content?.parts||[])
+        if (p.inlineData) return { b64: p.inlineData.data, mimeType: p.inlineData.mimeType||'image/png' };
+      // Log what was returned to help diagnose
+      console.warn('No image part found. Response:', JSON.stringify(data).slice(0, 400));
+      throw new Error('No image in response');
+    }
+    // Imagen predict
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:predict?key=${apiKey}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ instances:[{prompt}], parameters:{sampleCount:1,aspectRatio:selectedRatio} }) }
+    );
+    if (!resp.ok) { const e = await resp.json().catch(()=>{}); throw new Error(e?.error?.message || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+    const p = (data.predictions||[])[0];
+    if (!p) throw new Error('No image in response');
+    return { b64: p.bytesBase64Encoded, mimeType: p.mimeType||'image/png' };
+  } catch (err) {
+    // Retry up to 2 times for "No image" errors (model occasionally returns text-only)
+    if (attempt < 2 && err.message === 'No image in response') {
+      console.warn(`Slide retry ${attempt + 1}…`);
+      await new Promise(r => setTimeout(r, 1000));
+      return callImageAPI(apiKey, prompt, model, attempt + 1);
+    }
+    throw err;
+  }
+}
+
+async function retrySingleImage(idx) {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const model = document.getElementById('model').value;
+  const style = document.getElementById('style').value;
+  const personality = document.getElementById('personality').value;
+  const colors = getColors();
+  const brand = {
+    name: document.getElementById('brandName').value.trim(),
+    industry: document.getElementById('industry').value.trim(),
+    audience: document.getElementById('audience').value.trim(),
+  };
+  const card = document.getElementById(`ic-${idx}`);
+  if (card) {
+    const aspectMap = {'1:1':'100%','4:5':'125%','9:16':'177.8%'};
+    card.innerHTML = `<div class="skeleton" style="padding-top:${aspectMap[selectedRatio]||'100%'};"></div>`;
+  }
+  try {
+    const prompt = buildImagePrompt(slidePlan[idx], idx, slidePlan.length, brand, colors, style, personality);
+    const img = await callImageAPI(apiKey, prompt, model);
+    generatedImages[idx] = img;
+    renderImageCard(img, idx, slidePlan[idx]);
+    setStatus('Slide regenerated!', 'success');
+  } catch (err) {
+    markSlideError(idx, err.message);
+    setStatus(`Slide ${idx + 1} failed: ${err.message}`, 'error');
+  }
+}
+
+function markSlideError(idx, msg) {
+  const card = document.getElementById(`ic-${idx}`);
+  if (!card) return;
+  const aspectMap = {'1:1':'100%','4:5':'125%','9:16':'177.8%'};
+  const pt = aspectMap[selectedRatio]||'100%';
+  card.innerHTML = `
+    <div style="padding-top:${pt};position:relative;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px;text-align:center;">
+        <div style="font-size:24px;">⚠️</div>
+        <div style="font-size:0.7rem;color:#f87171;font-weight:600;">Slide ${idx + 1} failed</div>
+        <div style="font-size:0.65rem;color:var(--muted);">${msg.slice(0,80)}</div>
+        <button class="card-btn" style="margin-top:4px;background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);" onclick="retrySingleImage(${idx})">↻ Retry</button>
+      </div>
+    </div>`;
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+function showSkeletons(count) {
+  const grid = document.getElementById('imageGrid');
+  grid.innerHTML = '';
+  const aspectMap = {'1:1':'100%','4:5':'125%','9:16':'177.8%'};
+  const pt = aspectMap[selectedRatio]||'100%';
+  for (let i = 0; i < count; i++) {
+    const slide = slidePlan[i] || {};
+    const dotColor = slide.type==='hook'?'#f472b6':slide.type==='cta'?'#4ade80':'#a78bfa';
+    const card = document.createElement('div');
+    card.className='image-card'; card.id=`ic-${i}`;
+    card.innerHTML=`<div class="skeleton" style="padding-top:${pt};"></div><div class="slide-badge"><span class="dot" style="background:${dotColor}"></span>Slide ${i+1}</div>`;
+    grid.appendChild(card);
+  }
+}
+
+function renderImageCard(img, idx, slide) {
+  const card = document.getElementById(`ic-${idx}`);
+  if (!card) return;
+  const src = `data:${img.mimeType};base64,${img.b64}`;
+  const dotColor = slide.type==='hook'?'#f472b6':slide.type==='cta'?'#4ade80':'#a78bfa';
+  const typeLabel = slide.type==='hook'?'Hook':slide.type==='cta'?'CTA':'Content';
+  card.innerHTML=`
+    <img src="${src}" alt="Slide ${idx+1}" loading="lazy" />
+    <div class="slide-badge"><span class="dot" style="background:${dotColor}"></span>${typeLabel} · ${idx+1}</div>
+    <div class="overlay">
+      <button class="card-btn" onclick="downloadSingle(${idx})">⬇ Save</button>
+      <button class="card-btn" onclick="copyImg(${idx})">📋 Copy</button>
+    </div>`;
+}
+
+// ── Download ─────────────────────────────────────────────────────────────────
+function downloadSingle(idx) {
+  const img = generatedImages[idx]; if (!img) return;
+  const ext = img.mimeType.split('/')[1]||'png';
+  const a = document.createElement('a');
+  a.href=`data:${img.mimeType};base64,${img.b64}`; a.download=`slide_${idx+1}.${ext}`; a.click();
+}
+async function copyImg(idx) {
+  const img = generatedImages[idx]; if (!img) return;
+  try {
+    const bytes=atob(img.b64), arr=new Uint8Array(bytes.length);
+    for (let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    await navigator.clipboard.write([new ClipboardItem({[img.mimeType]:new Blob([arr],{type:img.mimeType})})]);
+    setStatus('Copied!','success');
+  } catch(e) { setStatus('Copy failed: '+e.message,'error'); }
+}
+async function downloadAll() {
+  const ready = generatedImages.filter(Boolean);
+  if (!ready.length) { setStatus('No images yet.','error'); return; }
+  setStatus('Preparing ZIP…');
+  const zip = new JSZip();
+  ready.forEach((img,i) => {
+    const ext=img.mimeType.split('/')[1]||'png';
+    const bytes=atob(img.b64), arr=new Uint8Array(bytes.length);
+    for (let j=0;j<bytes.length;j++) arr[j]=bytes.charCodeAt(j);
+    zip.file(`slide_${i+1}.${ext}`,arr);
+  });
+  const blob = await zip.generateAsync({type:'blob'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='carousel.zip'; a.click();
+  setStatus(`Downloaded ${ready.length} slides.`,'success');
+}
+
+// ── Check models ─────────────────────────────────────────────────────────────
+async function checkModels() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { setStatus('Enter API key first.','error'); return; }
+  setStatus('Fetching models…');
+  try {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!resp.ok) { const e=await resp.json().catch(()=>{}); throw new Error(e?.error?.message||`HTTP ${resp.status}`); }
+    const data = await resp.json();
+    const imgModels = (data.models||[]).filter(m=>m.name.includes('imagen')||m.name.includes('image'));
+    console.log('All models:', (data.models||[]).map(m=>m.name));
+    if (!imgModels.length) setStatus('No image models found. Check console (F12).','error');
+    else setStatus('Available: '+imgModels.map(m=>m.name.replace('models/','')).join(', '),'success');
+  } catch(e) { setStatus('Error: '+e.message,'error'); }
+}
+
+// Cmd/Ctrl+Enter to plan
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter') planCarousel();
+});
+</script>
+</body>
+</html>

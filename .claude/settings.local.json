@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"aria-\" /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep -oh 'href=\"[^\"]*\"' /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(ls -la /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep -n \"\\\\.nav-links a:hover, \\\\.nav-links a.active\" /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep -n \"@media\" /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep -n \"\\\\.btn-white\" /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep \"\\\\.cta-banner\" /Users/m/instagram-carousel-generator/public/*.html)",
+      "Bash(grep -n \"span class=\\\\\"grad\\\\\"\" /Users/m/instagram-carousel-generator/public/*.html)"
+    ]
+  }
+}
