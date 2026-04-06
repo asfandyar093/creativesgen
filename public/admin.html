@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Creatives Gen</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --accent:#5b5ef4;--accent-l:#eef0ff;--pink:#ec4899;
+      --green:#10b981;--green-l:#ecfdf5;--yellow:#f59e0b;--yellow-l:#fffbeb;
+      --red:#ef4444;--red-l:#fef2f2;
+      --bg:#f0f2f8;--surface:#fff;--border:#dde1ea;
+      --text:#0d1117;--muted:#5a6478;--light:#8b95a7;
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+    /* LOGIN */
+    #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+    .login-box{background:var(--surface);border-radius:20px;padding:48px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center}
+    .login-box h1{font-size:1.5rem;font-weight:900;margin-bottom:6px}
+    .login-box p{color:var(--muted);font-size:0.9rem;margin-bottom:28px}
+    .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border:2px solid #dde1ea;border-radius:10px;background:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-google:hover{border-color:var(--accent);background:var(--accent-l)}
+    #loginError{color:#ef4444;font-size:0.82rem;margin-top:12px;display:none}
+
+    /* DASHBOARD */
+    #dashboard{display:none}
+    header{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+    .h-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem}
+    .h-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--pink));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .h-badge{background:var(--red-l);color:var(--red);font-size:0.7rem;font-weight:800;padding:3px 8px;border-radius:99px;border:1px solid #fca5a5}
+    .btn-out{padding:7px 16px;border:1.5px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:inherit;color:var(--muted)}
+    .btn-out:hover{background:var(--bg)}
+
+    main{max-width:1300px;margin:0 auto;padding:32px}
+
+    /* STAT CARDS */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+    .stat{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px 24px}
+    .stat-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
+    .stat-val{font-size:2rem;font-weight:900;color:var(--text)}
+    .stat-sub{font-size:0.78rem;color:var(--light);margin-top:4px}
+    .stat.green .stat-val{color:var(--green)}
+    .stat.blue .stat-val{color:var(--accent)}
+    .stat.pink .stat-val{color:var(--pink)}
+    .stat.yellow .stat-val{color:var(--yellow)}
+
+    /* FILTERS */
+    .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+    .toolbar input{padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;width:220px}
+    .toolbar input:focus{border-color:var(--accent)}
+    .filter-btn{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+    .filter-btn.active,.filter-btn:hover{border-color:var(--accent);background:var(--accent-l);color:var(--accent)}
+    .refresh-btn{margin-left:auto;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit}
+    .refresh-btn:hover{opacity:.9}
+
+    /* TABLE */
+    .table-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
+    table{width:100%;border-collapse:collapse}
+    th{padding:12px 16px;text-align:left;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg);border-bottom:1.5px solid var(--border)}
+    td{padding:13px 16px;font-size:0.86rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#fafbff}
+    .avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle}
+    .avatar-ph{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:900;margin-right:8px;vertical-align:middle;flex-shrink:0}
+    .name-cell{display:flex;align-items:center}
+    .plan-badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .plan-free{background:#f1f5f9;color:#64748b}
+    .plan-starter{background:var(--accent-l);color:var(--accent)}
+    .plan-pro{background:#fdf4ff;color:#a855f7}
+    .plan-agency{background:var(--yellow-l);color:#d97706}
+    .plan-enterprise{background:#fff1f2;color:#e11d48}
+    .usage-bar-wrap{display:flex;align-items:center;gap:8px}
+    .usage-bar{height:6px;border-radius:99px;background:#e2e8f0;flex:1;min-width:60px}
+    .usage-fill{height:6px;border-radius:99px;background:var(--green);transition:width .3s}
+    .usage-fill.warn{background:var(--yellow)}
+    .usage-fill.full{background:var(--red)}
+    .usage-text{font-size:0.75rem;color:var(--muted);white-space:nowrap}
+    .provider-icon{font-size:1rem}
+    .empty{text-align:center;padding:60px;color:var(--muted)}
+    .loading{text-align:center;padding:60px;color:var(--muted);font-size:0.9rem}
+
+    /* MODAL */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+    .overlay.open{display:flex}
+    .detail-modal{background:var(--surface);border-radius:16px;padding:32px;width:480px;max-width:calc(100vw - 32px);max-height:80vh;overflow-y:auto}
+    .detail-modal h2{font-size:1.2rem;font-weight:900;margin-bottom:20px}
+    .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.88rem}
+    .detail-row:last-child{border-bottom:none}
+    .detail-row .dk{color:var(--muted);font-weight:600}
+    .detail-row .dv{font-weight:700;text-align:right}
+    .close-modal{float:right;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);margin-top:-8px}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div style="font-size:2rem;margin-bottom:12px">🔐</div>
+    <h1>Admin Access</h1>
+    <p>Sign in with your admin Google account</p>
+    <button class="btn-google" onclick="adminLogin()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Sign in with Google
+    </button>
+    <div id="loginError">Access denied. This account is not an admin.</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <div class="h-logo">
+      <div class="h-icon">✨</div>
+      Creatives Gen
+      <span class="h-badge">ADMIN</span>
+    </div>
+    <button class="btn-out" onclick="fbAuth.signOut().then(()=>location.reload())">Sign Out</button>
+  </header>
+  <main>
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat blue">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-val" id="statTotal">—</div>
+        <div class="stat-sub">All time signups</div>
+      </div>
+      <div class="stat green">
+        <div class="stat-label">Images Generated</div>
+        <div class="stat-val" id="statImages">—</div>
+        <div class="stat-sub">All time total</div>
+      </div>
+      <div class="stat pink">
+        <div class="stat-label">Paid Users</div>
+        <div class="stat-val" id="statPaid">—</div>
+        <div class="stat-sub">Starter / Pro / Agency</div>
+      </div>
+      <div class="stat yellow">
+        <div class="stat-label">Free Users</div>
+        <div class="stat-val" id="statFree">—</div>
+        <div class="stat-sub">On free plan</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="Search name or email…" oninput="filterUsers()">
+      <button class="filter-btn active" onclick="setPlanFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setPlanFilter('free',this)">Free</button>
+      <button class="filter-btn" onclick="setPlanFilter('starter',this)">Starter</button>
+      <button class="filter-btn" onclick="setPlanFilter('pro',this)">Pro</button>
+      <button class="filter-btn" onclick="setPlanFilter('agency',this)">Agency</button>
+      <button class="refresh-btn" onclick="loadUsers()">↻ Refresh</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Provider</th>
+            <th>Plan</th>
+            <th>Usage (this period)</th>
+            <th>All-time Images</th>
+            <th>Joined</th>
+            <th>Last Login</th>
+          </tr>
+        </thead>
+        <tbody id="userTable"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-modal" id="detailModal">
+    <button class="close-modal" onclick="closeDetail()">×</button>
+    <h2 id="detailName">User Details</h2>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+  // ── CHANGE THIS to your own email ──
+  const ADMIN_EMAIL = 'asfandyarkhank@gmail.com';
+
+  firebase.initializeApp({
+    apiKey: "AIzaSyCul5Hv4vy-FfH-IMafdOP3fs8ikP2WvIE",
+    authDomain: "image-generation-web-app.firebaseapp.com",
+    projectId: "image-generation-web-app",
+    storageBucket: "image-generation-web-app.firebasestorage.app",
+    messagingSenderId: "981800995254",
+    appId: "1:981800995254:web:279635b177ecbee3ead917"
+  });
+  const fbAuth = firebase.auth();
+  const fbDb = firebase.firestore();
+
+  let allUsers = [];
+  let planFilter = 'all';
+
+  fbAuth.onAuthStateChanged(user => {
+    if (user && user.email === ADMIN_EMAIL) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadUsers();
+    } else if (user) {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginError').textContent = 'Access denied. Not an admin account.';
+      fbAuth.signOut();
+    }
+  });
+
+  async function adminLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try { await fbAuth.signInWithPopup(provider); }
+    catch(e) { console.error(e); }
+  }
+
+  async function loadUsers() {
+    document.getElementById('userTable').innerHTML = '<tr><td colspan="7" class="loading">Loading…</td></tr>';
+    try {
+      const snap = await fbDb.collection('users').orderBy('createdAt', 'desc').get();
+      allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderStats();
+      filterUsers();
+    } catch(e) {
+      document.getElementById('userTable').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
+    }
+  }
+
+  function renderStats() {
+    const total = allUsers.length;
+    const images = allUsers.reduce((s, u) => s + (u.imagesUsedAllTime || 0), 0);
+    const paid = allUsers.filter(u => u.plan && u.plan !== 'free').length;
+    const free = allUsers.filter(u => !u.plan || u.plan === 'free').length;
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statImages').textContent = images.toLocaleString();
+    document.getElementById('statPaid').textContent = paid;
+    document.getElementById('statFree').textContent = free;
+  }
+
+  function setPlanFilter(plan, btn) {
+    planFilter = plan;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterUsers();
+  }
+
+  function filterUsers() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    let list = allUsers;
+    if (planFilter !== 'all') list = list.filter(u => (u.plan || 'free') === planFilter);
+    if (q) list = list.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
+    renderTable(list);
+  }
+
+  function renderTable(users) {
+    if (!users.length) {
+      document.getElementById('userTable').innerHTML = '<tr><td colspan="7" class="empty">No users found.</td></tr>';
+      return;
+    }
+    document.getElementById('userTable').innerHTML = users.map(u => {
+      const plan = u.plan || 'free';
+      const used = u.imagesUsed || 0;
+      const allowance = u.imagesAllowance || 15;
+      const pct = Math.min(used / allowance * 100, 100);
+      const fillClass = pct >= 100 ? 'full' : pct >= 70 ? 'warn' : '';
+      const avatarHtml = u.photoURL
+        ? `<img class="avatar" src="${u.photoURL}" referrerpolicy="no-referrer">`
+        : `<div class="avatar-ph">${(u.name||'?')[0].toUpperCase()}</div>`;
+      const provider = u.provider === 'facebook.com' ? '🔵 Facebook' : '🔴 Google';
+      const joined = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
+      const lastLogin = u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleDateString() : '—';
+      return `<tr onclick="showDetail('${u.id}')" style="cursor:pointer">
+        <td><div class="name-cell">${avatarHtml}<div><div style="font-weight:700">${esc(u.name||'—')}</div><div style="font-size:0.75rem;color:var(--muted)">${esc(u.email||'')}</div></div></div></td>
+        <td><span class="provider-icon">${provider}</span></td>
+        <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+        <td><div class="usage-bar-wrap"><div class="usage-bar"><div class="usage-fill ${fillClass}" style="width:${pct}%"></div></div><span class="usage-text">${used}/${allowance}</span></div></td>
+        <td style="font-weight:700">${(u.imagesUsedAllTime||0).toLocaleString()}</td>
+        <td style="color:var(--muted)">${joined}</td>
+        <td style="color:var(--muted)">${lastLogin}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function showDetail(uid) {
+    const u = allUsers.find(x => x.id === uid);
+    if (!u) return;
+    document.getElementById('detailName').textContent = u.name || u.email || 'User';
+    const rows = [
+      ['Email', u.email || '—'],
+      ['UID', `<span style="font-size:0.75rem;font-family:monospace">${uid}</span>`],
+      ['Plan', `<span class="plan-badge plan-${u.plan||'free'}">${u.plan||'free'}</span>`],
+      ['Images this period', `${u.imagesUsed||0} / ${u.imagesAllowance||15}`],
+      ['All-time images', (u.imagesUsedAllTime||0).toLocaleString()],
+      ['Plan renewal', u.planRenewalDate?.toDate ? u.planRenewalDate.toDate().toLocaleDateString() : '—'],
+      ['Joined', u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : '—'],
+      ['Last login', u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleString() : '—'],
+    ];
+    document.getElementById('detailBody').innerHTML = rows.map(([k,v]) =>
+      `<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`
+    ).join('');
+    document.getElementById('detailOverlay').classList.add('open');
+  }
+
+  function closeDetail() {
+    document.getElementById('detailOverlay').classList.remove('open');
+  }
+
+  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
