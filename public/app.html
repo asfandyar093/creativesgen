@@ -938,12 +938,21 @@ function showAuthError(msg) {
   setTimeout(()=>el.style.display='none', 5000);
 }
 
+async function handleSignIn(user) {
+  try {
+    const data = await ensureUserDoc(user);
+    initApp(user, data);
+  } catch(e) {
+    // Firestore failed — still open app with defaults
+    initApp(user, { imagesUsed: 0, imagesAllowance: 15, plan: 'free' });
+  }
+}
 async function doGoogleSignIn() {
   setAuthBusy(true);
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    await fbAuth.signInWithPopup(provider);
-    window.location.reload();
+    const result = await fbAuth.signInWithPopup(provider);
+    await handleSignIn(result.user);
   } catch(e) {
     setAuthBusy(false);
     if (e.code !== 'auth/popup-closed-by-user') showAuthError(e.message || 'Sign-in failed. Try again.');
@@ -953,8 +962,8 @@ async function doFacebookSignIn() {
   setAuthBusy(true);
   try {
     const provider = new firebase.auth.FacebookAuthProvider();
-    await fbAuth.signInWithPopup(provider);
-    window.location.reload();
+    const result = await fbAuth.signInWithPopup(provider);
+    await handleSignIn(result.user);
   } catch(e) {
     setAuthBusy(false);
     if (e.code === 'auth/account-exists-with-different-credential') {
@@ -1812,11 +1821,10 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Keyboard shortcut
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')adsGenerate();else websiteGenerate();}});
 
-  // Firebase auth state listener
+  // Firebase auth state listener — handles returning users on page load
   fbAuth.onAuthStateChanged(async user => {
     if (user) {
-      const data = await ensureUserDoc(user);
-      initApp(user, data);
+      await handleSignIn(user);
     } else {
       currentUser = null; userData = null;
       document.getElementById('accountModal').classList.remove('hidden');
