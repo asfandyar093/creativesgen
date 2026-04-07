@@ -1878,13 +1878,30 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Keyboard shortcut
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')adsGenerate();else websiteGenerate();}});
 
-  // Firebase auth state listener — handles returning users on page load
+  // Hide login modal on load — Firebase needs a moment to restore session
+  document.getElementById('accountModal').classList.add('hidden');
+
+  // Firebase auth state — fires once Firebase resolves persisted session
+  let authResolved = false;
   fbAuth.onAuthStateChanged(async user => {
     if (user) {
+      authResolved = true;
       await handleSignIn(user);
     } else {
-      currentUser = null; userData = null;
-      document.getElementById('accountModal').classList.remove('hidden');
+      // Only show login if this is a genuine logged-out state (not initial load delay)
+      if (!authResolved) {
+        // Give Firebase one extra tick to restore from localStorage
+        setTimeout(() => {
+          if (!authResolved) {
+            currentUser = null; userData = null;
+            document.getElementById('accountModal').classList.remove('hidden');
+          }
+        }, 1000);
+      } else {
+        currentUser = null; userData = null;
+        document.getElementById('accountModal').classList.remove('hidden');
+      }
+      authResolved = true;
     }
   });
 });
