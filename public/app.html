@@ -28,7 +28,20 @@
       const snap = await ref.get();
       if (!snap.exists) {
         const renewal = new Date(); renewal.setDate(renewal.getDate()+30);
-        await ref.set({ email:user.email, name:user.displayName, photoURL:user.photoURL, plan:'free', imagesAllowance:15, imagesUsed:0, imagesUsedAllTime:0, createdAt:firebase.firestore.FieldValue.serverTimestamp(), lastLoginAt:firebase.firestore.FieldValue.serverTimestamp(), planRenewalDate:renewal });
+        // Check if admin pre-authorized this email with a paid plan
+        let plan = 'free', allowance = 15;
+        try {
+          const docId = (user.email||'').toLowerCase().replace(/[.#$[\]]/g,'_');
+          const pa = await fbDb.collection('preauth').doc(docId).get();
+          if (pa.exists && !pa.data().claimed) {
+            plan = pa.data().plan || 'free';
+            const PLAN_ALLOWANCE = { free:15, starter:200, pro:1000, agency:5000, enterprise:15000 };
+            allowance = PLAN_ALLOWANCE[plan] || 15;
+            // Mark preauth as claimed
+            await fbDb.collection('preauth').doc(docId).update({ claimed:true, claimedAt:firebase.firestore.FieldValue.serverTimestamp(), claimedUid:user.uid });
+          }
+        } catch(e) { /* preauth check failed silently, proceed with free */ }
+        await ref.set({ email:user.email, name:user.displayName, photoURL:user.photoURL, provider:user.providerData[0]?.providerId||'google.com', plan, imagesAllowance:allowance, imagesUsed:0, imagesUsedAllTime:0, createdAt:firebase.firestore.FieldValue.serverTimestamp(), lastLoginAt:firebase.firestore.FieldValue.serverTimestamp(), planRenewalDate:firebase.firestore.Timestamp.fromDate(renewal) });
       } else {
         await ref.update({ lastLoginAt:firebase.firestore.FieldValue.serverTimestamp() });
       }
@@ -298,6 +311,75 @@
     .spinner-sm { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(91,94,244,.3); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ═══ TOAST NOTIFICATIONS ═══ */
+    #toastContainer { position:fixed; bottom:24px; right:24px; z-index:999; display:flex; flex-direction:column-reverse; gap:10px; pointer-events:none; }
+    .toast { background:#1f2937; color:#fff; padding:12px 18px; border-radius:12px; font-size:0.84rem; font-weight:600; box-shadow:0 6px 24px rgba(0,0,0,.28); display:flex; align-items:center; gap:10px; pointer-events:all; animation:toastIn .25s ease; max-width:320px; }
+    .toast.success { background:#065f46; border-left:4px solid #10b981; }
+    .toast.error { background:#7f1d1d; border-left:4px solid #ef4444; }
+    .toast.info { background:#1e1b4b; border-left:4px solid #6366f1; }
+    @keyframes toastIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ═══ IMAGE PREVIEW MODAL ═══ */
+    #previewOverlay { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:800; display:none; align-items:center; justify-content:center; backdrop-filter:blur(12px); }
+    #previewOverlay.show { display:flex; }
+    .preview-box { position:relative; max-width:92vw; max-height:92vh; }
+    .preview-box img { max-width:92vw; max-height:92vh; border-radius:12px; box-shadow:0 24px 80px rgba(0,0,0,.5); object-fit:contain; display:block; }
+    .preview-close { position:absolute; top:-14px; right:-14px; width:36px; height:36px; background:rgba(255,255,255,.15); border:2px solid rgba(255,255,255,.25); border-radius:50%; color:#fff; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+    .preview-actions { position:absolute; bottom:-50px; left:50%; transform:translateX(-50%); display:flex; gap:10px; }
+    .preview-btn { padding:8px 18px; background:rgba(255,255,255,.15); border:1.5px solid rgba(255,255,255,.3); border-radius:99px; color:#fff; font-size:0.82rem; font-weight:700; cursor:pointer; backdrop-filter:blur(4px); transition:background .15s; white-space:nowrap; }
+    .preview-btn:hover { background:rgba(255,255,255,.28); }
+
+    /* ═══ CONCEPT CARDS (Ads) ═══ */
+    .concept-panel { padding:24px 28px; display:none; flex-direction:column; gap:0; }
+    .concept-panel.show { display:flex; }
+    .cp-header { margin-bottom:22px; }
+    .cp-header h2 { font-size:1.15rem; font-weight:900; margin-bottom:5px; }
+    .cp-header p { font-size:0.88rem; color:var(--muted); }
+    .cp-header .cp-sub { font-size:0.78rem; color:var(--light); margin-top:4px; display:flex; align-items:center; gap:6px; }
+    .concepts-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:24px; }
+    .concept-card { background:var(--surface); border:2px solid var(--border); border-radius:14px; padding:18px 16px; cursor:pointer; transition:all .18s; position:relative; }
+    .concept-card:hover { border-color:var(--pink); transform:translateY(-2px); box-shadow:0 6px 24px rgba(236,72,153,.15); }
+    .concept-card.selected { border-color:var(--pink); background:var(--pink-l); box-shadow:0 0 0 3px rgba(236,72,153,.2); }
+    .concept-card.selected .cc-check { display:flex; }
+    .cc-check { position:absolute; top:10px; right:10px; width:22px; height:22px; background:var(--pink); border-radius:50%; color:#fff; font-size:12px; display:none; align-items:center; justify-content:center; }
+    .cc-emoji { font-size:1.6rem; margin-bottom:9px; }
+    .cc-title { font-size:0.92rem; font-weight:800; margin-bottom:5px; color:var(--text); }
+    .cc-desc { font-size:0.78rem; color:var(--muted); line-height:1.5; }
+    .cc-tag { display:inline-block; font-size:0.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; padding:3px 8px; border-radius:99px; background:var(--pink-l); color:var(--pink); margin-top:8px; }
+    .concept-card.selected .cc-tag { background:rgba(236,72,153,.25); }
+    .cp-actions { display:flex; gap:10px; align-items:center; }
+    .btn-generate-now { flex:1; padding:14px; background:linear-gradient(135deg,var(--pink),#f97316); border:none; border-radius:var(--radius); color:#fff; font-size:0.97rem; font-weight:900; cursor:pointer; transition:all .15s; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:8px; }
+    .btn-generate-now:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 24px rgba(236,72,153,.4); }
+    .btn-generate-now:disabled { opacity:.5; cursor:not-allowed; }
+    .btn-back-brief { padding:14px 18px; background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); color:var(--muted); font-size:0.88rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; }
+    .btn-back-brief:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* ═══ COMPETITOR RESEARCH ═══ */
+    .intel-box { background:linear-gradient(135deg,#1e1b4b,#1a0533); border-radius:12px; padding:16px; margin-top:10px; border:1.5px solid rgba(91,94,244,.3); }
+    .intel-box p { font-size:0.82rem; color:#94a3b8; line-height:1.6; }
+    .intel-box strong { color:#a5b4fc; }
+    .intel-chips { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+    .intel-chip { font-size:0.72rem; font-weight:700; padding:4px 11px; border-radius:99px; background:rgba(91,94,244,.2); color:#a5b4fc; border:1px solid rgba(91,94,244,.3); }
+    .intel-chip.pink { background:rgba(236,72,153,.2); color:#f9a8d4; border-color:rgba(236,72,153,.3); }
+    .intel-chip.green { background:rgba(16,185,129,.2); color:#6ee7b7; border-color:rgba(16,185,129,.3); }
+    .btn-research { width:100%; padding:10px; background:linear-gradient(135deg,var(--accent),var(--pink)); border:none; border-radius:var(--radius); color:#fff; font-size:0.84rem; font-weight:800; cursor:pointer; font-family:inherit; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:7px; margin-top:10px; }
+    .btn-research:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 16px rgba(91,94,244,.35); }
+    .btn-research:disabled { opacity:.5; cursor:not-allowed; }
+    .research-badge { display:inline-flex; align-items:center; gap:5px; font-size:0.7rem; font-weight:800; color:var(--green); background:var(--green-l); padding:3px 9px; border-radius:99px; border:1px solid var(--green-m); margin-bottom:8px; }
+
+    /* ═══ SMART BRIEF (AI Quick Fill) ═══ */
+    .btn-smartfill { width:100%; padding:10px; background:var(--surface2); border:2px dashed var(--border2); border-radius:var(--radius); color:var(--muted); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .15s; display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:14px; }
+    .btn-smartfill:hover { border-color:var(--accent); color:var(--accent); background:var(--accent-l); }
+
+    /* ═══ INDUSTRY INSIGHTS ═══ */
+    .insights-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+    .insight-pill { font-size:0.72rem; font-weight:700; padding:4px 10px; border-radius:99px; background:var(--accent-l); color:var(--accent); border:1.5px solid var(--accent-m); cursor:pointer; transition:all .15s; }
+    .insight-pill:hover { background:var(--accent); color:#fff; }
+    .insight-pill.pink { background:var(--pink-l); color:var(--pink); border-color:#f9a8d4; }
+    .insight-pill.pink:hover { background:var(--pink); color:#fff; }
+    .insight-pill.green { background:var(--green-l); color:var(--green); border-color:var(--green-m); }
+    .insight-pill.green:hover { background:var(--green); color:#fff; }
+
     /* ═══ CHAT DRAWER ═══ */
     .chat-drawer { position: fixed; right: 0; top: 72px; bottom: 0; width: var(--chat-w); background: var(--surface); border-left: 1.5px solid var(--border); transform: translateX(100%); transition: transform .3s cubic-bezier(.4,0,.2,1); z-index: 45; display: flex; flex-direction: column; box-shadow: -6px 0 32px rgba(0,0,0,.1); }
     .chat-drawer.open { transform: translateX(0); }
@@ -541,10 +623,21 @@
         <hr class="divider" />
         <div class="sec">
           <div class="sec-title">2 · Topic / Goal</div>
+          <button class="btn-smartfill" onclick="smartFillSocial()">✨ AI Quick-Fill — describe your goal, I'll fill the rest</button>
           <div class="field">
             <label>Describe your post topic</label>
             <textarea id="s-topic" rows="3" placeholder="e.g. 5 tips for local service businesses to get more Google reviews and grow faster"></textarea>
             <p class="hint">Be specific — the more context you give, the better the AI output.</p>
+          </div>
+          <div class="field">
+            <label>Competitors / Accounts to beat <span class="opt-tag">Optional</span></label>
+            <input type="text" id="s-competitors" placeholder="e.g. @nike, @hubspot, competitor brand names" />
+            <button class="btn-research" style="margin-top:8px;" id="s-researchBtn" onclick="runSocialIntelligence()">🔬 Get Industry Insights &amp; Trending Angles</button>
+            <div id="s-intel-box" style="display:none;margin-top:8px;" class="intel-box">
+              <div class="research-badge">✓ Insights Ready</div>
+              <p id="s-intel-text"></p>
+              <div class="insights-row" id="s-insight-pills"></div>
+            </div>
           </div>
           <div class="field">
             <label>Style Inspiration <span class="opt-tag">Optional</span></label>
@@ -626,7 +719,7 @@
           </div>
           <div class="field"><label>Image Model</label>
             <select id="s-model">
-              <option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option>
+              <option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option>
               <option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option>
               <option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option>
               <option value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra (best quality)</option>
@@ -643,14 +736,14 @@
     <main class="main-area" id="s-main">
       <div class="empty-state" id="s-empty">
         <div class="e-icon">📱</div>
-        <h2>Create stunning social media content</h2>
-        <p>Choose a post type, describe your topic, and AI writes all the copy and generates beautiful on-brand images — ready to post.</p>
+        <h2>Create posts that actually go viral</h2>
+        <p>Describe your topic, get industry intelligence, and AI writes copy + generates high-engagement images in your brand's style — ready to post.</p>
         <div class="step-pills">
           <div class="step-pill"><div class="sn">1</div>Choose type &amp; topic</div>
-          <div class="step-pill"><div class="sn">2</div>AI writes slide copy</div>
-          <div class="step-pill"><div class="sn">3</div>Generate &amp; download</div>
+          <div class="step-pill"><div class="sn">2</div>Get industry insights</div>
+          <div class="step-pill"><div class="sn">3</div>Generate &amp; post</div>
         </div>
-        <p style="font-size:0.78rem;color:var(--light);margin-top:20px;">💡 Tip: Open <strong>AI Chat</strong> to edit images after generation</p>
+        <p style="font-size:0.78rem;color:var(--light);margin-top:20px;">💡 Try <strong>Industry Insights</strong> → get trending angles for your niche • Double-click any image to preview full size</p>
       </div>
       <div class="plan-view" id="s-plan">
         <div class="pv-header">
@@ -704,6 +797,7 @@
         <hr class="divider" />
         <div class="sec">
           <div class="sec-title">3 · Ad Brief</div>
+          <button class="btn-smartfill" onclick="smartFillAds()">✨ AI Quick-Fill — just tell me what you're selling</button>
           <div class="field"><label>Ad Objective</label>
             <select id="a-objective">
               <option value="brand awareness and reach">Brand Awareness</option>
@@ -715,7 +809,7 @@
               <option value="retargeting warm audience">Retargeting</option>
             </select>
           </div>
-          <div class="field"><label>What are you advertising?</label><input id="a-product" type="text" placeholder="e.g. 30% off lawn care services this spring" /></div>
+          <div class="field"><label>What are you advertising?</label><input id="a-product" type="text" placeholder="e.g. 30% off lawn care services this spring" oninput="clearCompetitorIntel()" /></div>
           <div class="field"><label>Headline <span class="opt-tag">Optional — AI generates if blank</span></label><input id="a-headline" type="text" placeholder="e.g. Transform Your Lawn This Spring" /></div>
           <div class="field"><label>Body Copy <span class="opt-tag">Optional — AI generates if blank</span></label><textarea id="a-body" rows="2" placeholder="e.g. Professional lawn care starting at $49..."></textarea></div>
           <div class="field"><label>CTA Button Text</label>
@@ -726,6 +820,23 @@
           <div class="field"><label>Example Ad <span class="opt-tag">Optional</span></label>
             <div class="upload-zone" id="a-exZone"><input type="file" accept="image/*" onchange="handleExampleImage(this,'a')" /><div class="uz-icon">🖼️</div><p><strong>Upload</strong> an ad you like</p></div>
             <div class="logo-preview" id="a-exPreview"><img id="a-exImg" src="" alt="" /><button class="logo-remove" onclick="removeExample('a')">✕</button></div>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="sec">
+          <div class="sec-title">🔍 Competitor Research <span>(Optional — makes ads smarter)</span></div>
+          <div class="field">
+            <label>Competitor Names <span class="opt-tag">Separate with commas</span></label>
+            <input id="a-competitors" type="text" placeholder="e.g. HomeAdvisor, TaskRabbit, Thumbtack" />
+            <p class="hint">AI researches their positioning to help you stand out and outperform them.</p>
+          </div>
+          <button class="btn-research" id="a-researchBtn" onclick="runCompetitorResearch()">
+            🔬 Research Competitors &amp; Industry
+          </button>
+          <div id="a-intel-box" style="display:none;" class="intel-box">
+            <div class="research-badge">✓ Research Complete</div>
+            <p id="a-intel-text"></p>
+            <div class="intel-chips" id="a-intel-chips"></div>
           </div>
         </div>
         <hr class="divider" />
@@ -751,33 +862,59 @@
             </select>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="a-model"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option><option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option><option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option></select>
+            <select id="a-model"><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="imagen-4.0-generate-001">CreativesGen Vision (higher quality)</option><option value="imagen-4.0-fast-generate-001">CreativesGen Vision Fast</option></select>
           </div>
         </div>
       </div>
       <div class="sb-footer">
         <div id="a-status" class="status-msg"></div>
         <div id="a-progress" class="progress-bar"><div id="a-pfill" class="progress-fill"></div></div>
-        <button class="btn-go" id="a-genBtn" onclick="adsGenerate()">🎯 Generate Ad Creatives</button>
+        <button class="btn-go" id="a-genBtn" style="background:linear-gradient(135deg,#ec4899,#f97316)" onclick="showConceptPicker()">💡 Choose Ad Concept &amp; Generate</button>
       </div>
     </aside>
     <main class="main-area" id="a-main">
       <div class="empty-state" id="a-empty">
         <div class="e-icon">📣</div>
-        <h2>Generate professional ad creatives</h2>
-        <p>Choose Meta or Google, select your sizes, fill in your brief, and AI generates ready-to-use ads for every size.</p>
+        <h2>Create ads that actually convert</h2>
+        <p>Fill your brief, pick a creative concept, and AI generates platform-ready ads in every size — with competitor and industry intelligence built in.</p>
         <div class="step-pills">
-          <div class="step-pill"><div class="sn">1</div>Choose platform &amp; sizes</div>
-          <div class="step-pill"><div class="sn">2</div>Fill ad brief</div>
-          <div class="step-pill"><div class="sn">3</div>Download all sizes</div>
+          <div class="step-pill"><div class="sn">1</div>Set platform &amp; brief</div>
+          <div class="step-pill"><div class="sn">2</div>Research competitors</div>
+          <div class="step-pill"><div class="sn">3</div>Pick concept &amp; generate</div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--light);margin-top:20px;">💡 Tip: Use <strong>Competitor Research</strong> to automatically differentiate your ads</p>
+      </div>
+
+      <!-- CONCEPT PICKER -->
+      <div class="concept-panel" id="a-concepts">
+        <div class="cp-header">
+          <h2>🎨 Choose Your Ad Concept</h2>
+          <p>Select the creative direction that best fits your campaign. Each concept uses a proven advertising psychology framework.</p>
+          <div class="cp-sub" id="a-concept-sub"><span>Based on your brief and</span><span id="a-concept-intel-note" style="color:var(--green);font-weight:700;"></span></div>
+        </div>
+        <div class="concepts-grid" id="a-conceptsGrid"></div>
+        <div class="cp-actions">
+          <button class="btn-back-brief" onclick="showAdView('empty')">← Back to Brief</button>
+          <button class="btn-generate-now" id="a-conceptGenBtn" onclick="adsGenerateWithConcept()">
+            <span class="spinner" id="a-cg-spinner" style="display:none;"></span>
+            🎯 Generate Ad Creatives
+          </button>
         </div>
       </div>
+
       <div class="results-view" id="a-results">
         <div class="rv-header">
-          <div><h2 id="a-resTitle">Your Ad Creatives</h2><span id="a-resSub"></span></div>
-          <div class="rv-actions"><button class="btn-outline" onclick="downloadAll('a')">⬇ Download ZIP</button></div>
+          <div>
+            <h2 id="a-resTitle">Your Ad Creatives</h2>
+            <span id="a-resSub"></span>
+            <span id="a-res-concept" style="font-size:0.75rem;color:var(--pink);font-weight:700;margin-top:3px;display:block;"></span>
+          </div>
+          <div class="rv-actions">
+            <button class="btn-outline" onclick="showAdView('concepts')">↺ New Concept</button>
+            <button class="btn-outline" onclick="downloadAll('a')">⬇ Download ZIP</button>
+          </div>
         </div>
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any ad to select it, then use AI Chat to request changes.</p>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any ad to preview, then use AI Chat to request changes.</p>
         <div class="image-grid" id="a-grid"></div>
       </div>
     </main>
@@ -813,8 +950,19 @@
         <hr class="divider" />
         <div class="sec">
           <div class="sec-title">2 · Page Content</div>
+          <button class="btn-smartfill" onclick="smartFillWebsite()">✨ AI Quick-Fill — describe your website, I'll handle the rest</button>
           <div class="field"><label>Page Headline or Key Message</label><input id="w-headline" type="text" placeholder="e.g. Professional Lawn Care for a Perfect Yard" /></div>
           <div class="field"><label>Page Copy <span class="opt-tag">Optional — paste your content</span></label><textarea id="w-copy" rows="4" placeholder="e.g. We provide reliable, eco-friendly lawn care for homeowners in the Dallas area..."></textarea><p class="hint">AI uses this context to create more relevant, on-brand images.</p></div>
+          <div class="field">
+            <label>Competitor Websites <span class="opt-tag">Optional — for visual differentiation</span></label>
+            <input id="w-competitors" type="text" placeholder="e.g. Stripe, Notion, Shopify" />
+            <button class="btn-research" style="margin-top:8px;" id="w-researchBtn" onclick="runWebsiteIntelligence()">🔬 Research Industry Visual Style</button>
+            <div id="w-intel-box" style="display:none;margin-top:8px;" class="intel-box">
+              <div class="research-badge">✓ Visual Intel Ready</div>
+              <p id="w-intel-text"></p>
+              <div class="intel-chips" id="w-intel-chips"></div>
+            </div>
+          </div>
           <div class="field"><label>Images per Format</label><div class="slider-row"><input type="range" id="w-count" min="1" max="6" value="2" oninput="document.getElementById('w-countVal').textContent=this.value;updateWebTotal()" /><div class="slider-val" id="w-countVal">2</div></div><p class="hint" id="w-totalHint">Total: 4 images (2 formats × 2 each)</p></div>
         </div>
         <hr class="divider" />
@@ -860,7 +1008,7 @@
             <div id="w-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'w-c1','w-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'w-c2','w-h2')" /></div></div>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="w-model"><option value="gemini-2.5-flash-image">Gemini 2.5 Flash (recommended)</option><option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option><option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option></select>
+            <select id="w-model"><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="imagen-4.0-generate-001">CreativesGen Vision (higher quality)</option><option value="imagen-4.0-fast-generate-001">CreativesGen Vision Fast</option></select>
           </div>
         </div>
       </div>
@@ -893,6 +1041,22 @@
   </div>
 
 </div><!-- /app -->
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+
+<!-- IMAGE PREVIEW MODAL -->
+<div id="previewOverlay" onclick="closePreview(event)">
+  <div class="preview-box" id="previewBox">
+    <button class="preview-close" onclick="closePreviewNow()">✕</button>
+    <img id="previewImg" src="" alt="Preview" />
+    <div class="preview-actions">
+      <button class="preview-btn" id="previewDlBtn">⬇ Download</button>
+      <button class="preview-btn" id="previewEditBtn">✎ Edit in Chat</button>
+      <button class="preview-btn" onclick="closePreviewNow()">✕ Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- CHAT DRAWER -->
 <div class="chat-drawer" id="chatDrawer">
@@ -1134,7 +1298,8 @@ function switchTool(tool) {
 // VIEW MANAGEMENT
 // ════════════════════════════════════════
 function showView(prefix,view) {
-  const views={s:['empty','plan','results'],a:['empty','results'],w:['empty','results']};
+  if(prefix==='a'){showAdView(view);return;}
+  const views={s:['empty','plan','results'],w:['empty','results']};
   (views[prefix]||['empty','results']).forEach(v=>{const el=document.getElementById(`${prefix}-${v}`);if(el) el.style.display=(v===view)?(v==='plan'?'flex':'block'):'none';});
   if(prefix==='s'&&view==='empty') document.getElementById('s-empty').style.display='flex';
 }
@@ -1258,10 +1423,13 @@ ${isCTA ? '═══ CTA RULES ═══\nACTION: The CTA button/element must be
 ${avoid ? `DO NOT include: ${avoid}` : ''}
 ${logos['s'] ? 'Brand logo provided as reference — incorporate its aesthetic, place subtly in corner' : ''}
 ${examples['s'] ? 'Style reference image provided — match this visual language and aesthetic closely' : ''}
+${socialIntel ? `
+═══ INDUSTRY INTELLIGENCE ═══
+${(()=>{ try{ const d=JSON.parse(socialIntel); return `What drives engagement in this space: ${d.summary||''}\nEngagement triggers to activate: ${(d.engagementTriggers||[]).join(', ')}`; }catch{ return ''; } })()}` : ''}
 Slide ${idx+1} of ${count} — ensure visual consistency with the series.`;
 }
 
-function buildAdPrompt(product, sizeInfo, platform, objective, headline, bodyCopy, cta, audience, style, colors, brand, inspir) {
+function buildAdPrompt(product, sizeInfo, platform, objective, headline, bodyCopy, cta, audience, style, colors, brand, inspir, concept, intelData) {
   const platformRules = platform==='meta'
     ? `META ADS RULES:
 - Mobile-first: 67% of Meta impressions are mobile — design for thumb-stopping impact
@@ -1276,7 +1444,51 @@ function buildAdPrompt(product, sizeInfo, platform, objective, headline, bodyCop
 - Professional credibility: Clean, trustworthy, polished corporate aesthetic
 - CTA button: Highly visible, contrasting color, clear action text`;
 
-  return `You are a conversion-focused advertising creative director. Create a high-performing ${platform==='meta'?'Meta (Facebook/Instagram)':'Google Display'} advertisement.
+  const conceptInstructions = concept ? `
+
+═══ CREATIVE CONCEPT: ${concept.title.toUpperCase()} ═══
+${concept.desc}
+CONCEPT EXECUTION RULES:
+${concept.id==='problem_solution' ? `- Open visually with the PAIN POINT (use dark/heavy elements, stressed body language, or problem imagery)
+- Transition sharply to the SOLUTION (bright, clean, relief, transformation)
+- The visual contrast between problem and solution MUST be immediately obvious
+- Headline carries the pain → product carries the relief` : ''}
+${concept.id==='social_proof' ? `- Lead with a big, bold number or testimonial result ("10,000+ customers", "★★★★★", "97% success rate")
+- Use trust signals: star ratings, user counts, logos of known brands, or a direct quote
+- Face/person in the ad (if applicable) adds credibility — show satisfaction, not effort
+- The proof statement must be the most visually dominant element after the brand` : ''}
+${concept.id==='lifestyle' ? `- Show the ASPIRATIONAL OUTCOME — the life the customer will have, not the product features
+- Use rich lifestyle photography aesthetic — warm, beautiful, premium, desirable
+- The product should feel like a natural part of the lifestyle shown
+- Evoke emotion first, product second — the feeling sells` : ''}
+${concept.id==='urgency_offer' ? `- SCARCITY and TIME PRESSURE are the #1 visual elements — bold timer, "TODAY ONLY", limited badge
+- Make the offer impossible to miss: big discount % or specific benefit in dominant typography
+- Use high-energy, urgent color palette (red accents, bold contrasts)
+- Every element should feel like it needs to be acted on RIGHT NOW` : ''}
+${concept.id==='before_after' ? `- Create clear visual contrast between a "before" state (problem, plain, old) and "after" state (better, beautiful, solved)
+- Strong dividing line or split composition separating the two states
+- Before should look recognizably relatable; after should look aspirationally desirable
+- The transformation gap should be striking and obvious at a glance` : ''}
+${concept.id==='feature_benefit' ? `- Feature is the mechanism, benefit is what it gives the customer — lead with BENEFIT
+- Clean, technical, confident design — like a product reveal
+- Use an icon or visual representation of the specific feature
+- The benefit statement should be specific and measurable if possible` : ''}
+${concept.id==='curiosity_hook' ? `- The visual must be UNEXPECTED — subvert the viewer's expectations for this industry
+- Use bold, unusual composition, provocative question, or visual paradox
+- Do NOT show the full product or answer immediately — create a curiosity gap
+- The ad should make people stop and think "wait, what is this?" before showing the answer` : ''}` : '';
+
+  const intelInstructions = intelData ? `
+
+═══ COMPETITOR INTELLIGENCE ═══
+Industry Insight: ${intelData.summary||''}
+Winning Angles (use these): ${(intelData.winningAngles||[]).join(', ')}
+Competitor Weaknesses (avoid these patterns): ${(intelData.competitorWeaknesses||[]).join(', ')}
+Emotional Trigger to activate: ${intelData.emotionalTrigger||''}
+Visual differentiation: ${intelData.differentiationOpportunity||''}
+IMPORTANT: Create an ad that DELIBERATELY differentiates from competitor patterns while activating the key emotional trigger.` : '';
+
+  return `You are a conversion-focused advertising creative director with 15+ years at top agencies. Create a high-performing ${platform==='meta'?'Meta (Facebook/Instagram)':'Google Display'} advertisement.
 
 ═══ AD SPECIFICATIONS ═══
 Size: ${sizeInfo.label} — ${sizeInfo.dim}
@@ -1297,17 +1509,19 @@ Visual style: ${style}
 ${inspir ? `Style inspiration: ${inspir}` : ''}
 Colors — Primary: ${colors.primary} | Secondary: ${colors.secondary} | Background: ${colors.bg}
 Design standard: Premium ad creative — matches quality of Fortune 500 advertising
+${conceptInstructions}
+${intelInstructions}
 
 ═══ PLATFORM OPTIMIZATION ═══
 ${platformRules}
 
-═══ CONVERSION PSYCHOLOGY ═══
+═══ CONVERSION PSYCHOLOGY (AIDA) ═══
 Attention: Interrupt the scroll with the strongest possible visual element
 Interest: Make the headline spark immediate relevance to the audience's desire
 Desire: Show or suggest the outcome/transformation the product delivers
 Action: Make "${cta}" feel like the obvious next step
 
-This is a DESIGNED GRAPHIC — not a plain photo. Professional typography, strong visual hierarchy, brand-aligned composition.
+This is a DESIGNED GRAPHIC — not a plain photo. Professional typography, strong visual hierarchy, brand-aligned composition. Every pixel should serve conversion.
 ${logos['a'] ? 'Brand logo provided — include prominently and professionally' : ''}
 ${examples['a'] ? 'Reference ad provided — closely match this visual style and approach' : ''}`;
 }
@@ -1359,7 +1573,10 @@ CRITICAL RULES:
 6. Visual consistency with other images in this set — same mood, palette, and quality level
 
 ${logos['w'] ? 'Brand logo provided for style reference — use its color language and aesthetic throughout' : ''}
-${examples['w'] ? 'Example website image provided — closely match this visual language and quality' : ''}`;
+${examples['w'] ? 'Example website image provided — closely match this visual language and quality' : ''}
+${websiteIntel ? `
+═══ INDUSTRY VISUAL INTELLIGENCE ═══
+${(()=>{ try{ const d=JSON.parse(websiteIntel); return `Differentiation strategy: ${d.differentiationOpportunity||''}\nRecommended approach: ${d.recommendedStyle||''}`; }catch{ return ''; } })()}` : ''}`;
 }
 
 // ════════════════════════════════════════
@@ -1480,8 +1697,8 @@ async function socialGenerateImages() {
   }
   document.getElementById('s-resTitle').textContent=`Your ${config.label}`;
   document.getElementById('s-resSub').textContent=`${done}/${count} generated · ${ratios['s']}`;
-  if(errors.length===0){setStatus('s',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');saveBrandMemory();}
-  else setStatus('s',`${done}/${count} done. Slides ${errors.join(', ')} failed — retry in the grid.`,'error');
+  if(errors.length===0){setStatus('s',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');saveBrandMemory();showToast(`${done} slide${done>1?'s':''} generated!`,'success');}
+  else setStatus('s',`${done}/${count} done. Slides ${errors.join(', ')} failed — retry in the grid.`,'error');if(errors.length)showToast(`${errors.length} slide${errors.length>1?'s':''} failed. Tap retry.`,'error');
   setProgress('s',null);btn.disabled=false;btn.innerHTML='🎨 Generate Images';
 }
 async function retrySocialSlide(idx) {
@@ -1499,46 +1716,6 @@ async function retrySocialSlide(idx) {
   }catch(err){markError('s',idx,err.message,()=>retrySocialSlide(idx));setStatus('s',`Retry failed: ${err.message}`,'error');}
 }
 
-// ════════════════════════════════════════
-// ADS — GENERATE
-// ════════════════════════════════════════
-async function adsGenerate() {
-  const product=document.getElementById('a-product').value.trim();
-  if(!product){setStatus('a','Describe what you are advertising.','error');return;}
-  if(selectedAdSizes.size===0){setStatus('a','Select at least one ad size.','error');return;}
-  const sizesToGen=[...selectedAdSizes];
-  if(!canGenerate(sizesToGen.length)){showPaywall();return;}
-  const btn=document.getElementById('a-genBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
-  const model=document.getElementById('a-model').value;const style=document.getElementById('a-style').value;
-  const brand={name:document.getElementById('a-brand').value.trim(),industry:document.getElementById('a-industry').value.trim()};
-  const colors=getColors('a');const objective=document.getElementById('a-objective').value;
-  const headline=document.getElementById('a-headline').value.trim();const bodyCopy=document.getElementById('a-body').value.trim();
-  const cta=document.getElementById('a-cta').value;const audience=document.getElementById('a-audience').value.trim();
-  const inspir=document.getElementById('a-inspiration').value.trim();
-  generatedImages['a']=new Array(sizesToGen.length).fill(null);generatedPrompts['a']=new Array(sizesToGen.length).fill('');
-  showView('a','results');
-  document.getElementById('a-resTitle').textContent='Generating…';
-  document.getElementById('a-resSub').textContent=`${sizesToGen.length} ad sizes · ${adsPlatform==='meta'?'Meta Ads':'Google Display'}`;
-  showGridSkeletons('a',sizesToGen.map(k=>AD_SIZES[k]));setStatus('a',`Generating ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''}…`,'info');setProgress('a',5);
-  let done=0,errors=[];
-  for(let i=0;i<sizesToGen.length;i++){
-    const sizeKey=sizesToGen[i];const sizeInfo=AD_SIZES[sizeKey];
-    setStatus('a',`Generating ${sizeInfo.label} (${sizeInfo.dim})…`,'info');
-    try{
-      const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir);
-      generatedPrompts['a'][i]=prompt;
-      const parts=[];if(logos['a'])parts.push({mimeType:logos['a'].mimeType,data:logos['a'].b64});if(examples['a'])parts.push({mimeType:examples['a'].mimeType,data:examples['a'].b64});
-      const img=await callImageAPI(prompt,model,parts.length?parts:null,sizeInfo.ratio);
-      generatedImages['a'][i]=img;renderCard('a',img,i,{label:sizeInfo.label,dotColor:'#6366f1',sub:sizeInfo.dim,isAd:true});
-      consumeImages(1);done++;setProgress('a',Math.round(((i+1)/sizesToGen.length)*95));
-    }catch(err){errors.push(sizeInfo.label);markError('a',i,err.message,()=>retryAd(i,sizeKey));console.error(`Ad ${sizeKey}:`,err);}
-  }
-  document.getElementById('a-resTitle').textContent=`Your ${adsPlatform==='meta'?'Meta':'Google'} Ad Creatives`;
-  document.getElementById('a-resSub').textContent=`${done}/${sizesToGen.length} generated`;
-  if(errors.length===0)setStatus('a',`All ${done} ads ready! Click any ad then use AI Chat to refine.`,'success');
-  else setStatus('a',`${done} done. Failed: ${errors.join(', ')}.`,'error');
-  setProgress('a',null);btn.disabled=false;btn.innerHTML='🎯 Generate Ad Creatives';
-}
 async function retryAd(idx,sizeKey) {
   if(!canGenerate(1)){showPaywall();return;}
   const model=document.getElementById('a-model').value;const sizeInfo=AD_SIZES[sizeKey];
@@ -1548,12 +1725,14 @@ async function retryAd(idx,sizeKey) {
   const objective=document.getElementById('a-objective').value;const headline=document.getElementById('a-headline').value.trim();
   const bodyCopy=document.getElementById('a-body').value.trim();const cta=document.getElementById('a-cta').value;
   const audience=document.getElementById('a-audience').value.trim();const inspir=document.getElementById('a-inspiration').value.trim();
+  let intelData=null;try{if(competitorIntel)intelData=JSON.parse(competitorIntel);}catch{}
+  const concept=AD_CONCEPTS.find(c=>c.id===selectedConcept);
   showSkeleton('a',idx,sizeInfo.ratio);
   try{
-    const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir);
+    const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir,concept,intelData);
     generatedPrompts['a'][idx]=prompt;
     const img=await callImageAPI(prompt,model,null,sizeInfo.ratio);
-    generatedImages['a'][idx]=img;renderCard('a',img,idx,{label:sizeInfo.label,dotColor:'#6366f1',sub:sizeInfo.dim,isAd:true});consumeImages(1);setStatus('a','Ad regenerated!','success');
+    generatedImages['a'][idx]=img;renderCard('a',img,idx,{label:sizeInfo.label,dotColor:'#ec4899',sub:sizeInfo.dim,isAd:true});consumeImages(1);setStatus('a','Ad regenerated!','success');showToast('Ad regenerated!','success',2000);
   }catch(err){markError('a',idx,err.message,()=>retryAd(idx,sizeKey));}
 }
 
@@ -1594,8 +1773,8 @@ async function websiteGenerate() {
   }
   document.getElementById('w-resTitle').textContent='Website Images';
   document.getElementById('w-resSub').textContent=`${done}/${total} generated · ${pageType}`;
-  if(errors.length===0)setStatus('w',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');
-  else setStatus('w',`${done} done. Image${errors.length>1?'s':''} ${errors.join(', ')} failed.`,'error');
+  if(errors.length===0){setStatus('w',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');showToast(`${done} website image${done>1?'s':''} ready!`,'success');}
+  else{setStatus('w',`${done} done. Image${errors.length>1?'s':''} ${errors.join(', ')} failed.`,'error');showToast(`${errors.length} image${errors.length>1?'s':''} failed.`,'error');}
   setProgress('w',null);btn.disabled=false;btn.innerHTML='🌐 Generate Website Images';
 }
 async function retryWeb(idx,task) {
@@ -1645,8 +1824,9 @@ function renderCard(prefix,img,idx,meta) {
   const src=`data:${img.mimeType};base64,${img.b64}`;
   const isFocused=focusedImage&&focusedImage.prefix===prefix&&focusedImage.idx===idx;
   card.className='image-card'+(isFocused?' focused':'');
-  card.innerHTML=`<img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" /><div class="slide-badge"><span class="sdot" style="background:${meta.dotColor}"></span>${meta.label}</div>${meta.isAd?`<div class="ad-size-label">${meta.sub}</div>`:`<div class="slide-badge" style="left:auto;right:10px;top:10px;font-size:0.62rem;">${meta.sub}</div>`}${isFocused?'<div class="focused-badge">✎ Selected</div>':''}<div class="card-overlay"><button class="card-btn" onclick="dlSingle('${prefix}',${idx})">⬇ Save</button><button class="card-btn" onclick="copyImg('${prefix}',${idx})">📋 Copy</button><button class="card-btn" onclick="selectImageForEdit('${prefix}',${idx})">✎ Edit</button></div>`;
+  card.innerHTML=`<img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" /><div class="slide-badge"><span class="sdot" style="background:${meta.dotColor}"></span>${meta.label}</div>${meta.isAd?`<div class="ad-size-label">${meta.sub}</div>`:`<div class="slide-badge" style="left:auto;right:10px;top:10px;font-size:0.62rem;">${meta.sub}</div>`}${isFocused?'<div class="focused-badge">✎ Selected</div>':''}<div class="card-overlay"><button class="card-btn" onclick="event.stopPropagation();openPreview('${prefix}',${idx})">🔍 Preview</button><button class="card-btn" onclick="event.stopPropagation();dlSingle('${prefix}',${idx})">⬇ Save</button><button class="card-btn" onclick="event.stopPropagation();selectImageForEdit('${prefix}',${idx})">✎ Edit</button></div>`;
   card.onclick=()=>selectImageForEdit(prefix,idx);
+  card.ondblclick=()=>openPreview(prefix,idx);
 }
 function markError(prefix,idx,msg,retryFn) {
   const card=document.getElementById(`${prefix}-ic-${idx}`);if(!card)return;
@@ -1657,7 +1837,7 @@ function markError(prefix,idx,msg,retryFn) {
 // ════════════════════════════════════════
 // DOWNLOAD
 // ════════════════════════════════════════
-function dlSingle(prefix,idx) { const img=generatedImages[prefix]?.[idx];if(!img)return;const ext=img.mimeType.split('/')[1]||'png';const a=document.createElement('a');a.href=`data:${img.mimeType};base64,${img.b64}`;a.download=`postcraft_${prefix}_${idx+1}.${ext}`;a.click(); }
+function dlSingle(prefix,idx) { const img=generatedImages[prefix]?.[idx];if(!img)return;const ext=img.mimeType.split('/')[1]||'png';const a=document.createElement('a');a.href=`data:${img.mimeType};base64,${img.b64}`;a.download=`creativesgen_${prefix}_${idx+1}.${ext}`;a.click();showToast('Image downloaded!','success',2000); }
 async function copyImg(prefix,idx) {
   const img=generatedImages[prefix]?.[idx];if(!img)return;
   try{const bytes=atob(img.b64),arr=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)arr[i]=bytes.charCodeAt(i);await navigator.clipboard.write([new ClipboardItem({[img.mimeType]:new Blob([arr],{type:img.mimeType})})]);setStatus(prefix,'Copied to clipboard!','success');}
@@ -1667,7 +1847,7 @@ async function downloadAll(prefix) {
   const imgs=(generatedImages[prefix]||[]).filter(Boolean);if(!imgs.length){setStatus(prefix,'No images yet.','error');return;}
   setStatus(prefix,'Preparing ZIP…','info');const zip=new JSZip();
   imgs.forEach((img,i)=>{const ext=img.mimeType.split('/')[1]||'png';const bytes=atob(img.b64),arr=new Uint8Array(bytes.length);for(let j=0;j<bytes.length;j++)arr[j]=bytes.charCodeAt(j);zip.file(`image_${i+1}.${ext}`,arr);});
-  const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`postcraft_${prefix}_export.zip`;a.click();setStatus(prefix,`Downloaded ${imgs.length} images.`,'success');
+  const blob=await zip.generateAsync({type:'blob'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`creativesgen_${prefix}_export.zip`;a.click();setStatus(prefix,`Downloaded ${imgs.length} images.`,'success');showToast(`ZIP with ${imgs.length} images downloaded!`,'success');
 }
 
 // ════════════════════════════════════════
@@ -1864,6 +2044,364 @@ function toggleHistoryView() {
 }
 
 // ════════════════════════════════════════
+// TOAST SYSTEM
+// ════════════════════════════════════════
+function showToast(msg, type='info', duration=3500) {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  const icon = type==='success'?'✓':type==='error'?'✕':'ℹ';
+  t.innerHTML = `<span style="flex-shrink:0;font-weight:900;">${icon}</span><span>${msg}</span>`;
+  container.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(10px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),320); }, duration);
+}
+
+// ════════════════════════════════════════
+// IMAGE PREVIEW MODAL
+// ════════════════════════════════════════
+let previewContext = null;
+function openPreview(prefix, idx) {
+  const img = generatedImages[prefix]?.[idx];
+  if (!img) return;
+  previewContext = {prefix, idx};
+  const src = `data:${img.mimeType};base64,${img.b64}`;
+  document.getElementById('previewImg').src = src;
+  document.getElementById('previewOverlay').classList.add('show');
+  document.getElementById('previewDlBtn').onclick = ()=>dlSingle(prefix,idx);
+  document.getElementById('previewEditBtn').onclick = ()=>{ closePreviewNow(); selectImageForEdit(prefix,idx); if(!chatOpen) toggleChat(); };
+}
+function closePreview(e) { if(e.target.id==='previewOverlay') closePreviewNow(); }
+function closePreviewNow() { document.getElementById('previewOverlay').classList.remove('show'); previewContext=null; }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closePreviewNow(); });
+
+// ════════════════════════════════════════
+// COMPETITOR RESEARCH (Ads)
+// ════════════════════════════════════════
+let competitorIntel = '';
+let socialIntel = '';
+let websiteIntel = '';
+
+function clearCompetitorIntel() { competitorIntel=''; document.getElementById('a-intel-box').style.display='none'; }
+
+async function runCompetitorResearch() {
+  const product = document.getElementById('a-product').value.trim();
+  const industry = document.getElementById('a-industry').value.trim();
+  const competitors = document.getElementById('a-competitors').value.trim();
+  if (!product && !industry) { showToast('Add your product and industry first.','error'); return; }
+  const btn = document.getElementById('a-researchBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Researching…';
+  try {
+    const prompt = `You are a senior advertising strategist with deep expertise in performance marketing. Analyze the following and provide strategic intelligence for creating superior ad creatives.
+
+PRODUCT/SERVICE: ${product || 'Not specified'}
+INDUSTRY: ${industry || 'Not specified'}
+COMPETITORS: ${competitors || 'Major players in this industry'}
+
+Provide a strategic intelligence report covering:
+1. What messaging angles WORK BEST in this industry (proven by high-performing ads)
+2. What competitors typically do wrong or overuse (so we can differentiate)
+3. The #1 emotional trigger that converts buyers in this space
+4. What visual style and color approach performs best for this industry on Meta/Google
+5. The most effective CTA approach for this product type
+
+Return ONLY a JSON object (no markdown):
+{
+  "summary": "2-3 sentence strategic overview of what makes ads convert in this space",
+  "winningAngles": ["angle 1", "angle 2", "angle 3"],
+  "competitorWeaknesses": ["weakness 1", "weakness 2"],
+  "emotionalTrigger": "primary emotional trigger",
+  "visualStyle": "recommended visual approach",
+  "topCTA": "most effective CTA approach",
+  "differentiators": ["key differentiator 1", "key differentiator 2"]
+}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Bad response');
+    const intel = JSON.parse(match[0]);
+    competitorIntel = JSON.stringify(intel);
+    // Render intel box
+    document.getElementById('a-intel-text').textContent = intel.summary;
+    const chipsEl = document.getElementById('a-intel-chips');
+    chipsEl.innerHTML = '';
+    (intel.winningAngles||[]).forEach(a=>{ const c=document.createElement('span');c.className='intel-chip';c.textContent='💡 '+a;chipsEl.appendChild(c); });
+    (intel.differentiators||[]).forEach(d=>{ const c=document.createElement('span');c.className='intel-chip green';c.textContent='⚡ '+d;chipsEl.appendChild(c); });
+    if(intel.emotionalTrigger){ const c=document.createElement('span');c.className='intel-chip pink';c.textContent='❤️ '+intel.emotionalTrigger;chipsEl.appendChild(c); }
+    document.getElementById('a-intel-box').style.display='block';
+    showToast('Competitor research complete! Ready to generate smarter ads.','success');
+  } catch(e) { showToast('Research failed: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.innerHTML='🔬 Research Competitors &amp; Industry'; }
+}
+
+// ════════════════════════════════════════
+// SOCIAL INTELLIGENCE
+// ════════════════════════════════════════
+async function runSocialIntelligence() {
+  const topic = document.getElementById('s-topic').value.trim();
+  const industry = document.getElementById('s-industry').value.trim();
+  const competitors = document.getElementById('s-competitors').value.trim();
+  if (!topic && !industry) { showToast('Add your topic or industry first.','error'); return; }
+  const btn = document.getElementById('s-researchBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Researching…';
+  try {
+    const prompt = `You are a viral social media strategist. Research what's working right now for this topic and industry.
+
+TOPIC: ${topic || 'Not specified'}
+INDUSTRY: ${industry || 'Not specified'}
+COMPETITORS/ACCOUNTS: ${competitors || 'Major accounts in this space'}
+
+Return ONLY a JSON object (no markdown):
+{
+  "summary": "2-sentence insight about what drives engagement in this space right now",
+  "trendingAngles": ["angle 1 that gets shares", "angle 2 that gets saves", "angle 3 that gets comments"],
+  "hookFormulas": ["hook formula 1", "hook formula 2", "hook formula 3"],
+  "contentGaps": ["underserved topic 1", "underserved topic 2"],
+  "bestFormat": "recommended post format with brief reason",
+  "engagementTriggers": ["trigger 1", "trigger 2", "trigger 3"]
+}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Bad response');
+    const intel = JSON.parse(match[0]);
+    socialIntel = JSON.stringify(intel);
+    document.getElementById('s-intel-text').textContent = intel.summary;
+    const pillsEl = document.getElementById('s-insight-pills');
+    pillsEl.innerHTML = '';
+    (intel.trendingAngles||[]).forEach(a=>{ const p=document.createElement('span');p.className='insight-pill';p.textContent=a;p.title='Click to use this angle';p.onclick=()=>{document.getElementById('s-topic').value=a;showToast('Topic updated!','success');};pillsEl.appendChild(p); });
+    (intel.hookFormulas||[]).forEach(h=>{ const p=document.createElement('span');p.className='insight-pill pink';p.textContent='Hook: '+h;pillsEl.appendChild(p); });
+    (intel.engagementTriggers||[]).forEach(t=>{ const p=document.createElement('span');p.className='insight-pill green';p.textContent=t;pillsEl.appendChild(p); });
+    document.getElementById('s-intel-box').style.display='block';
+    showToast('Industry insights ready! Click any angle pill to use it.','success');
+  } catch(e) { showToast('Research failed: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.innerHTML='🔬 Get Industry Insights &amp; Trending Angles'; }
+}
+
+// ════════════════════════════════════════
+// WEBSITE INTELLIGENCE
+// ════════════════════════════════════════
+async function runWebsiteIntelligence() {
+  const industry = document.getElementById('w-industry').value.trim();
+  const competitors = document.getElementById('w-competitors').value.trim();
+  const headline = document.getElementById('w-headline').value.trim();
+  if (!industry && !competitors) { showToast('Add your industry or competitor names first.','error'); return; }
+  const btn = document.getElementById('w-researchBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Researching…';
+  try {
+    const prompt = `You are a senior UX and brand strategist. Analyze the visual design landscape for this industry/competitors and provide guidance for creating outstanding website imagery.
+
+INDUSTRY: ${industry || 'Not specified'}
+COMPETITORS: ${competitors || 'Leading brands in this industry'}
+PAGE TYPE: ${document.getElementById('w-pagetype').value}
+HEADLINE: ${headline || 'Not specified'}
+
+Return ONLY a JSON object (no markdown):
+{
+  "summary": "2-sentence analysis of the visual design opportunity in this space",
+  "competitorPatterns": ["pattern 1 everyone uses", "pattern 2 to avoid"],
+  "differentiationOpportunity": "what visual approach would stand out",
+  "recommendedStyle": "specific visual style recommendation",
+  "colorGuidance": "color strategy recommendation",
+  "conversionTips": ["tip 1 for higher converting visuals", "tip 2", "tip 3"]
+}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('Bad response');
+    const intel = JSON.parse(match[0]);
+    websiteIntel = JSON.stringify(intel);
+    document.getElementById('w-intel-text').textContent = intel.summary;
+    const chipsEl = document.getElementById('w-intel-chips');
+    chipsEl.innerHTML = '';
+    if(intel.differentiationOpportunity){ const c=document.createElement('span');c.className='intel-chip green';c.textContent='⚡ '+intel.differentiationOpportunity;chipsEl.appendChild(c); }
+    (intel.conversionTips||[]).forEach(t=>{ const c=document.createElement('span');c.className='intel-chip';c.textContent='✓ '+t;chipsEl.appendChild(c); });
+    // Auto-apply style recommendation
+    if(intel.recommendedStyle){ const si=document.getElementById('w-inspiration');if(si&&!si.value)si.value=intel.recommendedStyle; }
+    document.getElementById('w-intel-box').style.display='block';
+    showToast('Visual intel ready! Style suggestion applied.','success');
+  } catch(e) { showToast('Research failed: '+e.message,'error'); }
+  finally { btn.disabled=false; btn.innerHTML='🔬 Research Industry Visual Style'; }
+}
+
+// ════════════════════════════════════════
+// AI QUICK-FILL (Smart Brief)
+// ════════════════════════════════════════
+async function smartFillAds() {
+  const product = document.getElementById('a-product').value.trim();
+  if (!product) { showToast('Type what you\'re advertising first, then click Quick-Fill.','error'); return; }
+  showToast('AI is filling your brief…','info');
+  try {
+    const prompt = `You are an expert ad copywriter. Given a product/service, generate a complete ad brief.
+PRODUCT: ${product}
+Return ONLY JSON (no markdown):
+{"headline":"compelling benefit-driven headline, max 8 words","body":"1-2 sentence ad copy focused on the top benefit and social proof","audience":"specific target audience description","inspiration":"visual style recommendation, e.g. clean minimal with bold typography"}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Bad AI response');
+    const fill = JSON.parse(match[0]);
+    if(fill.headline) document.getElementById('a-headline').value = fill.headline;
+    if(fill.body) document.getElementById('a-body').value = fill.body;
+    if(fill.audience) document.getElementById('a-audience').value = fill.audience;
+    if(fill.inspiration) document.getElementById('a-inspiration').value = fill.inspiration;
+    showToast('Brief filled! Review and adjust as needed.','success');
+  } catch(e) { showToast('Quick-fill failed: '+e.message,'error'); }
+}
+
+async function smartFillSocial() {
+  const topic = document.getElementById('s-topic').value.trim();
+  const brand = document.getElementById('s-brand').value.trim();
+  if (!topic) { showToast('Describe your topic first, then click Quick-Fill.','error'); return; }
+  showToast('AI is planning your content…','info');
+  try {
+    const prompt = `You are a social media expert. Given a post topic, suggest a highly engaging approach.
+TOPIC: ${topic}
+BRAND: ${brand||'Not specified'}
+Return ONLY JSON: {"refinedTopic":"refined, specific version of the topic that will perform better","audience":"specific audience","inspiration":"visual style that matches the content mood"}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Bad AI response');
+    const fill = JSON.parse(match[0]);
+    if(fill.refinedTopic) document.getElementById('s-topic').value = fill.refinedTopic;
+    if(fill.audience) document.getElementById('s-audience').value = fill.audience;
+    if(fill.inspiration) document.getElementById('s-inspiration').value = fill.inspiration;
+    showToast('Content brief enhanced!','success');
+  } catch(e) { showToast('Quick-fill failed: '+e.message,'error'); }
+}
+
+async function smartFillWebsite() {
+  const brand = document.getElementById('w-brand').value.trim();
+  const industry = document.getElementById('w-industry').value.trim();
+  if (!brand && !industry) { showToast('Add your business name or industry first.','error'); return; }
+  showToast('AI is writing your brief…','info');
+  try {
+    const pageType = document.getElementById('w-pagetype').value;
+    const prompt = `You are a conversion-focused web copywriter. Generate website content for a ${pageType} section.
+BUSINESS: ${brand||'Company'}
+INDUSTRY: ${industry||'Not specified'}
+Return ONLY JSON: {"headline":"compelling headline for this section (max 10 words)","copy":"2-3 sentences of supporting copy","inspiration":"visual style recommendation for this page type"}`;
+    const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+    const data = await r.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Bad AI response');
+    const fill = JSON.parse(match[0]);
+    if(fill.headline) document.getElementById('w-headline').value = fill.headline;
+    if(fill.copy) document.getElementById('w-copy').value = fill.copy;
+    if(fill.inspiration) document.getElementById('w-inspiration').value = fill.inspiration;
+    showToast('Website brief generated!','success');
+  } catch(e) { showToast('Quick-fill failed: '+e.message,'error'); }
+}
+
+// ════════════════════════════════════════
+// AD CONCEPT PICKER
+// ════════════════════════════════════════
+const AD_CONCEPTS = [
+  { id:'problem_solution', emoji:'🎯', title:'Problem / Solution', desc:'Lead with the pain point your audience feels, then position your product as the clear answer.', tag:'Highest converting', bestFor:'Sales & Lead Gen' },
+  { id:'social_proof', emoji:'⭐', title:'Social Proof', desc:'Lead with results, testimonials, numbers, or user counts. "10,000+ customers can\'t be wrong."', tag:'Builds trust fast', bestFor:'Brand Awareness' },
+  { id:'lifestyle', emoji:'🌟', title:'Lifestyle / Aspiration', desc:'Show the life your customer wants. Your product is the vehicle to get there.', tag:'Emotional pull', bestFor:'Brand & eCommerce' },
+  { id:'urgency_offer', emoji:'⚡', title:'Urgency / Offer', desc:'Limited time, exclusive deal, or scarcity. Creates FOMO and drives immediate action.', tag:'Fast results', bestFor:'Sales & Retargeting' },
+  { id:'before_after', emoji:'🔄', title:'Before / After', desc:'Show the transformation. Clear contrast between the problem state and the improved outcome.', tag:'Visual storytelling', bestFor:'Services & Products' },
+  { id:'feature_benefit', emoji:'🚀', title:'Feature → Benefit', desc:'Showcase a specific feature but frame it entirely in terms of the customer benefit and outcome.', tag:'Educational', bestFor:'SaaS & Tech' },
+  { id:'curiosity_hook', emoji:'🤔', title:'Curiosity / Pattern Interrupt', desc:'Disrupt expectations with an unexpected visual or provocative question that stops the scroll.', tag:'Awareness driver', bestFor:'Top of Funnel' },
+];
+
+let selectedConcept = null;
+
+function showAdView(view) {
+  document.getElementById('a-empty').style.display = view==='empty'?'flex':'none';
+  const cp = document.getElementById('a-concepts');
+  cp.classList.toggle('show', view==='concepts');
+  document.getElementById('a-results').style.display = view==='results'?'block':'none';
+}
+
+function showConceptPicker() {
+  const product = document.getElementById('a-product').value.trim();
+  if (!product) { setStatus('a','Describe what you are advertising.','error'); return; }
+  if (selectedAdSizes.size === 0) { setStatus('a','Select at least one ad size.','error'); return; }
+  // Render concepts grid
+  const grid = document.getElementById('a-conceptsGrid');
+  grid.innerHTML = '';
+  AD_CONCEPTS.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = 'concept-card' + (selectedConcept===c.id?' selected':'');
+    card.dataset.id = c.id;
+    card.innerHTML = `<div class="cc-check">✓</div><div class="cc-emoji">${c.emoji}</div><div class="cc-title">${c.title}</div><div class="cc-desc">${c.desc}</div><span class="cc-tag">${c.tag}</span>`;
+    card.onclick = ()=>{
+      grid.querySelectorAll('.concept-card').forEach(cc=>cc.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedConcept = c.id;
+      card.querySelector('.cc-check').style.display='flex';
+    };
+    grid.appendChild(card);
+  });
+  // Select default if none selected
+  if (!selectedConcept) { selectedConcept = 'problem_solution'; grid.querySelector('[data-id="problem_solution"]').classList.add('selected'); grid.querySelector('[data-id="problem_solution"] .cc-check').style.display='flex'; }
+  // Show intel note if research was done
+  const note = document.getElementById('a-concept-intel-note');
+  note.textContent = competitorIntel ? '— enhanced with competitor research' : '';
+  showAdView('concepts');
+}
+
+async function adsGenerateWithConcept() {
+  const concept = AD_CONCEPTS.find(c=>c.id===selectedConcept) || AD_CONCEPTS[0];
+  await adsGenerate(concept);
+}
+
+// ════════════════════════════════════════
+// ADS — GENERATE (updated with concept support)
+// ════════════════════════════════════════
+async function adsGenerate(concept) {
+  const product=document.getElementById('a-product').value.trim();
+  if(!product){setStatus('a','Describe what you are advertising.','error');return;}
+  if(selectedAdSizes.size===0){setStatus('a','Select at least one ad size.','error');return;}
+  const sizesToGen=[...selectedAdSizes];
+  if(!canGenerate(sizesToGen.length)){showPaywall();return;}
+  const btn=document.getElementById('a-conceptGenBtn');
+  if(btn){btn.disabled=true;document.getElementById('a-cg-spinner').style.display='inline-block';}
+  const model=document.getElementById('a-model').value;const style=document.getElementById('a-style').value;
+  const brand={name:document.getElementById('a-brand').value.trim(),industry:document.getElementById('a-industry').value.trim()};
+  const colors=getColors('a');const objective=document.getElementById('a-objective').value;
+  const headline=document.getElementById('a-headline').value.trim();const bodyCopy=document.getElementById('a-body').value.trim();
+  const cta=document.getElementById('a-cta').value;const audience=document.getElementById('a-audience').value.trim();
+  const inspir=document.getElementById('a-inspiration').value.trim();
+  let intelData = null;
+  try { if(competitorIntel) intelData = JSON.parse(competitorIntel); } catch{}
+  generatedImages['a']=new Array(sizesToGen.length).fill(null);generatedPrompts['a']=new Array(sizesToGen.length).fill('');
+  showAdView('results');
+  document.getElementById('a-resTitle').textContent='Generating…';
+  document.getElementById('a-resSub').textContent=`${sizesToGen.length} ad size${sizesToGen.length>1?'s':''} · ${adsPlatform==='meta'?'Meta Ads':'Google Display'}`;
+  if(concept) document.getElementById('a-res-concept').textContent=`Concept: ${concept.emoji} ${concept.title}`;
+  showGridSkeletons('a',sizesToGen.map(k=>AD_SIZES[k]));
+  setStatus('a',`Generating ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''}…`,'info');setProgress('a',5);
+  let done=0,errors=[];
+  for(let i=0;i<sizesToGen.length;i++){
+    const sizeKey=sizesToGen[i];const sizeInfo=AD_SIZES[sizeKey];
+    setStatus('a',`Generating ${sizeInfo.label} (${sizeInfo.dim})…`,'info');
+    try{
+      const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir,concept,intelData);
+      generatedPrompts['a'][i]=prompt;
+      const parts=[];if(logos['a'])parts.push({mimeType:logos['a'].mimeType,data:logos['a'].b64});if(examples['a'])parts.push({mimeType:examples['a'].mimeType,data:examples['a'].b64});
+      const img=await callImageAPI(prompt,model,parts.length?parts:null,sizeInfo.ratio);
+      generatedImages['a'][i]=img;renderCard('a',img,i,{label:sizeInfo.label,dotColor:'#ec4899',sub:sizeInfo.dim,isAd:true});
+      consumeImages(1);done++;setProgress('a',Math.round(((i+1)/sizesToGen.length)*95));
+    }catch(err){errors.push(sizeInfo.label);markError('a',i,err.message,()=>retryAd(i,sizeKey));console.error(`Ad ${sizeKey}:`,err);}
+  }
+  document.getElementById('a-resTitle').textContent=`Your ${adsPlatform==='meta'?'Meta':'Google'} Ad Creatives`;
+  document.getElementById('a-resSub').textContent=`${done}/${sizesToGen.length} generated`;
+  if(errors.length===0){setStatus('a',`All ${done} ads ready!`,'success');showToast(`${done} ad creative${done>1?'s':''} generated!`,'success');}
+  else setStatus('a',`${done} done. Failed: ${errors.join(', ')}.`,'error');
+  setProgress('a',null);
+  if(btn){btn.disabled=false;document.getElementById('a-cg-spinner').style.display='none';}
+}
+
+// ════════════════════════════════════════
 // MISC
 // ════════════════════════════════════════
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -1876,7 +2414,7 @@ window.addEventListener('DOMContentLoaded', ()=>{
   document.querySelectorAll('.size-check input[type="checkbox"]').forEach(cb=>{if(cb.checked)cb.closest('.size-check').classList.add('checked');});
   updateWebTotal();
   // Keyboard shortcut
-  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')adsGenerate();else websiteGenerate();}});
+  document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')showConceptPicker();else websiteGenerate();}});
 
   // Hide login modal on load — Firebase needs a moment to restore session
   document.getElementById('accountModal').classList.add('hidden');

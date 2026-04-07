@@ -11,90 +11,189 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --accent:#5b5ef4;--accent-l:#eef0ff;--pink:#ec4899;
+      --accent:#5b5ef4;--accent-l:#eef0ff;--pink:#ec4899;--pink-l:#fdf2f8;
       --green:#10b981;--green-l:#ecfdf5;--yellow:#f59e0b;--yellow-l:#fffbeb;
-      --red:#ef4444;--red-l:#fef2f2;
-      --bg:#f0f2f8;--surface:#fff;--border:#dde1ea;
-      --text:#0d1117;--muted:#5a6478;--light:#8b95a7;
+      --red:#ef4444;--red-l:#fef2f2;--purple:#a855f7;--purple-l:#faf5ff;
+      --bg:#f0f2f8;--surface:#fff;--surface2:#f8fafc;--border:#dde1ea;--border2:#e8ecf4;
+      --text:#0d1117;--text2:#374151;--muted:#5a6478;--light:#8b95a7;
     }
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-    /* LOGIN */
+    /* ── LOGIN ── */
     #loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh}
-    .login-box{background:var(--surface);border-radius:20px;padding:48px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.15);text-align:center}
+    .login-box{background:var(--surface);border-radius:20px;padding:48px;width:400px;box-shadow:0 20px 60px rgba(0,0,0,.12);text-align:center}
     .login-box h1{font-size:1.5rem;font-weight:900;margin-bottom:6px}
     .login-box p{color:var(--muted);font-size:0.9rem;margin-bottom:28px}
-    .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border:2px solid #dde1ea;border-radius:10px;background:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
+    .btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:13px;border:2px solid var(--border);border-radius:10px;background:#fff;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s}
     .btn-google:hover{border-color:var(--accent);background:var(--accent-l)}
-    #loginError{color:#ef4444;font-size:0.82rem;margin-top:12px;display:none}
+    #loginError{color:var(--red);font-size:0.82rem;margin-top:12px;display:none}
 
-    /* DASHBOARD */
+    /* ── HEADER ── */
     #dashboard{display:none}
     header{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
     .h-logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem}
     .h-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--pink));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
     .h-badge{background:var(--red-l);color:var(--red);font-size:0.7rem;font-weight:800;padding:3px 8px;border-radius:99px;border:1px solid #fca5a5}
-    .btn-out{padding:7px 16px;border:1.5px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:inherit;color:var(--muted)}
-    .btn-out:hover{background:var(--bg)}
+    .h-right{display:flex;align-items:center;gap:12px}
+    .h-admin-label{font-size:0.78rem;color:var(--muted);font-weight:600}
+    .btn-sm{padding:7px 16px;border:1.5px solid var(--border);border-radius:8px;background:none;cursor:pointer;font-size:0.82rem;font-weight:700;font-family:inherit;color:var(--muted)}
+    .btn-sm:hover{background:var(--bg)}
 
-    main{max-width:1300px;margin:0 auto;padding:32px}
+    /* ── TABS ── */
+    .tab-bar{background:var(--surface);border-bottom:1.5px solid var(--border);padding:0 32px;display:flex;gap:4px}
+    .tab{padding:14px 20px;font-size:0.86rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1.5px;transition:all .15s;border-top:none;border-left:none;border-right:none;background:none;font-family:inherit}
+    .tab:hover{color:var(--accent)}
+    .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-    /* STAT CARDS */
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
-    .stat{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px 24px}
-    .stat-label{font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px}
-    .stat-val{font-size:2rem;font-weight:900;color:var(--text)}
-    .stat-sub{font-size:0.78rem;color:var(--light);margin-top:4px}
-    .stat.green .stat-val{color:var(--green)}
+    main{max-width:1400px;margin:0 auto;padding:32px}
+
+    /* ── TABS CONTENT ── */
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+
+    /* ── STAT CARDS ── */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .stats-wide{grid-template-columns:repeat(4,1fr)}
+    .stat{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px 24px;position:relative;overflow:hidden}
+    .stat::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.08}
+    .stat.blue::after{background:var(--accent)}
+    .stat.green::after{background:var(--green)}
+    .stat.pink::after{background:var(--pink)}
+    .stat.yellow::after{background:var(--yellow)}
+    .stat.purple::after{background:var(--purple)}
+    .stat.red::after{background:var(--red)}
+    .stat-label{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+    .stat-val{font-size:2rem;font-weight:900;color:var(--text);line-height:1}
+    .stat-sub{font-size:0.76rem;color:var(--light);margin-top:6px}
     .stat.blue .stat-val{color:var(--accent)}
+    .stat.green .stat-val{color:var(--green)}
     .stat.pink .stat-val{color:var(--pink)}
     .stat.yellow .stat-val{color:var(--yellow)}
+    .stat.purple .stat-val{color:var(--purple)}
+    .stat.red .stat-val{color:var(--red)}
 
-    /* FILTERS */
-    .toolbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
-    .toolbar input{padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;width:220px}
+    /* ── CHARTS SECTION ── */
+    .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+    .chart-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px}
+    .chart-title{font-size:0.86rem;font-weight:800;margin-bottom:18px;color:var(--text2)}
+    .plan-dist{display:flex;flex-direction:column;gap:10px}
+    .plan-row{display:flex;align-items:center;gap:12px}
+    .plan-row-label{width:80px;font-size:0.78rem;font-weight:700;color:var(--muted);text-transform:uppercase}
+    .plan-bar-wrap{flex:1;height:10px;background:var(--bg);border-radius:99px;overflow:hidden}
+    .plan-bar{height:10px;border-radius:99px;transition:width .6s ease}
+    .plan-row-count{font-size:0.78rem;font-weight:800;width:40px;text-align:right}
+    .plan-row-rev{font-size:0.75rem;color:var(--muted);width:60px;text-align:right}
+
+    .top-users-list{display:flex;flex-direction:column;gap:8px}
+    .top-user-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface2)}
+    .top-user-rank{width:22px;height:22px;background:var(--accent-l);color:var(--accent);border-radius:50%;font-size:0.7rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .top-user-info{flex:1;min-width:0}
+    .top-user-name{font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-user-email{font-size:0.72rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-user-imgs{font-size:0.82rem;font-weight:800;color:var(--accent);flex-shrink:0}
+
+    /* ── TOOLBAR ── */
+    .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap}
+    .section-head h2{font-size:1rem;font-weight:900}
+    .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .toolbar input{padding:9px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.86rem;font-family:inherit;outline:none;width:220px;background:var(--surface)}
     .toolbar input:focus{border-color:var(--accent)}
-    .filter-btn{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
+    .filter-btn{padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--muted);transition:all .15s}
     .filter-btn.active,.filter-btn:hover{border-color:var(--accent);background:var(--accent-l);color:var(--accent)}
-    .refresh-btn{margin-left:auto;padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit}
-    .refresh-btn:hover{opacity:.9}
+    .btn-primary{padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:0.82rem;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .15s}
+    .btn-primary:hover{opacity:.9}
+    .btn-danger{padding:7px 14px;background:var(--red-l);color:var(--red);border:1.5px solid #fca5a5;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+    .btn-danger:hover{background:#fee2e2}
+    .btn-success{padding:7px 14px;background:var(--green-l);color:var(--green);border:1.5px solid #6ee7b7;border-radius:8px;font-size:0.78rem;font-weight:700;cursor:pointer;font-family:inherit}
+    .btn-success:hover{background:#d1fae5}
 
-    /* TABLE */
+    /* ── TABLE ── */
     .table-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden}
     table{width:100%;border-collapse:collapse}
-    th{padding:12px 16px;text-align:left;font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--bg);border-bottom:1.5px solid var(--border)}
-    td{padding:13px 16px;font-size:0.86rem;border-bottom:1px solid var(--border);vertical-align:middle}
+    th{padding:11px 14px;text-align:left;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--surface2);border-bottom:1.5px solid var(--border)}
+    td{padding:12px 14px;font-size:0.84rem;border-bottom:1px solid var(--border2);vertical-align:middle}
     tr:last-child td{border-bottom:none}
     tr:hover td{background:#fafbff}
-    .avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle}
-    .avatar-ph{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.75rem;font-weight:900;margin-right:8px;vertical-align:middle;flex-shrink:0}
+    .avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;margin-right:8px;vertical-align:middle}
+    .avatar-ph{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;font-weight:900;margin-right:8px;vertical-align:middle;flex-shrink:0}
     .name-cell{display:flex;align-items:center}
-    .plan-badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+    .plan-badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
     .plan-free{background:#f1f5f9;color:#64748b}
     .plan-starter{background:var(--accent-l);color:var(--accent)}
-    .plan-pro{background:#fdf4ff;color:#a855f7}
+    .plan-pro{background:var(--purple-l);color:var(--purple)}
     .plan-agency{background:var(--yellow-l);color:#d97706}
-    .plan-enterprise{background:#fff1f2;color:#e11d48}
+    .plan-enterprise{background:var(--red-l);color:#e11d48}
     .usage-bar-wrap{display:flex;align-items:center;gap:8px}
-    .usage-bar{height:6px;border-radius:99px;background:#e2e8f0;flex:1;min-width:60px}
+    .usage-bar{height:6px;border-radius:99px;background:#e2e8f0;flex:1;min-width:50px}
     .usage-fill{height:6px;border-radius:99px;background:var(--green);transition:width .3s}
     .usage-fill.warn{background:var(--yellow)}
     .usage-fill.full{background:var(--red)}
-    .usage-text{font-size:0.75rem;color:var(--muted);white-space:nowrap}
-    .provider-icon{font-size:1rem}
+    .usage-text{font-size:0.72rem;color:var(--muted);white-space:nowrap}
     .empty{text-align:center;padding:60px;color:var(--muted)}
-    .loading{text-align:center;padding:60px;color:var(--muted);font-size:0.9rem}
+    .loading-row{text-align:center;padding:60px;color:var(--muted);font-size:0.9rem}
+    .action-btns{display:flex;gap:6px}
+    .tbl-btn{padding:5px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all .15s;white-space:nowrap}
+    .tbl-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-l)}
+    .tbl-btn.red:hover{border-color:var(--red);color:var(--red);background:var(--red-l)}
 
-    /* MODAL */
-    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+    /* ── REVENUE TAB ── */
+    .rev-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+    .rev-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:22px}
+    .rev-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .rev-card-plan{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    .rev-card-users{font-size:0.72rem;color:var(--muted)}
+    .rev-card-price{font-size:1.8rem;font-weight:900}
+    .rev-card-mrr{font-size:0.78rem;color:var(--muted);margin-top:4px}
+    .rev-table-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:28px}
+
+    /* ── ADMINS TAB ── */
+    .admins-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;max-width:600px}
+    .admin-row{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border2)}
+    .admin-row:last-child{border-bottom:none}
+    .admin-email{font-size:0.88rem;font-weight:700}
+    .admin-you{font-size:0.72rem;background:var(--green-l);color:var(--green);padding:2px 8px;border-radius:99px;font-weight:800}
+    .add-admin-form{padding:20px;background:var(--surface2);border-top:1.5px solid var(--border)}
+    .add-admin-form input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;margin-bottom:10px}
+    .add-admin-form input:focus{border-color:var(--accent)}
+
+    /* ── MODAL ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200;display:none;backdrop-filter:blur(2px)}
     .overlay.open{display:flex}
-    .detail-modal{background:var(--surface);border-radius:16px;padding:32px;width:480px;max-width:calc(100vw - 32px);max-height:80vh;overflow-y:auto}
-    .detail-modal h2{font-size:1.2rem;font-weight:900;margin-bottom:20px}
-    .detail-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.88rem}
+    .modal{background:var(--surface);border-radius:18px;padding:32px;width:500px;max-width:calc(100vw - 32px);max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,.2)}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .modal-header h2{font-size:1.1rem;font-weight:900}
+    .close-modal{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);line-height:1}
+    .modal-section{margin-bottom:22px}
+    .modal-section-title{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+    .detail-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border2);font-size:0.86rem}
     .detail-row:last-child{border-bottom:none}
-    .detail-row .dk{color:var(--muted);font-weight:600}
-    .detail-row .dv{font-weight:700;text-align:right}
-    .close-modal{float:right;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);margin-top:-8px}
+    .dk{color:var(--muted);font-weight:600}
+    .dv{font-weight:700;text-align:right}
+    .form-row{margin-bottom:14px}
+    .form-row label{display:block;font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+    .form-row select,.form-row input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.88rem;font-family:inherit;outline:none;background:var(--surface)}
+    .form-row select:focus,.form-row input:focus{border-color:var(--accent)}
+    .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+    .modal-actions .btn-primary{flex:1}
+    .modal-actions .btn-danger{flex:1}
+    .divider{height:1px;background:var(--border);margin:20px 0}
+    .info-box{background:var(--accent-l);border-radius:10px;padding:14px 16px;font-size:0.82rem;color:var(--accent);font-weight:600;margin-bottom:16px}
+    .danger-box{background:var(--red-l);border-radius:10px;padding:14px 16px;font-size:0.82rem;color:var(--red);font-weight:600}
+
+    /* ── TOAST ── */
+    #toastContainer{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column-reverse;gap:10px;pointer-events:none}
+    .toast{background:#1f2937;color:#fff;padding:12px 18px;border-radius:12px;font-size:0.86rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:all .25s;max-width:320px}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .toast.success{background:#065f46;border-left:4px solid #10b981}
+    .toast.error{background:#7f1d1d;border-left:4px solid #ef4444}
+
+    /* ── MISC ── */
+    .page-title{font-size:1.1rem;font-weight:900;margin-bottom:22px;color:var(--text)}
+    .trend-up{color:var(--green);font-size:0.75rem;font-weight:700}
+    .trend-down{color:var(--red);font-size:0.75rem;font-weight:700}
+    .sort-btn{background:none;border:none;cursor:pointer;font-size:0.7rem;color:var(--light);padding:0 4px}
+    .sort-btn.asc::after{content:' ↑'}
+    .sort-btn.desc::after{content:' ↓'}
   </style>
 </head>
 <body>
@@ -102,9 +201,9 @@
 <!-- LOGIN -->
 <div id="loginScreen">
   <div class="login-box">
-    <div style="font-size:2rem;margin-bottom:12px">🔐</div>
+    <div style="font-size:2.2rem;margin-bottom:12px">🔐</div>
     <h1>Admin Access</h1>
-    <p>Sign in with your admin Google account</p>
+    <p>Sign in with an authorised admin Google account to access the dashboard.</p>
     <button class="btn-google" onclick="adminLogin()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20"> Sign in with Google
     </button>
@@ -120,201 +219,800 @@
       Creatives Gen
       <span class="h-badge">ADMIN</span>
     </div>
-    <button class="btn-out" onclick="fbAuth.signOut().then(()=>location.reload())">Sign Out</button>
+    <div class="h-right">
+      <span class="h-admin-label" id="adminEmailLabel"></span>
+      <button class="btn-sm" onclick="fbAuth.signOut().then(()=>location.reload())">Sign Out</button>
+    </div>
   </header>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab" onclick="switchTab('users',this)">Users</button>
+    <button class="tab" onclick="switchTab('revenue',this)">Revenue</button>
+    <button class="tab" onclick="switchTab('preauth',this)">Pre-authorize</button>
+    <button class="tab" onclick="switchTab('admins',this)">Admins</button>
+  </div>
+
   <main>
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat blue">
-        <div class="stat-label">Total Users</div>
-        <div class="stat-val" id="statTotal">—</div>
-        <div class="stat-sub">All time signups</div>
+
+    <!-- ══════════ OVERVIEW TAB ══════════ -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="stats" id="overviewStats">
+        <div class="stat blue">
+          <div class="stat-label">Total Users</div>
+          <div class="stat-val" id="st-total">—</div>
+          <div class="stat-sub">All-time signups</div>
+        </div>
+        <div class="stat green">
+          <div class="stat-label">Images Generated</div>
+          <div class="stat-val" id="st-images">—</div>
+          <div class="stat-sub">All-time total</div>
+        </div>
+        <div class="stat pink">
+          <div class="stat-label">Paid Users</div>
+          <div class="stat-val" id="st-paid">—</div>
+          <div class="stat-sub">Starter / Pro / Agency / Ent.</div>
+        </div>
+        <div class="stat yellow">
+          <div class="stat-label">Est. MRR</div>
+          <div class="stat-val" id="st-mrr">—</div>
+          <div class="stat-sub">Monthly recurring revenue</div>
+        </div>
+        <div class="stat purple">
+          <div class="stat-label">Avg Images / User</div>
+          <div class="stat-val" id="st-avg">—</div>
+          <div class="stat-sub">All-time average</div>
+        </div>
+        <div class="stat blue">
+          <div class="stat-label">New (This Month)</div>
+          <div class="stat-val" id="st-newmonth">—</div>
+          <div class="stat-sub">Signups this calendar month</div>
+        </div>
+        <div class="stat green">
+          <div class="stat-label">Active (30 days)</div>
+          <div class="stat-val" id="st-active">—</div>
+          <div class="stat-sub">Logged in within 30 days</div>
+        </div>
+        <div class="stat red">
+          <div class="stat-label">Inactive Users</div>
+          <div class="stat-val" id="st-inactive">—</div>
+          <div class="stat-sub">No login in 30+ days</div>
+        </div>
       </div>
-      <div class="stat green">
-        <div class="stat-label">Images Generated</div>
-        <div class="stat-val" id="statImages">—</div>
-        <div class="stat-sub">All time total</div>
-      </div>
-      <div class="stat pink">
-        <div class="stat-label">Paid Users</div>
-        <div class="stat-val" id="statPaid">—</div>
-        <div class="stat-sub">Starter / Pro / Agency</div>
-      </div>
-      <div class="stat yellow">
-        <div class="stat-label">Free Users</div>
-        <div class="stat-val" id="statFree">—</div>
-        <div class="stat-sub">On free plan</div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Plan Distribution</div>
+          <div class="plan-dist" id="planDistChart"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top 8 Users by Images Generated</div>
+          <div class="top-users-list" id="topUsersList"></div>
+        </div>
       </div>
     </div>
 
-    <!-- Filters -->
-    <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="Search name or email…" oninput="filterUsers()">
-      <button class="filter-btn active" onclick="setPlanFilter('all',this)">All</button>
-      <button class="filter-btn" onclick="setPlanFilter('free',this)">Free</button>
-      <button class="filter-btn" onclick="setPlanFilter('starter',this)">Starter</button>
-      <button class="filter-btn" onclick="setPlanFilter('pro',this)">Pro</button>
-      <button class="filter-btn" onclick="setPlanFilter('agency',this)">Agency</button>
-      <button class="refresh-btn" onclick="loadUsers()">↻ Refresh</button>
+    <!-- ══════════ USERS TAB ══════════ -->
+    <div class="tab-content" id="tab-users">
+      <div class="section-head">
+        <h2>All Users</h2>
+        <div class="toolbar">
+          <input type="text" id="searchInput" placeholder="Search name or email…" oninput="filterUsers()">
+          <button class="filter-btn active" onclick="setPlanFilter('all',this)">All</button>
+          <button class="filter-btn" onclick="setPlanFilter('free',this)">Free</button>
+          <button class="filter-btn" onclick="setPlanFilter('starter',this)">Starter</button>
+          <button class="filter-btn" onclick="setPlanFilter('pro',this)">Pro</button>
+          <button class="filter-btn" onclick="setPlanFilter('agency',this)">Agency</button>
+          <button class="filter-btn" onclick="setPlanFilter('enterprise',this)">Enterprise</button>
+          <button class="btn-primary" onclick="loadUsers()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Provider</th>
+              <th>Plan</th>
+              <th>Usage (period)</th>
+              <th>All-time Images <button class="sort-btn" id="sortImgBtn" onclick="sortBy('images',this)"></button></th>
+              <th>Joined <button class="sort-btn" id="sortJoinBtn" onclick="sortBy('joined',this)"></button></th>
+              <th>Last Login</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="userTable"><tr><td colspan="8" class="loading-row">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Table -->
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Provider</th>
-            <th>Plan</th>
-            <th>Usage (this period)</th>
-            <th>All-time Images</th>
-            <th>Joined</th>
-            <th>Last Login</th>
-          </tr>
-        </thead>
-        <tbody id="userTable"><tr><td colspan="7" class="loading">Loading…</td></tr></tbody>
-      </table>
+    <!-- ══════════ REVENUE TAB ══════════ -->
+    <div class="tab-content" id="tab-revenue">
+      <div class="rev-cards" id="revCards"></div>
+      <div class="section-head"><h2>Revenue by User</h2></div>
+      <div class="rev-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Plan</th>
+              <th>Monthly Value</th>
+              <th>Est. Renewal</th>
+              <th>Images Used</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="revTable"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- ══════════ PRE-AUTHORIZE TAB ══════════ -->
+    <div class="tab-content" id="tab-preauth">
+      <div class="section-head">
+        <h2>Pre-authorize Users</h2>
+        <button class="btn-primary" onclick="loadPreauth()">↻ Refresh</button>
+      </div>
+      <div class="info-box" style="max-width:700px;margin-bottom:20px">
+        <strong>How it works:</strong> Enter a customer's email and plan below. When they sign up (or next time they log in), they'll automatically receive the paid plan — no manual steps needed.
+      </div>
+
+      <!-- Add form -->
+      <div class="chart-card" style="max-width:500px;margin-bottom:24px">
+        <div class="chart-title">Add Pre-authorized User</div>
+        <div class="form-row">
+          <label>Customer Email</label>
+          <input type="email" id="pa-email" placeholder="customer@example.com">
+        </div>
+        <div class="form-row">
+          <label>Plan to Grant</label>
+          <select id="pa-plan">
+            <option value="starter">Starter — 200 images/mo ($19/mo)</option>
+            <option value="pro">Pro — 1,000 images/mo ($59/mo)</option>
+            <option value="agency">Agency — 5,000 images/mo ($199/mo)</option>
+            <option value="enterprise">Enterprise — 15,000 images/mo ($499/mo)</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Payment Note (optional)</label>
+          <input type="text" id="pa-note" placeholder="e.g. Paid via bank transfer $59 — April 2026">
+        </div>
+        <button class="btn-primary" style="width:100%" onclick="addPreauth()">Grant Access</button>
+      </div>
+
+      <!-- Pending list -->
+      <div class="section-head"><h2>Pending Pre-authorizations</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Note</th>
+              <th>Added</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="preauthTable"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════ ADMINS TAB ══════════ -->
+    <div class="tab-content" id="tab-admins">
+      <div class="section-head"><h2>Admin Accounts</h2></div>
+      <div class="admins-wrap" id="adminsWrap">
+        <div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
-<!-- DETAIL MODAL -->
-<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
-  <div class="detail-modal" id="detailModal">
-    <button class="close-modal" onclick="closeDetail()">×</button>
-    <h2 id="detailName">User Details</h2>
-    <div id="detailBody"></div>
+<!-- EDIT USER MODAL -->
+<div class="overlay" id="editOverlay" onclick="if(event.target===this)closeEdit()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="editTitle">Edit User</h2>
+      <button class="close-modal" onclick="closeEdit()">×</button>
+    </div>
+
+    <!-- User info summary -->
+    <div class="modal-section">
+      <div class="modal-section-title">Account Info</div>
+      <div id="editInfoRows"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Plan management -->
+    <div class="modal-section">
+      <div class="modal-section-title">Subscription Management</div>
+      <div class="info-box">Changes take effect immediately on next app load for this user.</div>
+      <div class="form-row">
+        <label>Plan</label>
+        <select id="editPlan" onchange="onPlanChange()">
+          <option value="free">Free — 15 images/mo</option>
+          <option value="starter">Starter — 200 images/mo ($19/mo)</option>
+          <option value="pro">Pro — 1,000 images/mo ($59/mo)</option>
+          <option value="agency">Agency — 5,000 images/mo ($199/mo)</option>
+          <option value="enterprise">Enterprise — 15,000 images/mo ($499/mo)</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Image Allowance (images/period)</label>
+        <input type="number" id="editAllowance" min="0" max="100000">
+      </div>
+      <div class="form-row">
+        <label>Current Usage (images used this period)</label>
+        <input type="number" id="editUsed" min="0" max="100000">
+      </div>
+      <div class="form-row">
+        <label>Renewal Date</label>
+        <input type="date" id="editRenewal">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Danger zone -->
+    <div class="modal-section">
+      <div class="modal-section-title">Quick Actions</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn-success" onclick="resetUsage()">↺ Reset Usage to 0</button>
+        <button class="btn-danger" onclick="cancelSubscription()">✕ Cancel Subscription</button>
+        <button class="tbl-btn" style="padding:7px 14px;" onclick="grantBonus()">+ Grant 50 Bonus Images</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="saveUser()">Save Changes</button>
+      <button class="btn-sm" onclick="closeEdit()">Cancel</button>
+    </div>
   </div>
 </div>
 
+<!-- TOAST -->
+<div id="toastContainer"></div>
+
 <script>
-  // ── CHANGE THIS to your own email ──
-  const ADMIN_EMAIL = 'asfandyarkhank@gmail.com';
+// ── CONFIG ──────────────────────────────────────────────────────────
+const HARDCODED_ADMIN = 'asfandyarkhank@gmail.com';
 
-  firebase.initializeApp({
-    apiKey: "AIzaSyCul5Hv4vy-FfH-IMafdOP3fs8ikP2WvIE",
-    authDomain: "image-generation-web-app.firebaseapp.com",
-    projectId: "image-generation-web-app",
-    storageBucket: "image-generation-web-app.firebasestorage.app",
-    messagingSenderId: "981800995254",
-    appId: "1:981800995254:web:279635b177ecbee3ead917"
-  });
-  const fbAuth = firebase.auth();
-  const fbDb = firebase.firestore();
+const PLAN_PRICES = { free:0, starter:19, pro:59, agency:199, enterprise:499 };
+const PLAN_ALLOWANCE = { free:15, starter:200, pro:1000, agency:5000, enterprise:15000 };
+const PLAN_COLORS = {
+  free:'#64748b', starter:'#5b5ef4', pro:'#a855f7', agency:'#f59e0b', enterprise:'#e11d48'
+};
 
-  let allUsers = [];
-  let planFilter = 'all';
+firebase.initializeApp({
+  apiKey: "AIzaSyCul5Hv4vy-FfH-IMafdOP3fs8ikP2WvIE",
+  authDomain: "image-generation-web-app.firebaseapp.com",
+  projectId: "image-generation-web-app",
+  storageBucket: "image-generation-web-app.firebasestorage.app",
+  messagingSenderId: "981800995254",
+  appId: "1:981800995254:web:279635b177ecbee3ead917"
+});
+const fbAuth = firebase.auth();
+const fbDb = firebase.firestore();
 
-  fbAuth.onAuthStateChanged(user => {
-    if (user && user.email === ADMIN_EMAIL) {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      loadUsers();
-    } else if (user) {
-      document.getElementById('loginError').style.display = 'block';
-      document.getElementById('loginError').textContent = 'Access denied. Not an admin account.';
-      fbAuth.signOut();
+let allUsers = [];
+let planFilter = 'all';
+let sortField = null;
+let sortDir = 'desc';
+let editingUid = null;
+let adminEmails = [];
+let currentAdminEmail = '';
+
+// ── AUTH ────────────────────────────────────────────────────────────
+fbAuth.onAuthStateChanged(async user => {
+  if (!user) return;
+  // Check both hardcoded admin and Firestore admin list
+  const isAdmin = await checkIsAdmin(user.email);
+  if (isAdmin) {
+    currentAdminEmail = user.email;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('adminEmailLabel').textContent = user.email;
+    loadUsers();
+    loadAdmins();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginError').textContent = 'Access denied. Not an admin account.';
+    fbAuth.signOut();
+  }
+});
+
+async function checkIsAdmin(email) {
+  if (email === HARDCODED_ADMIN) return true;
+  try {
+    const doc = await fbDb.collection('config').doc('admins').get();
+    if (doc.exists) {
+      const data = doc.data();
+      return (data.emails || []).includes(email);
     }
-  });
+  } catch(e) { /* ignore */ }
+  return false;
+}
 
-  async function adminLogin() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    try { await fbAuth.signInWithPopup(provider); }
-    catch(e) { console.error(e); }
-  }
+async function adminLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try { await fbAuth.signInWithPopup(provider); }
+  catch(e) { console.error(e); }
+}
 
-  async function loadUsers() {
-    document.getElementById('userTable').innerHTML = '<tr><td colspan="7" class="loading">Loading…</td></tr>';
-    try {
-      const snap = await fbDb.collection('users').orderBy('createdAt', 'desc').get();
-      allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderStats();
-      filterUsers();
-    } catch(e) {
-      document.getElementById('userTable').innerHTML = `<tr><td colspan="7" class="empty">Error: ${e.message}</td></tr>`;
-    }
-  }
+// ── TABS ────────────────────────────────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'admins') renderAdmins();
+  if (name === 'revenue') renderRevenue();
+  if (name === 'preauth') loadPreauth();
+}
 
-  function renderStats() {
-    const total = allUsers.length;
-    const images = allUsers.reduce((s, u) => s + (u.imagesUsedAllTime || 0), 0);
-    const paid = allUsers.filter(u => u.plan && u.plan !== 'free').length;
-    const free = allUsers.filter(u => !u.plan || u.plan === 'free').length;
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statImages').textContent = images.toLocaleString();
-    document.getElementById('statPaid').textContent = paid;
-    document.getElementById('statFree').textContent = free;
-  }
-
-  function setPlanFilter(plan, btn) {
-    planFilter = plan;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+// ── LOAD DATA ───────────────────────────────────────────────────────
+async function loadUsers() {
+  document.getElementById('userTable').innerHTML = '<tr><td colspan="8" class="loading-row">Loading…</td></tr>';
+  try {
+    const snap = await fbDb.collection('users').orderBy('createdAt', 'desc').get();
+    allUsers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderStats();
+    renderCharts();
     filterUsers();
+    renderRevenue();
+  } catch(e) {
+    document.getElementById('userTable').innerHTML = `<tr><td colspan="8" class="empty">Error: ${esc(e.message)}</td></tr>`;
+    showToast('Failed to load users: ' + e.message, 'error');
+  }
+}
+
+// ── STATS ───────────────────────────────────────────────────────────
+function renderStats() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const thirtyDaysAgo = new Date(now - 30*24*60*60*1000);
+
+  const total = allUsers.length;
+  const images = allUsers.reduce((s,u) => s+(u.imagesUsedAllTime||0), 0);
+  const paid = allUsers.filter(u => u.plan && u.plan !== 'free').length;
+  const mrr = allUsers.reduce((s,u) => s+(PLAN_PRICES[u.plan]||0), 0);
+  const avg = total ? Math.round(images/total) : 0;
+  const newMonth = allUsers.filter(u => {
+    const d = u.createdAt?.toDate ? u.createdAt.toDate() : null;
+    return d && d >= monthStart;
+  }).length;
+  const active = allUsers.filter(u => {
+    const d = u.lastLoginAt?.toDate ? u.lastLoginAt.toDate() : null;
+    return d && d >= thirtyDaysAgo;
+  }).length;
+  const inactive = total - active;
+
+  document.getElementById('st-total').textContent = total.toLocaleString();
+  document.getElementById('st-images').textContent = images.toLocaleString();
+  document.getElementById('st-paid').textContent = paid.toLocaleString();
+  document.getElementById('st-mrr').textContent = '$'+mrr.toLocaleString();
+  document.getElementById('st-avg').textContent = avg.toLocaleString();
+  document.getElementById('st-newmonth').textContent = newMonth.toLocaleString();
+  document.getElementById('st-active').textContent = active.toLocaleString();
+  document.getElementById('st-inactive').textContent = inactive.toLocaleString();
+}
+
+// ── CHARTS ──────────────────────────────────────────────────────────
+function renderCharts() {
+  // Plan distribution
+  const plans = ['free','starter','pro','agency','enterprise'];
+  const counts = {};
+  plans.forEach(p => counts[p] = allUsers.filter(u => (u.plan||'free') === p).length);
+  const maxCount = Math.max(...Object.values(counts), 1);
+  document.getElementById('planDistChart').innerHTML = plans.map(p => {
+    const count = counts[p];
+    const pct = Math.round(count/maxCount*100);
+    const rev = count * PLAN_PRICES[p];
+    return `<div class="plan-row">
+      <span class="plan-row-label" style="color:${PLAN_COLORS[p]}">${p}</span>
+      <div class="plan-bar-wrap"><div class="plan-bar" style="width:${pct}%;background:${PLAN_COLORS[p]}"></div></div>
+      <span class="plan-row-count" style="color:${PLAN_COLORS[p]}">${count}</span>
+      <span class="plan-row-rev">${rev>0?'$'+rev.toLocaleString():'—'}</span>
+    </div>`;
+  }).join('');
+
+  // Top users
+  const topUsers = [...allUsers].sort((a,b) => (b.imagesUsedAllTime||0)-(a.imagesUsedAllTime||0)).slice(0,8);
+  document.getElementById('topUsersList').innerHTML = topUsers.length ? topUsers.map((u,i) => {
+    const avatarHtml = u.photoURL
+      ? `<img class="avatar" src="${u.photoURL}" referrerpolicy="no-referrer" style="width:26px;height:26px;flex-shrink:0">`
+      : `<div class="avatar-ph" style="width:26px;height:26px;font-size:0.65rem;flex-shrink:0">${(u.name||'?')[0].toUpperCase()}</div>`;
+    return `<div class="top-user-row">
+      <span class="top-user-rank">${i+1}</span>
+      ${avatarHtml}
+      <div class="top-user-info">
+        <div class="top-user-name">${esc(u.name||'—')}</div>
+        <div class="top-user-email">${esc(u.email||'')}</div>
+      </div>
+      <span class="top-user-imgs">${(u.imagesUsedAllTime||0).toLocaleString()}</span>
+    </div>`;
+  }).join('') : '<div style="color:var(--muted);font-size:0.86rem">No data yet.</div>';
+}
+
+// ── USERS TABLE ──────────────────────────────────────────────────────
+function setPlanFilter(plan, btn) {
+  planFilter = plan;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterUsers();
+}
+
+function filterUsers() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let list = allUsers;
+  if (planFilter !== 'all') list = list.filter(u => (u.plan||'free') === planFilter);
+  if (q) list = list.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
+  if (sortField === 'images') list = [...list].sort((a,b) => sortDir==='desc' ? (b.imagesUsedAllTime||0)-(a.imagesUsedAllTime||0) : (a.imagesUsedAllTime||0)-(b.imagesUsedAllTime||0));
+  if (sortField === 'joined') list = [...list].sort((a,b) => {
+    const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+    const db2 = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+    return sortDir==='desc' ? db2-da : da-db2;
+  });
+  renderTable(list);
+}
+
+function sortBy(field, btn) {
+  if (sortField === field) sortDir = sortDir==='desc'?'asc':'desc';
+  else { sortField = field; sortDir = 'desc'; }
+  document.querySelectorAll('.sort-btn').forEach(b => { b.className='sort-btn'; });
+  btn.className = 'sort-btn '+sortDir;
+  filterUsers();
+}
+
+function renderTable(users) {
+  if (!users.length) {
+    document.getElementById('userTable').innerHTML = '<tr><td colspan="8" class="empty">No users found.</td></tr>';
+    return;
+  }
+  document.getElementById('userTable').innerHTML = users.map(u => {
+    const plan = u.plan||'free';
+    const used = u.imagesUsed||0;
+    const allowance = u.imagesAllowance||15;
+    const pct = Math.min(used/allowance*100, 100);
+    const fillClass = pct>=100?'full':pct>=70?'warn':'';
+    const avatarHtml = u.photoURL
+      ? `<img class="avatar" src="${u.photoURL}" referrerpolicy="no-referrer">`
+      : `<div class="avatar-ph">${(u.name||'?')[0].toUpperCase()}</div>`;
+    const provider = u.provider==='facebook.com'?'🔵':'🔴';
+    const joined = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
+    const lastLogin = u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleDateString() : '—';
+    const thirtyDaysAgo = new Date(Date.now()-30*24*60*60*1000);
+    const isActive = u.lastLoginAt?.toDate && u.lastLoginAt.toDate()>=thirtyDaysAgo;
+    return `<tr>
+      <td><div class="name-cell">${avatarHtml}<div>
+        <div style="font-weight:700">${esc(u.name||'—')}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">${esc(u.email||'')}</div>
+      </div></div></td>
+      <td><span title="${esc(u.provider||'google')}">${provider}</span></td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td><div class="usage-bar-wrap">
+        <div class="usage-bar"><div class="usage-fill ${fillClass}" style="width:${pct}%"></div></div>
+        <span class="usage-text">${used}/${allowance}</span>
+      </div></td>
+      <td style="font-weight:700">${(u.imagesUsedAllTime||0).toLocaleString()}</td>
+      <td style="color:var(--muted)">${joined}</td>
+      <td><span style="color:${isActive?'var(--green)':'var(--muted)'}">● </span><span style="color:var(--muted)">${lastLogin}</span></td>
+      <td><div class="action-btns">
+        <button class="tbl-btn" onclick="openEdit('${u.id}')">Edit</button>
+        <button class="tbl-btn red" onclick="quickCancel('${u.id}')">Cancel Sub</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── EDIT USER MODAL ──────────────────────────────────────────────────
+function openEdit(uid) {
+  const u = allUsers.find(x => x.id === uid);
+  if (!u) return;
+  editingUid = uid;
+  document.getElementById('editTitle').textContent = u.name || u.email || 'User';
+
+  const rows = [
+    ['Email', esc(u.email||'—')],
+    ['UID', `<span style="font-size:0.72rem;font-family:monospace;color:var(--muted)">${uid}</span>`],
+    ['Provider', u.provider||'google.com'],
+    ['All-time images', (u.imagesUsedAllTime||0).toLocaleString()],
+    ['Joined', u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : '—'],
+    ['Last login', u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleString() : '—'],
+  ];
+  document.getElementById('editInfoRows').innerHTML = rows.map(([k,v]) =>
+    `<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`
+  ).join('');
+
+  document.getElementById('editPlan').value = u.plan||'free';
+  document.getElementById('editAllowance').value = u.imagesAllowance||15;
+  document.getElementById('editUsed').value = u.imagesUsed||0;
+  if (u.planRenewalDate?.toDate) {
+    const d = u.planRenewalDate.toDate();
+    document.getElementById('editRenewal').value = d.toISOString().split('T')[0];
+  } else {
+    document.getElementById('editRenewal').value = '';
   }
 
-  function filterUsers() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    let list = allUsers;
-    if (planFilter !== 'all') list = list.filter(u => (u.plan || 'free') === planFilter);
-    if (q) list = list.filter(u => (u.name||'').toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q));
-    renderTable(list);
+  document.getElementById('editOverlay').classList.add('open');
+}
+
+function onPlanChange() {
+  const plan = document.getElementById('editPlan').value;
+  document.getElementById('editAllowance').value = PLAN_ALLOWANCE[plan]||15;
+}
+
+function closeEdit() {
+  document.getElementById('editOverlay').classList.remove('open');
+  editingUid = null;
+}
+
+async function saveUser() {
+  if (!editingUid) return;
+  const plan = document.getElementById('editPlan').value;
+  const allowance = parseInt(document.getElementById('editAllowance').value)||0;
+  const used = parseInt(document.getElementById('editUsed').value)||0;
+  const renewalVal = document.getElementById('editRenewal').value;
+  const update = {
+    plan,
+    imagesAllowance: allowance,
+    imagesUsed: used,
+    planRenewalDate: renewalVal ? firebase.firestore.Timestamp.fromDate(new Date(renewalVal)) : firebase.firestore.FieldValue.delete()
+  };
+  try {
+    await fbDb.collection('users').doc(editingUid).update(update);
+    // Update local cache
+    const idx = allUsers.findIndex(u => u.id === editingUid);
+    if (idx !== -1) Object.assign(allUsers[idx], update);
+    showToast('User updated successfully!', 'success');
+    closeEdit();
+    renderStats();
+    renderCharts();
+    filterUsers();
+    renderRevenue();
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+  }
+}
+
+async function resetUsage() {
+  if (!editingUid) return;
+  document.getElementById('editUsed').value = 0;
+  showToast('Usage set to 0 — click Save Changes to apply.', 'info');
+}
+
+async function cancelSubscription() {
+  if (!editingUid) return;
+  document.getElementById('editPlan').value = 'free';
+  document.getElementById('editAllowance').value = 15;
+  document.getElementById('editRenewal').value = '';
+  showToast('Plan set to Free — click Save Changes to apply.', 'info');
+}
+
+function grantBonus() {
+  if (!editingUid) return;
+  const current = parseInt(document.getElementById('editAllowance').value)||0;
+  document.getElementById('editAllowance').value = current+50;
+  showToast('Added 50 bonus images — click Save Changes to apply.', 'info');
+}
+
+// Quick cancel from table (no modal)
+async function quickCancel(uid) {
+  if (!confirm('Cancel this user\'s subscription and set them to Free plan?')) return;
+  try {
+    await fbDb.collection('users').doc(uid).update({ plan:'free', imagesAllowance:15, planRenewalDate:firebase.firestore.FieldValue.delete() });
+    const idx = allUsers.findIndex(u => u.id === uid);
+    if (idx !== -1) { allUsers[idx].plan='free'; allUsers[idx].imagesAllowance=15; }
+    showToast('Subscription cancelled — user moved to Free.', 'success');
+    renderStats(); renderCharts(); filterUsers(); renderRevenue();
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ── REVENUE TAB ──────────────────────────────────────────────────────
+function renderRevenue() {
+  const plans = ['starter','pro','agency','enterprise'];
+  const planCounts = {};
+  plans.forEach(p => planCounts[p] = allUsers.filter(u=>(u.plan||'free')===p).length);
+  const totalMrr = plans.reduce((s,p)=>s+planCounts[p]*PLAN_PRICES[p],0);
+
+  document.getElementById('revCards').innerHTML = [
+    {key:'starter',label:'Starter',color:'var(--accent)'},
+    {key:'pro',label:'Pro',color:'var(--purple)'},
+    {key:'agency',label:'Agency',color:'var(--yellow)'},
+    {key:'enterprise',label:'Enterprise',color:'var(--red)'},
+  ].map(({key,label,color})=>{
+    const cnt = planCounts[key]||0;
+    const mrr = cnt*PLAN_PRICES[key];
+    return `<div class="rev-card">
+      <div class="rev-card-top">
+        <span class="rev-card-plan plan-badge plan-${key}">${label}</span>
+        <span class="rev-card-users">${cnt} user${cnt!==1?'s':''}</span>
+      </div>
+      <div class="rev-card-price" style="color:${color}">$${mrr.toLocaleString()}</div>
+      <div class="rev-card-mrr">MRR · $${PLAN_PRICES[key]}/user</div>
+    </div>`;
+  }).join('') + `<div class="rev-card" style="border-color:var(--accent)">
+    <div class="rev-card-top"><span class="rev-card-plan" style="color:var(--accent);font-weight:900">TOTAL MRR</span></div>
+    <div class="rev-card-price" style="color:var(--accent)">$${totalMrr.toLocaleString()}</div>
+    <div class="rev-card-mrr">Est. annual: $${(totalMrr*12).toLocaleString()}</div>
+  </div>`;
+
+  const paidUsers = allUsers.filter(u=>u.plan&&u.plan!=='free').sort((a,b)=>PLAN_PRICES[b.plan||'free']-PLAN_PRICES[a.plan||'free']);
+  document.getElementById('revTable').innerHTML = paidUsers.length ? paidUsers.map(u=>{
+    const plan = u.plan||'free';
+    const renewal = u.planRenewalDate?.toDate ? u.planRenewalDate.toDate().toLocaleDateString() : '—';
+    const avatarHtml = u.photoURL
+      ? `<img class="avatar" src="${u.photoURL}" referrerpolicy="no-referrer">`
+      : `<div class="avatar-ph">${(u.name||'?')[0].toUpperCase()}</div>`;
+    return `<tr>
+      <td><div class="name-cell">${avatarHtml}<div>
+        <div style="font-weight:700">${esc(u.name||'—')}</div>
+        <div style="font-size:0.72rem;color:var(--muted)">${esc(u.email||'')}</div>
+      </div></div></td>
+      <td><span class="plan-badge plan-${plan}">${plan}</span></td>
+      <td style="font-weight:800;color:var(--green)">$${PLAN_PRICES[plan]}/mo</td>
+      <td style="color:var(--muted)">${renewal}</td>
+      <td>${(u.imagesUsedAllTime||0).toLocaleString()}</td>
+      <td><button class="tbl-btn" onclick="openEdit('${u.id}')">Edit Plan</button></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="6" class="empty">No paid users yet.</td></tr>';
+}
+
+// ── ADMINS TAB ───────────────────────────────────────────────────────
+async function loadAdmins() {
+  try {
+    const doc = await fbDb.collection('config').doc('admins').get();
+    adminEmails = doc.exists ? (doc.data().emails||[]) : [];
+    if (!adminEmails.includes(HARDCODED_ADMIN)) adminEmails = [HARDCODED_ADMIN, ...adminEmails];
+  } catch(e) {
+    adminEmails = [HARDCODED_ADMIN];
+  }
+}
+
+function renderAdmins() {
+  document.getElementById('adminsWrap').innerHTML = adminEmails.map(email => `
+    <div class="admin-row">
+      <div>
+        <div class="admin-email">${esc(email)}</div>
+        ${email===HARDCODED_ADMIN?'<span style="font-size:0.72rem;color:var(--muted)">Primary admin (hardcoded)</span>':''}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${email===currentAdminEmail?'<span class="admin-you">You</span>':''}
+        ${email!==HARDCODED_ADMIN?`<button class="btn-danger" style="padding:5px 10px;font-size:0.72rem" onclick="removeAdmin('${esc(email)}')">Remove</button>`:''}
+      </div>
+    </div>
+  `).join('') + `
+    <div class="add-admin-form">
+      <div style="font-size:0.78rem;font-weight:800;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Add Admin</div>
+      <input type="email" id="newAdminEmail" placeholder="Enter Google account email…">
+      <button class="btn-primary" style="width:100%" onclick="addAdmin()">Add Admin Account</button>
+    </div>`;
+}
+
+async function addAdmin() {
+  const email = document.getElementById('newAdminEmail').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { showToast('Enter a valid email address.','error'); return; }
+  if (adminEmails.includes(email)) { showToast('Already an admin.','error'); return; }
+  try {
+    const filtered = adminEmails.filter(e=>e!==HARDCODED_ADMIN);
+    filtered.push(email);
+    await fbDb.collection('config').doc('admins').set({ emails: filtered });
+    adminEmails.push(email);
+    renderAdmins();
+    document.getElementById('newAdminEmail').value='';
+    showToast(`${email} added as admin.`,'success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+async function removeAdmin(email) {
+  if (!confirm(`Remove ${email} as admin?`)) return;
+  try {
+    const filtered = adminEmails.filter(e=>e!==HARDCODED_ADMIN&&e!==email);
+    await fbDb.collection('config').doc('admins').set({ emails: filtered });
+    adminEmails = adminEmails.filter(e=>e!==email);
+    renderAdmins();
+    showToast(`${email} removed from admins.`,'success');
+  } catch(e) { showToast('Error: '+e.message,'error'); }
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────
+function showToast(msg, type='info', duration=3500) {
+  const t = document.createElement('div');
+  t.className = 'toast '+(type==='success'?'success':type==='error'?'error':'');
+  t.textContent = msg;
+  document.getElementById('toastContainer').appendChild(t);
+  requestAnimationFrame(()=>{ t.classList.add('show'); });
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, duration);
+}
+
+// ── PRE-AUTHORIZE ────────────────────────────────────────────────────
+async function addPreauth() {
+  const email = document.getElementById('pa-email').value.trim().toLowerCase();
+  const plan = document.getElementById('pa-plan').value;
+  const note = document.getElementById('pa-note').value.trim();
+  if (!email || !email.includes('@')) { showToast('Enter a valid email address.','error'); return; }
+
+  // Check if user is already signed up — upgrade them directly
+  const existing = allUsers.find(u => (u.email||'').toLowerCase() === email);
+  if (existing) {
+    if (confirm(`${email} already has an account. Upgrade them to ${plan} now?`)) {
+      try {
+        const allowance = PLAN_ALLOWANCE[plan];
+        const renewal = new Date(); renewal.setMonth(renewal.getMonth()+1);
+        await fbDb.collection('users').doc(existing.id).update({
+          plan, imagesAllowance: allowance,
+          planRenewalDate: firebase.firestore.Timestamp.fromDate(renewal),
+          paymentNote: note || firebase.firestore.FieldValue.delete()
+        });
+        const idx = allUsers.findIndex(u=>u.id===existing.id);
+        if(idx!==-1){ allUsers[idx].plan=plan; allUsers[idx].imagesAllowance=allowance; }
+        showToast(`${email} upgraded to ${plan} successfully!`,'success');
+        renderStats(); renderCharts(); filterUsers(); renderRevenue();
+        document.getElementById('pa-email').value='';
+        document.getElementById('pa-note').value='';
+      } catch(e){ showToast('Error: '+e.message,'error'); }
+    }
+    return;
   }
 
-  function renderTable(users) {
-    if (!users.length) {
-      document.getElementById('userTable').innerHTML = '<tr><td colspan="7" class="empty">No users found.</td></tr>';
+  // No account yet — store preauth
+  try {
+    const docId = email.replace(/[.#$[\]]/g,'_');
+    await fbDb.collection('preauth').doc(docId).set({
+      email, plan,
+      note: note||'',
+      addedBy: currentAdminEmail,
+      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      claimed: false
+    });
+    showToast(`${email} pre-authorized for ${plan}. They'll get access on signup.`,'success');
+    document.getElementById('pa-email').value='';
+    document.getElementById('pa-note').value='';
+    loadPreauth();
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
+
+async function loadPreauth() {
+  document.getElementById('preauthTable').innerHTML = '<tr><td colspan="6" class="loading-row">Loading…</td></tr>';
+  try {
+    const snap = await fbDb.collection('preauth').orderBy('addedAt','desc').get();
+    const items = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if (!items.length) {
+      document.getElementById('preauthTable').innerHTML = '<tr><td colspan="6" class="empty">No pre-authorizations yet.</td></tr>';
       return;
     }
-    document.getElementById('userTable').innerHTML = users.map(u => {
-      const plan = u.plan || 'free';
-      const used = u.imagesUsed || 0;
-      const allowance = u.imagesAllowance || 15;
-      const pct = Math.min(used / allowance * 100, 100);
-      const fillClass = pct >= 100 ? 'full' : pct >= 70 ? 'warn' : '';
-      const avatarHtml = u.photoURL
-        ? `<img class="avatar" src="${u.photoURL}" referrerpolicy="no-referrer">`
-        : `<div class="avatar-ph">${(u.name||'?')[0].toUpperCase()}</div>`;
-      const provider = u.provider === 'facebook.com' ? '🔵 Facebook' : '🔴 Google';
-      const joined = u.createdAt?.toDate ? u.createdAt.toDate().toLocaleDateString() : '—';
-      const lastLogin = u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleDateString() : '—';
-      return `<tr onclick="showDetail('${u.id}')" style="cursor:pointer">
-        <td><div class="name-cell">${avatarHtml}<div><div style="font-weight:700">${esc(u.name||'—')}</div><div style="font-size:0.75rem;color:var(--muted)">${esc(u.email||'')}</div></div></div></td>
-        <td><span class="provider-icon">${provider}</span></td>
-        <td><span class="plan-badge plan-${plan}">${plan}</span></td>
-        <td><div class="usage-bar-wrap"><div class="usage-bar"><div class="usage-fill ${fillClass}" style="width:${pct}%"></div></div><span class="usage-text">${used}/${allowance}</span></div></td>
-        <td style="font-weight:700">${(u.imagesUsedAllTime||0).toLocaleString()}</td>
-        <td style="color:var(--muted)">${joined}</td>
-        <td style="color:var(--muted)">${lastLogin}</td>
+    document.getElementById('preauthTable').innerHTML = items.map(p => {
+      const added = p.addedAt?.toDate ? p.addedAt.toDate().toLocaleDateString() : '—';
+      const status = p.claimed
+        ? `<span style="color:var(--green);font-weight:700">✓ Claimed</span>`
+        : `<span style="color:var(--yellow);font-weight:700">⏳ Pending</span>`;
+      return `<tr>
+        <td style="font-weight:700">${esc(p.email)}</td>
+        <td><span class="plan-badge plan-${p.plan}">${p.plan}</span></td>
+        <td style="color:var(--muted);font-size:0.8rem">${esc(p.note||'—')}</td>
+        <td style="color:var(--muted)">${added}</td>
+        <td>${status}</td>
+        <td><button class="tbl-btn red" onclick="deletePreauth('${esc(p.id)}','${esc(p.email)}')">Revoke</button></td>
       </tr>`;
     }).join('');
-  }
+  } catch(e){ document.getElementById('preauthTable').innerHTML=`<tr><td colspan="6" class="empty">Error: ${esc(e.message)}</td></tr>`; }
+}
 
-  function showDetail(uid) {
-    const u = allUsers.find(x => x.id === uid);
-    if (!u) return;
-    document.getElementById('detailName').textContent = u.name || u.email || 'User';
-    const rows = [
-      ['Email', u.email || '—'],
-      ['UID', `<span style="font-size:0.75rem;font-family:monospace">${uid}</span>`],
-      ['Plan', `<span class="plan-badge plan-${u.plan||'free'}">${u.plan||'free'}</span>`],
-      ['Images this period', `${u.imagesUsed||0} / ${u.imagesAllowance||15}`],
-      ['All-time images', (u.imagesUsedAllTime||0).toLocaleString()],
-      ['Plan renewal', u.planRenewalDate?.toDate ? u.planRenewalDate.toDate().toLocaleDateString() : '—'],
-      ['Joined', u.createdAt?.toDate ? u.createdAt.toDate().toLocaleString() : '—'],
-      ['Last login', u.lastLoginAt?.toDate ? u.lastLoginAt.toDate().toLocaleString() : '—'],
-    ];
-    document.getElementById('detailBody').innerHTML = rows.map(([k,v]) =>
-      `<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`
-    ).join('');
-    document.getElementById('detailOverlay').classList.add('open');
-  }
+async function deletePreauth(docId, email) {
+  if (!confirm(`Revoke pre-authorization for ${email}?`)) return;
+  try {
+    await fbDb.collection('preauth').doc(docId).delete();
+    showToast(`Revoked access for ${email}.`,'success');
+    loadPreauth();
+  } catch(e){ showToast('Error: '+e.message,'error'); }
+}
 
-  function closeDetail() {
-    document.getElementById('detailOverlay').classList.remove('open');
-  }
-
-  function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// ── UTILS ────────────────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
 </body>
 </html>
