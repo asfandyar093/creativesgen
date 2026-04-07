@@ -20,6 +20,8 @@
     });
     const fbAuth = firebase.auth();
     const fbDb = firebase.firestore();
+    // Keep user logged in across sessions (persists in localStorage)
+    fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     async function ensureUserDoc(user) {
       const ref = fbDb.collection('users').doc(user.uid);
