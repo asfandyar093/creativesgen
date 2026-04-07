@@ -1438,9 +1438,13 @@ function updateTrialUI(used, allowance) {
 }
 
 function canGenerate(n) {
-  if (!userData) return false;
-  if (userData.plan && userData.plan !== 'free') return true;
-  return (userData.imagesUsed || 0) + n <= (userData.imagesAllowance || 15);
+  // If userData not loaded yet, allow — don't block new users
+  if (!userData) return true;
+  const plan = userData.plan || 'free';
+  if (plan !== 'free') return true;
+  const used = userData.imagesUsed || 0;
+  const allowance = userData.imagesAllowance || 15;
+  return used + n <= allowance;
 }
 
 async function consumeImages(n) {
