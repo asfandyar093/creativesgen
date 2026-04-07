@@ -996,10 +996,32 @@ async function loadPreauth() {
         <td style="color:var(--muted);font-size:0.8rem">${esc(p.note||'—')}</td>
         <td style="color:var(--muted)">${added}</td>
         <td>${status}</td>
-        <td><button class="tbl-btn red" onclick="deletePreauth('${esc(p.id)}','${esc(p.email)}')">Revoke</button></td>
+        <td><div style="display:flex;gap:6px">
+          ${!p.claimed ? `<button class="tbl-btn" onclick="sendInviteEmail('${esc(p.email)}','${p.plan}','${esc(p.note||'')}')">📧 Invite</button>` : ''}
+          <button class="tbl-btn red" onclick="deletePreauth('${esc(p.id)}','${esc(p.email)}')">Revoke</button>
+        </div></td>
       </tr>`;
     }).join('');
   } catch(e){ document.getElementById('preauthTable').innerHTML=`<tr><td colspan="6" class="empty">Error: ${esc(e.message)}</td></tr>`; }
+}
+
+async function sendInviteEmail(email, plan, note) {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const r = await fetch('/api/send-invite', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, plan, note })
+    });
+    const data = await r.json();
+    if (!r.ok) { showToast('Failed: '+(data.error||'Unknown error'), 'error'); return; }
+    if (data.dev) showToast(`Dev mode: invite would go to ${email} (no SMTP configured)`, 'info', 5000);
+    else showToast(`Invite sent to ${email}!`, 'success');
+  } catch(e) {
+    showToast('Error: '+e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '📧 Invite';
+  }
 }
 
 async function deletePreauth(docId, email) {

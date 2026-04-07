@@ -57,6 +57,21 @@
     .auth-divider { display:flex; align-items:center; gap:10px; margin:4px 0 14px; color:var(--light); font-size:0.8rem; }
     .auth-divider::before, .auth-divider::after { content:''; flex:1; height:1px; background:var(--border); }
     .auth-error { background:var(--red-l); border:1.5px solid var(--red-m); border-radius:8px; padding:10px 14px; font-size:0.82rem; color:var(--red); margin-bottom:10px; display:none; }
+    /* Email auth */
+    .auth-tabs { display:flex; border:1.5px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:18px; }
+    .auth-tab { flex:1; padding:9px; background:none; border:none; font-size:0.84rem; font-weight:700; cursor:pointer; color:var(--muted); font-family:inherit; transition:all .15s; }
+    .auth-tab.active { background:var(--accent); color:#fff; }
+    .em-input { width:100%; padding:11px 14px; border:1.5px solid var(--border2); border-radius:8px; font-size:0.9rem; font-family:inherit; outline:none; margin-bottom:10px; color:var(--text); background:#fff; }
+    .em-input:focus { border-color:var(--accent); }
+    .btn-em { width:100%; padding:12px; background:linear-gradient(135deg,var(--accent),var(--pink)); color:#fff; border:none; border-radius:8px; font-size:0.92rem; font-weight:800; cursor:pointer; font-family:inherit; margin-bottom:12px; }
+    .btn-em:disabled { opacity:.6; cursor:not-allowed; }
+    .em-link { font-size:0.8rem; color:var(--accent); cursor:pointer; text-decoration:underline; background:none; border:none; font-family:inherit; padding:0; }
+    .em-row { display:flex; justify-content:space-between; margin-bottom:14px; }
+    .otp-box { background:var(--accent-l); border:2px solid var(--accent-m); border-radius:12px; padding:16px; text-align:center; margin-bottom:14px; }
+    .otp-box strong { font-size:0.88rem; color:var(--accent); }
+    .otp-input { width:100%; padding:14px; border:2px solid var(--border2); border-radius:8px; font-size:1.6rem; font-weight:900; letter-spacing:10px; text-align:center; font-family:monospace; outline:none; margin-bottom:10px; }
+    .otp-input:focus { border-color:var(--accent); }
+    .auth-success { background:var(--green-l); border:1.5px solid var(--green-m); border-radius:8px; padding:10px 14px; font-size:0.82rem; color:#065f46; margin-bottom:10px; display:none; }
   </style>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -505,15 +520,76 @@
         <span>Create social posts, ad creatives, and website images</span>
       </div>
     </div>
-    <div id="authError" class="auth-error"></div>
-    <button class="btn-auth" id="btnGoogle" onclick="doGoogleSignIn()">
-      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google"> Continue with Google
-    </button>
-    <button class="btn-auth btn-auth-fb" id="btnFacebook" onclick="doFacebookSignIn()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-      Continue with Facebook
-    </button>
-    <div class="auth-divider">or</div>
+
+    <!-- Auth method tabs -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabSocial" onclick="switchAuthTab('social')">Google / Facebook</button>
+      <button class="auth-tab" id="tabEmail" onclick="switchAuthTab('email')">Email</button>
+    </div>
+
+    <!-- ── SOCIAL TAB ── -->
+    <div id="auth-social">
+      <div id="authError" class="auth-error"></div>
+      <button class="btn-auth" id="btnGoogle" onclick="doGoogleSignIn()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" alt="Google"> Continue with Google
+      </button>
+      <button class="btn-auth btn-auth-fb" id="btnFacebook" onclick="doFacebookSignIn()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Continue with Facebook
+      </button>
+    </div>
+
+    <!-- ── EMAIL TAB ── -->
+    <div id="auth-email" style="display:none">
+      <div id="authErrorEmail" class="auth-error"></div>
+      <div id="authSuccessEmail" class="auth-success"></div>
+
+      <!-- Sign In state -->
+      <div id="em-signin">
+        <input class="em-input" type="email" id="em-si-email" placeholder="Email address" autocomplete="email">
+        <input class="em-input" type="password" id="em-si-pass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')emailSignIn()">
+        <button class="btn-em" id="btnEmailSignIn" onclick="emailSignIn()">Sign In</button>
+        <div class="em-row">
+          <button class="em-link" onclick="switchEmailState('signup')">Create account</button>
+          <button class="em-link" onclick="forgotPassword()">Forgot password?</button>
+        </div>
+      </div>
+
+      <!-- Sign Up state -->
+      <div id="em-signup" style="display:none">
+        <input class="em-input" type="email" id="em-su-email" placeholder="Email address" autocomplete="email">
+        <input class="em-input" type="password" id="em-su-pass" placeholder="Create password (min 8 chars)" autocomplete="new-password" onkeydown="if(event.key==='Enter')emailRequestOTP()">
+        <button class="btn-em" id="btnEmailSignUp" onclick="emailRequestOTP()">Send Verification Code →</button>
+        <div class="em-row">
+          <button class="em-link" onclick="switchEmailState('signin')">Already have an account?</button>
+        </div>
+      </div>
+
+      <!-- OTP Entry state -->
+      <div id="em-otp" style="display:none">
+        <div class="otp-box">
+          <div style="font-size:1.5rem;margin-bottom:6px">📧</div>
+          <strong>Check your inbox!</strong>
+          <div style="font-size:0.8rem;color:var(--muted);margin-top:4px">We sent a 6-digit code to <strong id="em-otp-dest"></strong></div>
+        </div>
+        <input class="otp-input" type="text" id="em-otp-code" placeholder="000000" maxlength="6" inputmode="numeric" oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')emailVerifyOTP()">
+        <button class="btn-em" id="btnEmailVerify" onclick="emailVerifyOTP()">Verify &amp; Create Account</button>
+        <div class="em-row">
+          <button class="em-link" onclick="emailRequestOTP(true)">Resend code</button>
+          <button class="em-link" onclick="switchEmailState('signup')">Change email</button>
+        </div>
+      </div>
+
+      <!-- Password Reset Sent state -->
+      <div id="em-reset-sent" style="display:none;text-align:center;padding:10px 0">
+        <div style="font-size:2rem;margin-bottom:10px">📬</div>
+        <div style="font-weight:700;margin-bottom:6px">Reset email sent!</div>
+        <div style="font-size:0.82rem;color:var(--muted);margin-bottom:16px">Check your inbox and follow the link to reset your password.</div>
+        <button class="em-link" onclick="switchEmailState('signin')">← Back to sign in</button>
+      </div>
+    </div>
+
+    <div class="auth-divider" style="margin-top:14px"></div>
     <p class="modal-note" style="font-size:0.78rem;color:var(--muted);margin-bottom:0;">By continuing you agree to our <a href="/terms.html" style="color:var(--accent)">Terms</a> &amp; <a href="/privacy.html" style="color:var(--accent)">Privacy Policy</a>.</p>
   </div>
 </div>
@@ -1191,6 +1267,135 @@ async function doFacebookSignIn() {
     } else if (e.code !== 'auth/popup-closed-by-user') {
       showAuthError(e.message || 'Sign-in failed. Try again.');
     }
+  }
+}
+
+// ════════════════════════════════════════
+// EMAIL AUTH — tab switching + OTP flow
+// ════════════════════════════════════════
+let _emailSignupPending = { email:'', password:'' };
+
+function switchAuthTab(tab) {
+  document.getElementById('auth-social').style.display = tab==='social' ? '' : 'none';
+  document.getElementById('auth-email').style.display = tab==='email' ? '' : 'none';
+  document.getElementById('tabSocial').classList.toggle('active', tab==='social');
+  document.getElementById('tabEmail').classList.toggle('active', tab==='email');
+  clearAuthMsgs();
+}
+
+function switchEmailState(state) {
+  ['em-signin','em-signup','em-otp','em-reset-sent'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('em-'+state).style.display = '';
+  clearAuthMsgs();
+}
+
+function clearAuthMsgs() {
+  ['authError','authErrorEmail','authSuccessEmail'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.display='none';
+  });
+}
+
+function showAuthErrorEmail(msg) {
+  const el = document.getElementById('authErrorEmail');
+  if (!el) return;
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('authSuccessEmail').style.display = 'none';
+}
+
+function showAuthSuccessEmail(msg) {
+  const el = document.getElementById('authSuccessEmail');
+  if (!el) return;
+  el.textContent = msg; el.style.display = 'block';
+  document.getElementById('authErrorEmail').style.display = 'none';
+}
+
+async function emailRequestOTP(resend=false) {
+  const email = (document.getElementById('em-su-email').value||'').trim();
+  const password = document.getElementById('em-su-pass').value||'';
+  if (!email || !email.includes('@')) { showAuthErrorEmail('Enter a valid email address.'); return; }
+  if (!resend && password.length < 8) { showAuthErrorEmail('Password must be at least 8 characters.'); return; }
+  if (!resend) _emailSignupPending = { email, password };
+
+  const btn = document.getElementById('btnEmailSignUp');
+  if (btn) { btn.disabled=true; btn.textContent='Sending…'; }
+  try {
+    const r = await fetch('/api/request-otp', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email: _emailSignupPending.email })
+    });
+    const data = await r.json();
+    if (!r.ok || data.error) { showAuthErrorEmail(data.error||'Failed to send code. Try again.'); return; }
+    document.getElementById('em-otp-dest').textContent = _emailSignupPending.email;
+    switchEmailState('otp');
+    if (resend) showAuthSuccessEmail('New code sent!');
+  } catch(e) {
+    showAuthErrorEmail('Network error. Check your connection and try again.');
+  } finally {
+    if (btn) { btn.disabled=false; btn.textContent='Send Verification Code →'; }
+  }
+}
+
+async function emailVerifyOTP() {
+  const code = (document.getElementById('em-otp-code').value||'').trim();
+  if (!code || code.length !== 6) { showAuthErrorEmail('Enter the 6-digit code from your email.'); return; }
+  const { email, password } = _emailSignupPending;
+  const btn = document.getElementById('btnEmailVerify');
+  btn.disabled=true; btn.textContent='Verifying…';
+  try {
+    const r = await fetch('/api/verify-otp', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, code })
+    });
+    const data = await r.json();
+    if (!data.valid) { showAuthErrorEmail(data.reason||'Incorrect code.'); btn.disabled=false; btn.textContent='Verify & Create Account'; return; }
+
+    // OTP verified — create Firebase account
+    const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
+    await cred.user.updateProfile({ displayName: email.split('@')[0] });
+    initApp(cred.user, { imagesUsed:0, imagesAllowance:15, plan:'free' });
+    ensureUserDoc(cred.user).then(d=>{ userData=d; updateTrialUI(d.imagesUsed||0, d.imagesAllowance||15); }).catch(()=>{});
+  } catch(e) {
+    if (e.code === 'auth/email-already-in-use') {
+      showAuthErrorEmail('Account already exists. Sign in instead.');
+      switchEmailState('signin');
+      document.getElementById('em-si-email').value = _emailSignupPending.email;
+    } else {
+      showAuthErrorEmail(e.message || 'Failed to create account.');
+    }
+    btn.disabled=false; btn.textContent='Verify & Create Account';
+  }
+}
+
+async function emailSignIn() {
+  const email = (document.getElementById('em-si-email').value||'').trim();
+  const password = document.getElementById('em-si-pass').value||'';
+  if (!email || !password) { showAuthErrorEmail('Enter your email and password.'); return; }
+  const btn = document.getElementById('btnEmailSignIn');
+  btn.disabled=true; btn.textContent='Signing in…';
+  try {
+    const cred = await fbAuth.signInWithEmailAndPassword(email, password);
+    initApp(cred.user, { imagesUsed:0, imagesAllowance:15, plan:'free' });
+    ensureUserDoc(cred.user).then(d=>{ userData=d; updateTrialUI(d.imagesUsed||0, d.imagesAllowance||15); }).catch(()=>{});
+  } catch(e) {
+    const msg = e.code==='auth/user-not-found' ? 'No account found. Create one instead.'
+              : e.code==='auth/wrong-password'||e.code==='auth/invalid-credential' ? 'Incorrect password.'
+              : e.code==='auth/too-many-requests' ? 'Too many attempts. Wait a moment and try again.'
+              : (e.message||'Sign-in failed. Try again.');
+    showAuthErrorEmail(msg);
+    btn.disabled=false; btn.textContent='Sign In';
+  }
+}
+
+async function forgotPassword() {
+  const email = (document.getElementById('em-si-email').value||'').trim();
+  if (!email || !email.includes('@')) { showAuthErrorEmail('Enter your email address above first.'); return; }
+  try {
+    await fbAuth.sendPasswordResetEmail(email);
+    switchEmailState('reset-sent');
+  } catch(e) {
+    showAuthErrorEmail(e.message||'Could not send reset email.');
   }
 }
 
