@@ -18,13 +18,43 @@ function getMailer() {
 }
 const FROM = () => `"Creatives Gen" <${process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@creativesgen.com'}>`;
 
-// ── IN-MEMORY OTP STORE ───────────────────────────────────────────────────
-// { email → { code, expiresAt } }
-const otpStore = new Map();
-setInterval(() => { // prune expired OTPs every 15 min
-  const now = Date.now();
-  for (const [k, v] of otpStore) if (now > v.expiresAt) otpStore.delete(k);
-}, 15 * 60 * 1000);
+// ── FIRESTORE OTP STORE (works on Vercel serverless) ─────────────────────
+const FIREBASE_PROJECT = 'image-generation-web-app';
+const FIREBASE_API_KEY = 'AIzaSyCul5Hv4vy-FfH-IMafdOP3fs8ikP2WvIE';
+const FS_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
+
+async function otpSet(email, code) {
+  const expiresAt = Date.now() + 10 * 60 * 1000;
+  const docId = email.toLowerCase().replace(/[.#$[\]/]/g, '_');
+  await fetch(`${FS_BASE}/otps/${docId}?key=${FIREBASE_API_KEY}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fields: {
+        email: { stringValue: email.toLowerCase() },
+        code: { stringValue: code },
+        expiresAt: { integerValue: String(expiresAt) }
+      }
+    })
+  });
+}
+
+async function otpGet(email) {
+  const docId = email.toLowerCase().replace(/[.#$[\]/]/g, '_');
+  const r = await fetch(`${FS_BASE}/otps/${docId}?key=${FIREBASE_API_KEY}`);
+  if (!r.ok) return null;
+  const data = await r.json();
+  if (!data.fields) return null;
+  return {
+    code: data.fields.code?.stringValue,
+    expiresAt: parseInt(data.fields.expiresAt?.integerValue || 0)
+  };
+}
+
+async function otpDelete(email) {
+  const docId = email.toLowerCase().replace(/[.#$[\]/]/g, '_');
+  await fetch(`${FS_BASE}/otps/${docId}?key=${FIREBASE_API_KEY}`, { method: 'DELETE' });
+}
 
 // ── /api/request-otp ─────────────────────────────────────────────────────
 app.post('/api/request-otp', async (req, res) => {
@@ -32,7 +62,7 @@ app.post('/api/request-otp', async (req, res) => {
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email required' });
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
-  otpStore.set(email.toLowerCase(), { code, expiresAt: Date.now() + 10 * 60 * 1000 });
+  await otpSet(email, code);
 
   const mailer = getMailer();
   if (!mailer) {
@@ -54,16 +84,16 @@ app.post('/api/request-otp', async (req, res) => {
 });
 
 // ── /api/verify-otp ──────────────────────────────────────────────────────
-app.post('/api/verify-otp', (req, res) => {
+app.post('/api/verify-otp', async (req, res) => {
   const { email, code } = req.body;
-  const stored = otpStore.get((email || '').toLowerCase());
+  const stored = await otpGet((email || '').toLowerCase());
   if (!stored) return res.json({ valid: false, reason: 'No code found. Request a new one.' });
   if (Date.now() > stored.expiresAt) {
-    otpStore.delete(email.toLowerCase());
+    await otpDelete(email);
     return res.json({ valid: false, reason: 'Code expired. Request a new one.' });
   }
   if (stored.code !== String(code).trim()) return res.json({ valid: false, reason: 'Incorrect code. Try again.' });
-  otpStore.delete(email.toLowerCase()); // single-use
+  await otpDelete(email); // single-use
   res.json({ valid: true });
 });
 
