@@ -453,8 +453,43 @@
       body.chat-open .tool-wrapper { margin-right: 0; }
     }
 
+    /* MOBILE TOOL SWITCHER — hidden on desktop */
+    .mob-tool-switcher { display: none; }
+
     @media (max-width: 768px) {
       html { font-size: 16px; }
+
+      /* Mobile tool switcher bar */
+      .mob-tool-switcher {
+        display: flex;
+        background: var(--surface);
+        border-bottom: 2px solid var(--border);
+        padding: 0;
+        position: sticky;
+        top: 54px;
+        z-index: 40;
+        box-shadow: 0 2px 8px rgba(0,0,0,.07);
+      }
+      .mob-tool-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 10px 4px;
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-family: inherit;
+        border-bottom: 3px solid transparent;
+        transition: all .15s;
+        color: var(--muted);
+      }
+      .mob-tool-btn.active { border-bottom-color: var(--accent); color: var(--accent); background: var(--accent-l); }
+      .mob-tool-btn:nth-child(2).active { border-bottom-color: #ec4899; color: #ec4899; background: var(--pink-l); }
+      .mob-tool-btn:nth-child(3).active { border-bottom-color: #10b981; color: #10b981; background: #ecfdf5; }
+      .mtb-icon { font-size: 1.2rem; line-height: 1; }
+      .mtb-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 
       /* Header — tight single row */
       header { padding: 0 10px; height: 54px; gap: 6px; }
@@ -687,6 +722,22 @@
     </div>
   </div>
 </header>
+
+<!-- MOBILE TOOL SWITCHER (hidden on desktop) -->
+<div class="mob-tool-switcher" id="mobToolSwitcher">
+  <button class="mob-tool-btn active" id="mob-tab-social" onclick="switchTool('social')">
+    <span class="mtb-icon">📱</span>
+    <span class="mtb-label">Social Posts</span>
+  </button>
+  <button class="mob-tool-btn" id="mob-tab-ads" onclick="switchTool('ads')">
+    <span class="mtb-icon">📣</span>
+    <span class="mtb-label">Ad Creatives</span>
+  </button>
+  <button class="mob-tool-btn" id="mob-tab-website" onclick="switchTool('website')">
+    <span class="mtb-icon">🌐</span>
+    <span class="mtb-label">Website Images</span>
+  </button>
+</div>
 
 <!-- APP -->
 <div class="app">
@@ -1521,6 +1572,8 @@ function switchTool(tool) {
       panel.style.animation='';
     }
     document.getElementById(`tab-${t}`).classList.toggle('active',t===tool);
+    const mobBtn=document.getElementById(`mob-tab-${t}`);
+    if(mobBtn) mobBtn.classList.toggle('active',t===tool);
   });
   clearFocus();
 }
