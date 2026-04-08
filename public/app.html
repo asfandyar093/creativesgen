@@ -513,20 +513,20 @@
       .u-avatar { width: 26px; height: 26px; font-size: 0.68rem; }
 
       /* App: single column, natural scroll */
-      .app { height: auto; overflow: visible; }
-      .tool-wrapper { display: block !important; height: auto !important; }
+      .app { height: auto; overflow: visible; display: block; }
+      .tool-wrapper { display: block !important; height: auto !important; width: 100%; }
       .tool-wrapper.hidden { display: none !important; }
       body.chat-open .tool-wrapper { margin-right: 0; }
 
-      /* Sidebar: full width, natural height */
-      .sidebar { border-right: none; border-bottom: 2px solid var(--border); overflow: visible; height: auto; }
-      .sb-scroll { overflow: visible; padding: 16px; }
+      /* Sidebar: full width, natural height — override flex column */
+      .sidebar { display: block !important; border-right: none; border-bottom: 2px solid var(--border); overflow: visible; height: auto; width: 100%; }
+      .sb-scroll { flex: none !important; overflow: visible; height: auto; padding: 16px; }
 
       /* Generate button: full width, normal flow */
-      .btn-go { border-radius: 0; padding: 16px; font-size: 1rem; }
+      .btn-go { border-radius: 0; padding: 16px; font-size: 1rem; width: 100%; }
 
       /* Output area: full width below */
-      .main-area { height: auto; min-height: 300px; overflow: visible; }
+      .main-area { display: block; height: auto; min-height: 50px; overflow: visible; width: 100%; }
 
       /* Grids */
       .row2 { grid-template-columns: 1fr 1fr; }
