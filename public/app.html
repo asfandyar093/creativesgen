@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/x-icon" href="/images/favicon/favicon.ico" /><link rel="icon" type="image/png" sizes="32x32" href="/images/favicon/favicon-32x32.png" /><link rel="icon" type="image/png" sizes="16x16" href="/images/favicon/favicon-16x16.png" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon/favicon.ico" /><link rel="icon" type="image/svg+xml" href="/images/favicon/favicon.svg" /><link rel="icon" type="image/png" sizes="96x96" href="/images/favicon/favicon-96x96.png" />
   <link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Creatives Gen — Studio</title>
@@ -645,7 +645,7 @@
   <div class="h-left">
     <a href="/" class="h-logo-link">
       <img src="/images/logo.png" alt="Creatives Gen" style="height:34px;width:auto;display:block;">
-      <div class="h-brand">Creatives <span>Gen</span></div>
+      
     </a>
     <div class="h-divider"></div>
     <a href="/" class="h-back">← Back to site</a>
@@ -1447,7 +1447,7 @@ function canGenerate(n) {
   return used + n <= allowance;
 }
 
-async function consumeImages(n) {
+async function consumeImages(n, toolType) {
   if (!currentUser || !userData) return;
   const ref = fbDb.collection('users').doc(currentUser.uid);
   await ref.update({
@@ -1456,6 +1456,16 @@ async function consumeImages(n) {
   });
   userData.imagesUsed = (userData.imagesUsed || 0) + n;
   updateTrialUI(userData.imagesUsed, userData.imagesAllowance || 15);
+  try {
+    await fbDb.collection('generations').add({
+      userId: currentUser.uid,
+      userEmail: currentUser.email,
+      tool: toolType || activeTool || 'unknown',
+      count: n,
+      plan: userData.plan || 'free',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {}
 }
 
 function showPaywall() { document.getElementById('paywallModal').classList.remove('hidden'); }
