@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/x-icon" href="/images/favicon/favicon.ico" /><link rel="icon" type="image/svg+xml" href="/images/favicon/favicon.svg" /><link rel="icon" type="image/png" sizes="96x96" href="/images/favicon/favicon-96x96.png" />
-  <link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png" /><link rel="manifest" href="/images/favicon/site.webmanifest" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon/favicon.ico?v=2" /><link rel="icon" type="image/svg+xml" href="/images/favicon/favicon.svg?v=2" /><link rel="icon" type="image/png" sizes="96x96" href="/images/favicon/favicon-96x96.png?v=2" />
+  <link rel="apple-touch-icon" href="/images/favicon/apple-touch-icon.png?v=2" /><link rel="manifest" href="/images/favicon/site.webmanifest" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Creatives Gen — Studio</title>
   <meta name="robots" content="noindex" />
@@ -456,16 +456,26 @@
     @media (max-width: 768px) {
       html { font-size: 16px; }
 
-      /* Header */
-      header { padding: 0 12px; height: 54px; }
+      /* Header — tight single row */
+      header { padding: 0 10px; height: 54px; gap: 6px; }
       .h-brand, .h-divider, .h-back { display: none; }
+      .h-left { gap: 0; }
+
+      /* Tabs — icon only */
       .tool-tabs { gap: 2px; padding: 3px; }
-      .tool-tab { padding: 8px 10px; font-size: 0.8rem; }
+      .tool-tab { padding: 8px 12px; font-size: 0.88rem; gap: 0; }
+      .tool-tab .t-label { display: none; }
+      .tool-tab.active::after { left: 15%; right: 15%; }
+
+      /* Right side — compact */
+      .h-right { gap: 6px; }
+      .trial-pill { padding: 4px 10px 4px 6px; }
       .trial-label { display: none; }
-      .chat-toggle-btn span:not(.ct-dot) { display: none; }
-      .chat-toggle-btn { padding: 6px 10px; }
+      .trial-ring { width: 22px; height: 22px; }
+      .chat-toggle-btn { display: none; }
       #uName { display: none; }
       .upgrade-btn { padding: 6px 10px; font-size: 0.7rem; }
+      .u-avatar { width: 26px; height: 26px; font-size: 0.68rem; }
 
       /* App: single column, natural scroll */
       .app { height: auto; overflow: visible; }
@@ -500,7 +510,7 @@
     }
 
     @media (max-width: 400px) {
-      .tool-tab { padding: 6px 7px; font-size: 0.72rem; }
+      .tool-tab { padding: 6px 10px; font-size: 0.84rem; }
       .row2 { grid-template-columns: 1fr; }
       .type-grid { grid-template-columns: repeat(4,1fr); }
     }
