@@ -858,10 +858,8 @@
           </div>
           <div class="field"><label>Image Model</label>
             <select id="s-model">
-              <option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option>
-              <option value="imagen-4.0-generate-001">Imagen 4 (higher quality)</option>
-              <option value="imagen-4.0-fast-generate-001">Imagen 4 Fast</option>
-              <option value="imagen-4.0-ultra-generate-001">Imagen 4 Ultra (best quality)</option>
+              <option value="gemini-2.0-flash-exp">CreativeGen Fast (recommended)</option>
+              <option value="imagen-3.0-generate-002">Imagen 3 (higher quality)</option>
             </select>
           </div>
         </div>
@@ -1001,7 +999,7 @@
             </select>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="a-model"><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="imagen-4.0-generate-001">CreativesGen Vision (higher quality)</option><option value="imagen-4.0-fast-generate-001">CreativesGen Vision Fast</option></select>
+            <select id="a-model"><option value="gemini-2.0-flash-exp">CreativeGen Fast (recommended)</option><option value="imagen-3.0-generate-002">Imagen 3 (higher quality)</option></select>
           </div>
         </div>
       </div>
@@ -1147,7 +1145,7 @@
             <div id="w-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'w-c1','w-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'w-c2','w-h2')" /></div></div>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="w-model"><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="imagen-4.0-generate-001">CreativesGen Vision (higher quality)</option><option value="imagen-4.0-fast-generate-001">CreativesGen Vision Fast</option></select>
+            <select id="w-model"><option value="gemini-2.0-flash-exp">CreativeGen Fast (recommended)</option><option value="imagen-3.0-generate-002">Imagen 3 (higher quality)</option></select>
           </div>
         </div>
       </div>
@@ -2400,9 +2398,10 @@ Return ONLY a JSON object (no markdown):
 }`;
     const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || data.message || `API error ${r.status}`);
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Bad response');
+    if (!match) throw new Error(data.error?.message || 'Bad response from model');
     const intel = JSON.parse(match[0]);
     competitorIntel = JSON.stringify(intel);
     // Render intel box
@@ -2446,9 +2445,10 @@ Return ONLY a JSON object (no markdown):
 }`;
     const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || data.message || `API error ${r.status}`);
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Bad response');
+    if (!match) throw new Error(data.error?.message || 'Bad response from model');
     const intel = JSON.parse(match[0]);
     socialIntel = JSON.stringify(intel);
     document.getElementById('s-intel-text').textContent = intel.summary;
@@ -2492,9 +2492,10 @@ Return ONLY a JSON object (no markdown):
 }`;
     const r = await fetch('/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data = await r.json();
+    if (!r.ok) throw new Error(data.error?.message || data.message || `API error ${r.status}`);
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
     const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('Bad response');
+    if (!match) throw new Error(data.error?.message || 'Bad response from model');
     const intel = JSON.parse(match[0]);
     websiteIntel = JSON.stringify(intel);
     document.getElementById('w-intel-text').textContent = intel.summary;
