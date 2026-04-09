@@ -438,6 +438,49 @@
     .chat-send:disabled { opacity: .5; cursor: not-allowed; }
     .chat-hint { font-size: 0.7rem; color: var(--light); margin-top: 7px; text-align: center; }
 
+    /* ═══ FREE PLAN MODEL NOTICE ═══ */
+    .free-model-notice { display:none; margin-top:8px; padding:10px 13px; background:#fef3c7; border:1.5px solid #fcd34d; border-radius:10px; font-size:0.78rem; color:#92400e; line-height:1.5; }
+    .free-model-notice strong { color:#78350f; }
+    .free-model-notice a { color:#d97706; font-weight:700; cursor:pointer; text-decoration:underline; }
+
+    /* ═══ FEEDBACK PANEL ═══ */
+    .feedback-panel { display:none; margin-top:24px; padding:20px; background:var(--surface2); border:1.5px solid var(--border2); border-radius:16px; text-align:center; }
+    .feedback-q { font-size:1rem; font-weight:800; color:var(--text); margin-bottom:14px; }
+    .feedback-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .feedback-btn { padding:10px 22px; border-radius:10px; border:none; font-size:0.88rem; font-weight:700; cursor:pointer; font-family:inherit; transition:all .2s; }
+    .fb-like { background:linear-gradient(135deg,var(--accent),var(--pink)); color:#fff; }
+    .fb-like:hover { opacity:.88; transform:scale(1.03); }
+    .fb-regen { background:var(--surface3); border:1.5px solid var(--border2); color:var(--text2); }
+    .fb-regen:hover { border-color:var(--accent); color:var(--accent); }
+    .regen-options { display:none; margin-top:16px; text-align:left; padding-top:16px; border-top:1.5px solid var(--border); }
+    .regen-q { font-size:0.85rem; font-weight:700; color:var(--text2); margin-bottom:10px; }
+    .regen-chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:12px; }
+    .regen-chip { padding:6px 13px; border:1.5px solid var(--border2); border-radius:20px; font-size:0.78rem; font-weight:600; cursor:pointer; background:var(--surface); color:var(--text2); transition:all .15s; user-select:none; }
+    .regen-chip.selected { background:var(--accent-l); border-color:var(--accent); color:var(--accent); }
+    .regen-custom { width:100%; padding:10px 13px; border:2px solid var(--border2); border-radius:10px; font-size:0.83rem; font-family:inherit; resize:none; outline:none; margin-bottom:10px; transition:border-color .2s; box-sizing:border-box; }
+    .regen-custom:focus { border-color:var(--accent); }
+    .regen-go { width:100%; padding:11px; background:var(--accent); color:#fff; border:none; border-radius:10px; font-size:0.88rem; font-weight:800; cursor:pointer; font-family:inherit; transition:all .2s; }
+    .regen-go:hover { background:var(--accent-h); }
+
+    /* ═══ INLINE AI CHAT ═══ */
+    .inline-chat { margin-top:24px; border:1.5px solid var(--border2); border-radius:16px; overflow:hidden; background:var(--surface); }
+    .inline-chat-header { padding:14px 18px; background:linear-gradient(135deg,var(--accent),var(--pink)); display:flex; align-items:center; justify-content:space-between; }
+    .inline-chat-header h4 { color:#fff; font-size:0.9rem; font-weight:800; margin:0; }
+    .inline-chat-header span { color:rgba(255,255,255,.8); font-size:0.75rem; }
+    .inline-chat-msgs { max-height:260px; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:12px; }
+    .inline-chat-msgs::-webkit-scrollbar { width:4px; }
+    .inline-chat-msgs::-webkit-scrollbar-thumb { background:var(--border2); border-radius:99px; }
+    .inline-chat-input-row { display:flex; gap:8px; padding:12px 14px; border-top:1.5px solid var(--border); background:var(--surface); }
+    .inline-chat-input { flex:1; padding:10px 13px; border:2px solid var(--border2); border-radius:10px; font-size:0.83rem; font-family:inherit; resize:none; outline:none; transition:border-color .2s; }
+    .inline-chat-input:focus { border-color:var(--accent); }
+    .inline-chat-send { padding:0 16px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-size:0.85rem; font-weight:800; cursor:pointer; font-family:inherit; white-space:nowrap; }
+    .inline-chat-send:hover { background:var(--accent-h); }
+    .inline-chat-hint { padding:6px 14px 12px; font-size:0.71rem; color:var(--light); text-align:center; background:var(--surface); }
+    .ic-select-hint { padding:20px; text-align:center; color:var(--muted); font-size:0.82rem; }
+
+    /* ═══ LIKED HISTORY BADGE ═══ */
+    .liked-badge { display:none; margin-top:10px; padding:8px 12px; background:#ecfdf5; border:1.5px solid #6ee7b7; border-radius:10px; font-size:0.76rem; color:#065f46; }
+
     /* History view */
     .history-view { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
     .history-view.active { display: flex; }
@@ -857,12 +900,15 @@
             </div>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="s-model">
-              <option value="gemini-2.0-flash-exp-image-generation">CreativeGen Lite (basic)</option>
-              <option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option>
+            <select id="s-model" onchange="onModelChange('s')">
+              <option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option>
+              <option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option>
               <option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option>
               <option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option>
             </select>
+            <div class="free-model-notice" id="s-free-notice">
+              <strong>Free plan includes CreativeGen Lite only.</strong> For better image quality, sharpness and detail — <a onclick="showPaywall()">upgrade your plan</a>.
+            </div>
           </div>
         </div>
       </div>
@@ -899,8 +945,45 @@
             <button class="btn-outline" onclick="downloadAll('s')">⬇ Download ZIP</button>
           </div>
         </div>
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any image to select it, then use AI Chat to request changes.</p>
         <div class="image-grid" id="s-grid"></div>
+        <!-- Feedback panel -->
+        <div class="feedback-panel" id="s-feedback">
+          <div class="feedback-q">How do these look? 🎨</div>
+          <div class="feedback-btns">
+            <button class="feedback-btn fb-like" onclick="likeGeneration('s')">💜 Love it! Save to History</button>
+            <button class="feedback-btn fb-regen" onclick="startRegenerate('s')">🔄 Regenerate with Changes</button>
+          </div>
+          <div class="regen-options" id="s-regen-opts">
+            <div class="regen-q">What would you like to change?</div>
+            <div class="regen-chips">
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different style</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different colors</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More vibrant</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More minimal</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Bolder text</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More professional</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different layout</span>
+            </div>
+            <textarea class="regen-custom" id="s-regen-custom" rows="2" placeholder="Or describe exactly what to change…"></textarea>
+            <button class="regen-go" onclick="confirmRegenerate('s')">↻ Regenerate Now</button>
+          </div>
+          <div class="liked-badge" id="s-liked-badge">✅ Saved to your history! AI will use your preferences for future generations.</div>
+        </div>
+        <!-- Inline AI Chat -->
+        <div class="inline-chat" id="s-inline-chat" style="display:none;">
+          <div class="inline-chat-header">
+            <h4>✨ AI Assistant</h4>
+            <span>Click any image → describe changes</span>
+          </div>
+          <div class="inline-chat-msgs" id="s-ic-msgs">
+            <div class="ic-select-hint">💡 Click any image above to select it, then type your changes below.</div>
+          </div>
+          <div class="inline-chat-input-row">
+            <textarea class="inline-chat-input" id="s-ic-input" rows="1" placeholder="e.g. Make it darker, change font color to white…" onkeydown="icKeydown(event,'s')"></textarea>
+            <button class="inline-chat-send" onclick="sendInlineChat('s')">Send ➤</button>
+          </div>
+          <div class="inline-chat-hint">Editing Slide <span id="s-ic-selected">—</span></div>
+        </div>
       </div>
     </main>
   </div>
@@ -1001,7 +1084,8 @@
             </select>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="a-model"><option value="gemini-2.0-flash-exp-image-generation">CreativeGen Lite (basic)</option><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <select id="a-model" onchange="onModelChange('a')"><option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option><option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <div class="free-model-notice" id="a-free-notice"><strong>Free plan includes CreativeGen Lite only.</strong> For sharper, higher quality ads — <a onclick="showPaywall()">upgrade your plan</a>.</div>
           </div>
         </div>
       </div>
@@ -1053,8 +1137,42 @@
             <button class="btn-outline" onclick="downloadAll('a')">⬇ Download ZIP</button>
           </div>
         </div>
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any ad to preview, then use AI Chat to request changes.</p>
         <div class="image-grid" id="a-grid"></div>
+        <div class="feedback-panel" id="a-feedback">
+          <div class="feedback-q">How do these look? 🎨</div>
+          <div class="feedback-btns">
+            <button class="feedback-btn fb-like" onclick="likeGeneration('a')">💜 Love it! Save to History</button>
+            <button class="feedback-btn fb-regen" onclick="startRegenerate('a')">🔄 Regenerate with Changes</button>
+          </div>
+          <div class="regen-options" id="a-regen-opts">
+            <div class="regen-q">What would you like to change?</div>
+            <div class="regen-chips">
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different style</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different colors</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More vibrant</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More minimal</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Stronger CTA</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More professional</span>
+            </div>
+            <textarea class="regen-custom" id="a-regen-custom" rows="2" placeholder="Or describe exactly what to change…"></textarea>
+            <button class="regen-go" onclick="confirmRegenerate('a')">↻ Regenerate Now</button>
+          </div>
+          <div class="liked-badge" id="a-liked-badge">✅ Saved to your history! AI will use your preferences for future generations.</div>
+        </div>
+        <div class="inline-chat" id="a-inline-chat" style="display:none;">
+          <div class="inline-chat-header">
+            <h4>✨ AI Assistant</h4>
+            <span>Click any ad → describe changes</span>
+          </div>
+          <div class="inline-chat-msgs" id="a-ic-msgs">
+            <div class="ic-select-hint">💡 Click any ad image above to select it, then type your changes below.</div>
+          </div>
+          <div class="inline-chat-input-row">
+            <textarea class="inline-chat-input" id="a-ic-input" rows="1" placeholder="e.g. Make the headline bigger, change background color…" onkeydown="icKeydown(event,'a')"></textarea>
+            <button class="inline-chat-send" onclick="sendInlineChat('a')">Send ➤</button>
+          </div>
+          <div class="inline-chat-hint">Editing Image <span id="a-ic-selected">—</span></div>
+        </div>
       </div>
     </main>
   </div>
@@ -1147,7 +1265,8 @@
             <div id="w-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'w-c1','w-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'w-c2','w-h2')" /></div></div>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="w-model"><option value="gemini-2.0-flash-exp-image-generation">CreativeGen Lite (basic)</option><option value="gemini-2.5-flash-image">CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <select id="w-model" onchange="onModelChange('w')"><option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option><option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <div class="free-model-notice" id="w-free-notice"><strong>Free plan includes CreativeGen Lite only.</strong> For higher quality website images — <a onclick="showPaywall()">upgrade your plan</a>.</div>
           </div>
         </div>
       </div>
@@ -1173,8 +1292,42 @@
           <div><h2 id="w-resTitle">Website Images</h2><span id="w-resSub"></span></div>
           <div class="rv-actions"><button class="btn-outline" onclick="downloadAll('w')">⬇ Download ZIP</button></div>
         </div>
-        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:16px;">💬 Click any image to select it, then use AI Chat to request changes.</p>
         <div class="image-grid" id="w-grid"></div>
+        <div class="feedback-panel" id="w-feedback">
+          <div class="feedback-q">How do these look? 🎨</div>
+          <div class="feedback-btns">
+            <button class="feedback-btn fb-like" onclick="likeGeneration('w')">💜 Love it! Save to History</button>
+            <button class="feedback-btn fb-regen" onclick="startRegenerate('w')">🔄 Regenerate with Changes</button>
+          </div>
+          <div class="regen-options" id="w-regen-opts">
+            <div class="regen-q">What would you like to change?</div>
+            <div class="regen-chips">
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different style</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different colors</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More vibrant</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More minimal</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">More professional</span>
+              <span class="regen-chip" onclick="toggleRegenChip(this)">Different layout</span>
+            </div>
+            <textarea class="regen-custom" id="w-regen-custom" rows="2" placeholder="Or describe exactly what to change…"></textarea>
+            <button class="regen-go" onclick="confirmRegenerate('w')">↻ Regenerate Now</button>
+          </div>
+          <div class="liked-badge" id="w-liked-badge">✅ Saved to your history! AI will use your preferences for future generations.</div>
+        </div>
+        <div class="inline-chat" id="w-inline-chat" style="display:none;">
+          <div class="inline-chat-header">
+            <h4>✨ AI Assistant</h4>
+            <span>Click any image → describe changes</span>
+          </div>
+          <div class="inline-chat-msgs" id="w-ic-msgs">
+            <div class="ic-select-hint">💡 Click any image above to select it, then type your changes below.</div>
+          </div>
+          <div class="inline-chat-input-row">
+            <textarea class="inline-chat-input" id="w-ic-input" rows="1" placeholder="e.g. Make it brighter, add more whitespace…" onkeydown="icKeydown(event,'w')"></textarea>
+            <button class="inline-chat-send" onclick="sendInlineChat('w')">Send ➤</button>
+          </div>
+          <div class="inline-chat-hint">Editing Image <span id="w-ic-selected">—</span></div>
+        </div>
       </div>
     </main>
   </div>
@@ -1484,6 +1637,7 @@ function initApp(user, data) {
   }
   updateTrialUI(data.imagesUsed || 0, data.imagesAllowance || 15);
   loadBrandMemory();
+  initModelDropdowns();
   const tool = new URLSearchParams(location.search).get('tool');
   if (tool && ['social','ads','website'].includes(tool)) switchTool(tool);
 }
@@ -1710,6 +1864,7 @@ ${examples['s'] ? 'Style reference image provided — match this visual language
 ${socialIntel ? `
 ═══ INDUSTRY INTELLIGENCE ═══
 ${(()=>{ try{ const d=JSON.parse(socialIntel); return `What drives engagement in this space: ${d.summary||''}\nEngagement triggers to activate: ${(d.engagementTriggers||[]).join(', ')}`; }catch{ return ''; } })()}` : ''}
+${getLikedHistoryContext('s')}${window._regenInstruction ? `\n═══ REGENERATION CHANGES REQUESTED ═══\nThe user wants changes from the previous version: ${window._regenInstruction}\nApply these changes while keeping the core content.\n` : ''}
 Slide ${idx+1} of ${count} — ensure visual consistency with the series.`;
 }
 
@@ -1945,10 +2100,12 @@ Return ONLY JSON (no markdown): {"headline":"max 7 words, specific and punchy","
 // ════════════════════════════════════════
 // SOCIAL — GENERATE IMAGES
 // ════════════════════════════════════════
-async function socialGenerateImages() {
+async function socialGenerateImages(regenInstruction) {
   if(!slidePlan.length) return;
   const count=slidePlan.length;
   if(!canGenerate(count)){showPaywall();return;}
+  enforceModelForPlan('s');
+  if(regenInstruction) window._regenInstruction=regenInstruction; else window._regenInstruction=null;
   const btn=document.getElementById('s-genBtn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
   const model=document.getElementById('s-model').value;
@@ -1981,7 +2138,7 @@ async function socialGenerateImages() {
   }
   document.getElementById('s-resTitle').textContent=`Your ${config.label}`;
   document.getElementById('s-resSub').textContent=`${done}/${count} generated · ${ratios['s']}`;
-  if(errors.length===0){setStatus('s',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');saveBrandMemory();showToast(`${done} slide${done>1?'s':''} generated!`,'success');}
+  if(errors.length===0){setStatus('s',`All ${done} images ready!`,'success');saveBrandMemory();showToast(`${done} slide${done>1?'s':''} generated!`,'success');showFeedbackPanel('s');}
   else setStatus('s',`${done}/${count} done. Slides ${errors.join(', ')} failed — retry in the grid.`,'error');if(errors.length)showToast(`${errors.length} slide${errors.length>1?'s':''} failed. Tap retry.`,'error');
   setProgress('s',null);btn.disabled=false;btn.innerHTML='🎨 Generate Images';
 }
@@ -2023,7 +2180,7 @@ async function retryAd(idx,sizeKey) {
 // ════════════════════════════════════════
 // WEBSITE — GENERATE (multi-format)
 // ════════════════════════════════════════
-async function websiteGenerate() {
+async function websiteGenerate(regenInstruction) {
   const headline=document.getElementById('w-headline').value.trim();
   if(!headline){setStatus('w','Add at least a page headline.','error');return;}
   if(selectedWebFormats.size===0){setStatus('w','Select at least one image format.','error');return;}
@@ -2031,6 +2188,8 @@ async function websiteGenerate() {
   const formatsArr=[...selectedWebFormats];
   const total=perFormat*formatsArr.length;
   if(!canGenerate(total)){showPaywall();return;}
+  enforceModelForPlan('w');
+  if(regenInstruction) window._regenInstruction=regenInstruction; else window._regenInstruction=null;
   const btn=document.getElementById('w-genBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Generating…';
   const model=document.getElementById('w-model').value;const imgType=document.getElementById('w-imgtype').value;
   const pageType=getWebPageType();const copy=document.getElementById('w-copy').value.trim();
@@ -2057,7 +2216,7 @@ async function websiteGenerate() {
   }
   document.getElementById('w-resTitle').textContent='Website Images';
   document.getElementById('w-resSub').textContent=`${done}/${total} generated · ${pageType}`;
-  if(errors.length===0){setStatus('w',`All ${done} images ready! Click any image then use AI Chat to refine.`,'success');showToast(`${done} website image${done>1?'s':''} ready!`,'success');}
+  if(errors.length===0){setStatus('w',`All ${done} images ready!`,'success');showToast(`${done} website image${done>1?'s':''} ready!`,'success');showFeedbackPanel('w');}
   else{setStatus('w',`${done} done. Image${errors.length>1?'s':''} ${errors.join(', ')} failed.`,'error');showToast(`${errors.length} image${errors.length>1?'s':''} failed.`,'error');}
   setProgress('w',null);btn.disabled=false;btn.innerHTML='🌐 Generate Website Images';
 }
@@ -2249,12 +2408,14 @@ function selectImageForEdit(prefix,idx) {
     card.classList.add('focused');
     const badge=document.createElement('div');badge.className='focused-badge';badge.textContent='✎ Selected';card.appendChild(badge);
   }
-  // Show context in chat
+  // Show context in chat drawer
   const ctx=document.getElementById('chatContext');const lbl=document.getElementById('ctxLabel');
   if(ctx&&lbl){ctx.style.display='flex';lbl.textContent=`Editing: ${prefix==='s'?'Slide':'Image'} ${idx+1}`;}
-  // Auto-open chat
-  if(!chatOpen) toggleChat();
-  document.getElementById('chatInput').focus();
+  // Update inline chat selected indicator
+  updateICSelected(prefix, idx);
+  // Focus inline chat input
+  const icInput = document.getElementById(`${prefix}-ic-input`);
+  if (icInput) { icInput.focus(); icInput.scrollIntoView({behavior:'smooth',block:'nearest'}); }
 }
 function clearFocus() {
   focusedImage=null;
@@ -2636,7 +2797,7 @@ function showConceptPicker() {
   showAdView('concepts');
 }
 
-async function adsGenerateWithConcept() {
+async function adsGenerateWithConcept(regenInstruction) {
   const concept = AD_CONCEPTS.find(c=>c.id===selectedConcept) || AD_CONCEPTS[0];
   await adsGenerate(concept);
 }
@@ -2650,6 +2811,8 @@ async function adsGenerate(concept) {
   if(selectedAdSizes.size===0){setStatus('a','Select at least one ad size.','error');return;}
   const sizesToGen=[...selectedAdSizes];
   if(!canGenerate(sizesToGen.length)){showPaywall();return;}
+  enforceModelForPlan('a');
+  if(regenInstruction) window._regenInstruction=regenInstruction; else window._regenInstruction=null;
   const btn=document.getElementById('a-conceptGenBtn');
   if(btn){btn.disabled=true;document.getElementById('a-cg-spinner').style.display='inline-block';}
   const model=document.getElementById('a-model').value;const style=document.getElementById('a-style').value;
@@ -2682,10 +2845,222 @@ async function adsGenerate(concept) {
   }
   document.getElementById('a-resTitle').textContent=`Your ${adsPlatform==='meta'?'Meta':'Google'} Ad Creatives`;
   document.getElementById('a-resSub').textContent=`${done}/${sizesToGen.length} generated`;
-  if(errors.length===0){setStatus('a',`All ${done} ads ready!`,'success');showToast(`${done} ad creative${done>1?'s':''} generated!`,'success');}
+  if(errors.length===0){setStatus('a',`All ${done} ads ready!`,'success');showToast(`${done} ad creative${done>1?'s':''} generated!`,'success');showFeedbackPanel('a');}
   else setStatus('a',`${done} done. Failed: ${errors.join(', ')}.`,'error');
   setProgress('a',null);
   if(btn){btn.disabled=false;document.getElementById('a-cg-spinner').style.display='none';}
+}
+
+// ════════════════════════════════════════
+// FREE PLAN MODEL ENFORCEMENT
+// ════════════════════════════════════════
+function onModelChange(prefix) {
+  const plan = userData?.plan || 'free';
+  const sel = document.getElementById(`${prefix}-model`);
+  const notice = document.getElementById(`${prefix}-free-notice`);
+  if (plan === 'free' && sel.value !== 'gemini-2.5-flash-lite') {
+    sel.value = 'gemini-2.5-flash-lite';
+    if (notice) notice.style.display = 'block';
+    showToast('Free plan only includes CreativeGen Lite. Upgrade for higher quality.', 'info', 4000);
+  } else {
+    if (notice) notice.style.display = 'none';
+  }
+}
+
+function enforceModelForPlan(prefix) {
+  const plan = userData?.plan || 'free';
+  const sel = document.getElementById(`${prefix}-model`);
+  const notice = document.getElementById(`${prefix}-free-notice`);
+  if (!sel) return;
+  if (plan === 'free') {
+    sel.value = 'gemini-2.5-flash-lite';
+    if (notice) notice.style.display = 'block';
+  } else {
+    if (notice) notice.style.display = 'none';
+  }
+}
+
+function initModelDropdowns() {
+  ['s','a','w'].forEach(p => enforceModelForPlan(p));
+}
+
+// ════════════════════════════════════════
+// LIKED HISTORY & AI PREFERENCES
+// ════════════════════════════════════════
+async function likeGeneration(prefix) {
+  const imgs = (generatedImages[prefix] || []).filter(Boolean);
+  if (!imgs.length) return;
+
+  const brand = document.getElementById(`${prefix === 's' ? 's' : prefix}-brand`)?.value || '';
+  const style = document.getElementById(`${prefix}-style`)?.value || '';
+  const colors = getColors(prefix);
+  const topic = document.getElementById(prefix === 's' ? 's-topic' : prefix === 'a' ? 'a-product' : 'w-headline')?.value || '';
+
+  const entry = {
+    prefix,
+    tool: prefix === 's' ? 'social' : prefix === 'a' ? 'ads' : 'website',
+    brand,
+    topic: topic.slice(0, 100),
+    style,
+    colors,
+    prompts: (generatedPrompts[prefix] || []).slice(0, 2),
+    likedAt: Date.now()
+  };
+
+  // Save to localStorage
+  try {
+    const history = getLikedHistory();
+    history.unshift(entry);
+    localStorage.setItem('cg_liked_history', JSON.stringify(history.slice(0, 20)));
+  } catch(e) {}
+
+  // Save to Firebase if logged in
+  if (currentUser) {
+    try {
+      await fbDb.collection('likedGenerations').add({
+        ...entry,
+        userId: currentUser.uid,
+        userEmail: currentUser.email,
+        plan: userData?.plan || 'free',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch(e) {}
+  }
+
+  // Show confirmation
+  const badge = document.getElementById(`${prefix}-liked-badge`);
+  if (badge) { badge.style.display = 'block'; }
+  showToast('Saved to history! AI will learn your style preferences.', 'success');
+  // Hide regen options if open
+  const regenOpts = document.getElementById(`${prefix}-regen-opts`);
+  if (regenOpts) regenOpts.style.display = 'none';
+}
+
+function getLikedHistory() {
+  try { return JSON.parse(localStorage.getItem('cg_liked_history') || '[]'); } catch { return []; }
+}
+
+function getLikedHistoryContext(prefix) {
+  const history = getLikedHistory().filter(h => h.prefix === prefix).slice(0, 3);
+  if (!history.length) return '';
+  const lines = history.map(h => {
+    const parts = [];
+    if (h.style) parts.push(`style: "${h.style}"`);
+    if (h.colors?.primary) parts.push(`primary color: ${h.colors.primary}`);
+    if (h.topic) parts.push(`topic: "${h.topic}"`);
+    return parts.join(', ');
+  });
+  return `\nUSER STYLE PREFERENCES (from liked generations — apply these tendencies):\n${lines.map(l=>'• '+l).join('\n')}\n`;
+}
+
+// ════════════════════════════════════════
+// FEEDBACK / REGENERATE PANEL
+// ════════════════════════════════════════
+function showFeedbackPanel(prefix) {
+  const panel = document.getElementById(`${prefix}-feedback`);
+  if (!panel) return;
+  panel.style.display = 'block';
+  // Reset state
+  const badge = document.getElementById(`${prefix}-liked-badge`);
+  if (badge) badge.style.display = 'none';
+  const regenOpts = document.getElementById(`${prefix}-regen-opts`);
+  if (regenOpts) regenOpts.style.display = 'none';
+  document.querySelectorAll(`#${prefix}-regen-opts .regen-chip`).forEach(c => c.classList.remove('selected'));
+  const custom = document.getElementById(`${prefix}-regen-custom`);
+  if (custom) custom.value = '';
+  // Show inline chat
+  const chat = document.getElementById(`${prefix}-inline-chat`);
+  if (chat) chat.style.display = 'block';
+}
+
+function startRegenerate(prefix) {
+  const opts = document.getElementById(`${prefix}-regen-opts`);
+  if (!opts) return;
+  opts.style.display = opts.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleRegenChip(el) {
+  el.classList.toggle('selected');
+}
+
+async function confirmRegenerate(prefix) {
+  const chips = [...document.querySelectorAll(`#${prefix}-regen-opts .regen-chip.selected`)].map(c => c.textContent);
+  const custom = document.getElementById(`${prefix}-regen-custom`)?.value.trim() || '';
+  if (!chips.length && !custom) {
+    showToast('Select at least one change option or describe what to change.', 'error'); return;
+  }
+  const instruction = [...chips, ...(custom ? [custom] : [])].join(', ');
+
+  // Hide panel and trigger regen
+  const opts = document.getElementById(`${prefix}-regen-opts`);
+  if (opts) opts.style.display = 'none';
+
+  if (prefix === 's') {
+    // Store regen instruction in a temporary variable and re-trigger social image gen
+    window._regenInstruction = instruction;
+    await socialGenerateImages(instruction);
+  } else if (prefix === 'a') {
+    window._regenInstruction = instruction;
+    await adsGenerateWithConcept(instruction);
+  } else if (prefix === 'w') {
+    window._regenInstruction = instruction;
+    await websiteGenerate(instruction);
+  }
+}
+
+// ════════════════════════════════════════
+// INLINE CHAT
+// ════════════════════════════════════════
+function icKeydown(e, prefix) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendInlineChat(prefix); }
+}
+
+function addICMessage(prefix, role, content) {
+  const container = document.getElementById(`${prefix}-ic-msgs`);
+  if (!container) return;
+  // Remove hint if present
+  const hint = container.querySelector('.ic-select-hint');
+  if (hint) hint.remove();
+  const wrap = document.createElement('div');
+  wrap.className = `chat-msg ${role}`;
+  const av = document.createElement('div');
+  av.className = `chat-avatar ${role === 'ai' ? 'ai-av' : 'user-av'}`;
+  av.textContent = role === 'ai' ? '✨' : '👤';
+  const bubble = document.createElement('div');
+  bubble.className = `chat-bubble ${role}`;
+  bubble.innerHTML = content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+  wrap.appendChild(av); wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function sendInlineChat(prefix) {
+  const input = document.getElementById(`${prefix}-ic-input`);
+  const text = input?.value.trim();
+  if (!text) return;
+  input.value = '';
+
+  // Mirror to main chat system for context
+  addUserMessage(text);
+  addICMessage(prefix, 'user', text);
+
+  if (!focusedImage || focusedImage.prefix !== prefix) {
+    addICMessage(prefix, 'ai', '💡 Please click an image above to select it first, then I can apply your changes.');
+    return;
+  }
+
+  addICMessage(prefix, 'ai', `Got it! Applying: "${text}"…`);
+  try {
+    await editImageWithChat(prefix, focusedImage.idx, text);
+    addICMessage(prefix, 'ai', `✅ Done! Image ${focusedImage.idx + 1} updated. Want to keep refining? Just type again.`);
+  } catch(e) {
+    addICMessage(prefix, 'ai', `❌ Failed: ${e.message}. Try rephrasing.`);
+  }
+}
+
+function updateICSelected(prefix, idx) {
+  const el = document.getElementById(`${prefix}-ic-selected`);
+  if (el) el.textContent = idx !== null ? `${prefix === 's' ? 'Slide' : 'Image'} ${idx + 1}` : '—';
 }
 
 // ════════════════════════════════════════
