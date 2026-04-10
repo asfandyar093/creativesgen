@@ -2890,14 +2890,21 @@ function showConceptPicker() {
 }
 
 async function adsGenerateWithConcept(regenInstruction) {
-  const concept = AD_CONCEPTS.find(c=>c.id===selectedConcept) || AD_CONCEPTS[0];
-  await adsGenerate(concept);
+  try {
+    const concept = AD_CONCEPTS.find(c=>c.id===selectedConcept) || AD_CONCEPTS[0];
+    await adsGenerate(concept, regenInstruction);
+  } catch(e) {
+    console.error('adsGenerateWithConcept error:', e);
+    setStatus('a', 'Error: ' + (e.message || String(e)), 'error');
+    const btn = document.getElementById('a-conceptGenBtn');
+    if (btn) { btn.disabled = false; document.getElementById('a-cg-spinner').style.display = 'none'; }
+  }
 }
 
 // ════════════════════════════════════════
 // ADS — GENERATE (updated with concept support)
 // ════════════════════════════════════════
-async function adsGenerate(concept) {
+async function adsGenerate(concept, regenInstruction) {
   const product=document.getElementById('a-product').value.trim();
   if(!product){setStatus('a','Describe what you are advertising.','error');return;}
   if(selectedAdSizes.size===0){setStatus('a','Select at least one ad size.','error');return;}
@@ -2907,6 +2914,7 @@ async function adsGenerate(concept) {
   if(regenInstruction) window._regenInstruction=regenInstruction; else window._regenInstruction=null;
   const btn=document.getElementById('a-conceptGenBtn');
   if(btn){btn.disabled=true;document.getElementById('a-cg-spinner').style.display='inline-block';}
+  showToast(`Starting ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''}…`, 'info', 2000);
   const model=document.getElementById('a-model').value;const style=document.getElementById('a-style').value;
   const brand={name:document.getElementById('a-brand').value.trim(),industry:document.getElementById('a-industry').value.trim()};
   const colors=getColors('a');const objective=document.getElementById('a-objective').value;
