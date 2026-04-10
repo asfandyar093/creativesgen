@@ -327,6 +327,7 @@ app.post('/api/image', async (req, res) => {
 
 // ── /api/admin/update-user ────────────────────────────────────────────────
 app.post('/api/admin/update-user', async (req, res) => {
+  console.log('update-user body keys:', Object.keys(req.body || {}), 'secret match:', req.body?.secret === 'cg-admin-2026-secure');
   const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
   if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
   if (!uid) return res.status(400).json({ error: 'uid required' });
@@ -347,6 +348,58 @@ app.post('/api/admin/update-user', async (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message || String(e) });
   }
+});
+
+// ── /api/admin/quick-cancel ───────────────────────────────────────────────
+app.post('/api/admin/quick-cancel', async (req, res) => {
+  const { secret, uid } = req.body;
+  if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
+  if (!uid) return res.status(400).json({ error: 'uid required' });
+  if (!adminDb) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  try {
+    await adminDb.collection('users').doc(uid).update({
+      plan: 'free', imagesAllowance: 15, planRenewalDate: require('firebase-admin').firestore.FieldValue.delete()
+    });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
+});
+
+// ── /api/admin/update-admins ─────────────────────────────────────────────
+app.post('/api/admin/update-admins', async (req, res) => {
+  const { secret, emails } = req.body;
+  if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
+  if (!adminDb) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  try {
+    await adminDb.collection('config').doc('admins').set({ emails });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
+});
+
+// ── /api/admin/preauthorize ──────────────────────────────────────────────
+app.post('/api/admin/preauthorize', async (req, res) => {
+  const { secret, email, plan, note, addedBy } = req.body;
+  if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
+  if (!adminDb) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  try {
+    const docId = email.replace(/[.#$[\]]/g, '_');
+    await adminDb.collection('preauth').doc(docId).set({
+      email, plan, note: note || '', addedBy: addedBy || '',
+      addedAt: require('firebase-admin').firestore.FieldValue.serverTimestamp(),
+      claimed: false
+    });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
+});
+
+// ── /api/admin/delete-preauth ────────────────────────────────────────────
+app.post('/api/admin/delete-preauth', async (req, res) => {
+  const { secret, docId } = req.body;
+  if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
+  if (!adminDb) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  try {
+    await adminDb.collection('preauth').doc(docId).delete();
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
 });
 
 const PORT = process.env.PORT || 3000;
