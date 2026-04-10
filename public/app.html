@@ -1453,8 +1453,9 @@ async function handleSignIn(user) {
     const data = await ensureUserDoc(user);
     initApp(user, data);
   } catch(e) {
-    // Firestore failed — still open app with defaults
-    initApp(user, { imagesUsed: 0, imagesAllowance: 15, plan: 'free' });
+    // Firestore failed — keep existing userData if we have it (prevents plan
+    // from resetting to free during token refresh), else fall back to defaults
+    initApp(user, userData || { imagesUsed: 0, imagesAllowance: 15, plan: 'free' });
   }
 }
 async function doGoogleSignIn() {
@@ -3178,24 +3179,30 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Keyboard shortcut
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')showConceptPicker();else websiteGenerate();}});
 
-  // Always show login modal until Firebase confirms a real signed-in user
-  document.getElementById('accountModal').classList.remove('hidden');
+  // Don't show login modal immediately — give Firebase time to restore the
+  // persisted session from IndexedDB. Showing it immediately causes a flash
+  // on every page refresh even for signed-in users.
+  // After 1.5s with no user, show the modal for genuinely new/signed-out users.
+  let authTimer = setTimeout(() => {
+    if (!sessionEstablished) {
+      document.getElementById('accountModal').classList.remove('hidden');
+    }
+  }, 1500);
 
-  // Firebase auth state — fires when Firebase resolves persisted session.
-  // Firebase can fire null events during token refresh while the user is
-  // actively using the app. Once a session is established, we never force
-  // the login modal — the user must explicitly click Sign Out.
   fbAuth.onAuthStateChanged(async user => {
+    clearTimeout(authTimer);
     if (user) {
       await handleSignIn(user);
     } else {
-      currentUser = null; userData = null;
-      // Only show login modal if user has never signed in this page load.
-      // If sessionEstablished=true, Firebase fired null during token refresh
-      // — silently ignore it and let Firebase re-authenticate in background.
       if (!sessionEstablished) {
+        // Genuinely not logged in — show login modal
+        currentUser = null; userData = null;
         document.getElementById('accountModal').classList.remove('hidden');
       }
+      // If sessionEstablished=true: Firebase fired null during a background
+      // token refresh. Do NOT clear currentUser/userData — the user is still
+      // actively using the app. consumeImages and other functions need these.
+      // Firebase will fire user again shortly and handleSignIn will refresh data.
     }
   });
 });
