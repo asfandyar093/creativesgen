@@ -815,12 +815,14 @@ function grantBonus() {
 async function quickCancel(uid) {
   if (!confirm('Cancel this user\'s subscription and set them to Free plan?')) return;
   try {
-    await fbDb.collection('users').doc(uid).update({ plan:'free', imagesAllowance:15, planRenewalDate:firebase.firestore.FieldValue.delete() });
+    const r = await adminFetch('/api/admin/quick-cancel', { uid });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     const idx = allUsers.findIndex(u => u.id === uid);
     if (idx !== -1) { allUsers[idx].plan='free'; allUsers[idx].imagesAllowance=15; }
     showToast('Subscription cancelled — user moved to Free.', 'success');
     renderStats(); renderCharts(); filterUsers(); renderRevenue();
-  } catch(e) { showToast('Error: '+e.message, 'error'); }
+  } catch(e) { showToast('Error: ' + errMsg(e), 'error'); }
 }
 
 // ── REVENUE TAB ──────────────────────────────────────────────────────
@@ -911,26 +913,42 @@ async function addAdmin() {
   try {
     const filtered = adminEmails.filter(e=>e!==HARDCODED_ADMIN);
     filtered.push(email);
-    await fbDb.collection('config').doc('admins').set({ emails: filtered });
+    const r = await adminFetch('/api/admin/update-admins', { emails: filtered });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     adminEmails.push(email);
     renderAdmins();
     document.getElementById('newAdminEmail').value='';
     showToast(`${email} added as admin.`,'success');
-  } catch(e) { showToast('Error: '+e.message,'error'); }
+  } catch(e) { showToast('Error: ' + errMsg(e),'error'); }
 }
 
 async function removeAdmin(email) {
   if (!confirm(`Remove ${email} as admin?`)) return;
   try {
     const filtered = adminEmails.filter(e=>e!==HARDCODED_ADMIN&&e!==email);
-    await fbDb.collection('config').doc('admins').set({ emails: filtered });
+    const r = await adminFetch('/api/admin/update-admins', { emails: filtered });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     adminEmails = adminEmails.filter(e=>e!==email);
     renderAdmins();
     showToast(`${email} removed from admins.`,'success');
-  } catch(e) { showToast('Error: '+e.message,'error'); }
+  } catch(e) { showToast('Error: ' + errMsg(e),'error'); }
 }
 
 // ── TOAST ────────────────────────────────────────────────────────────
+function adminFetch(url, body) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: 'cg-admin-2026-secure', ...body })
+  });
+}
+
+function errMsg(e) {
+  return typeof e === 'string' ? e : (e?.message || JSON.stringify(e) || 'Unknown error');
+}
+
 function showToast(msg, type='info', duration=3500) {
   const t = document.createElement('div');
   t.className = 'toast '+(type==='success'?'success':type==='error'?'error':'');
@@ -954,37 +972,40 @@ async function addPreauth() {
       try {
         const allowance = PLAN_ALLOWANCE[plan];
         const renewal = new Date(); renewal.setMonth(renewal.getMonth()+1);
-        await fbDb.collection('users').doc(existing.id).update({
-          plan, imagesAllowance: allowance,
-          planRenewalDate: firebase.firestore.Timestamp.fromDate(renewal),
-          paymentNote: note || firebase.firestore.FieldValue.delete()
+        const r = await adminFetch('/api/admin/update-user', {
+          uid: existing.id,
+          plan,
+          imagesAllowance: allowance,
+          planRenewalDate: renewal.toISOString(),
+          paymentNote: note || null
         });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
         const idx = allUsers.findIndex(u=>u.id===existing.id);
         if(idx!==-1){ allUsers[idx].plan=plan; allUsers[idx].imagesAllowance=allowance; }
         showToast(`${email} upgraded to ${plan} successfully!`,'success');
         renderStats(); renderCharts(); filterUsers(); renderRevenue();
         document.getElementById('pa-email').value='';
         document.getElementById('pa-note').value='';
-      } catch(e){ showToast('Error: '+e.message,'error'); }
+      } catch(e){ showToast('Error: '+errMsg(e),'error'); }
     }
     return;
   }
 
   // No account yet — store preauth
   try {
-    const docId = email.replace(/[.#$[\]]/g,'_');
-    await fbDb.collection('preauth').doc(docId).set({
+    const r = await adminFetch('/api/admin/preauthorize', {
       email, plan,
-      note: note||'',
-      addedBy: currentAdminEmail,
-      addedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      claimed: false
+      note: note || '',
+      addedBy: currentAdminEmail
     });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     showToast(`${email} pre-authorized for ${plan}. They'll get access on signup.`,'success');
     document.getElementById('pa-email').value='';
     document.getElementById('pa-note').value='';
     loadPreauth();
-  } catch(e){ showToast('Error: '+e.message,'error'); }
+  } catch(e){ showToast('Error: '+errMsg(e),'error'); }
 }
 
 async function loadPreauth() {
@@ -1038,10 +1059,12 @@ async function sendInviteEmail(email, plan, note) {
 async function deletePreauth(docId, email) {
   if (!confirm(`Revoke pre-authorization for ${email}?`)) return;
   try {
-    await fbDb.collection('preauth').doc(docId).delete();
+    const r = await adminFetch('/api/admin/delete-preauth', { docId });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
     showToast(`Revoked access for ${email}.`,'success');
     loadPreauth();
-  } catch(e){ showToast('Error: '+e.message,'error'); }
+  } catch(e){ showToast('Error: '+errMsg(e),'error'); }
 }
 
 // ── UTILS ────────────────────────────────────────────────────────────
