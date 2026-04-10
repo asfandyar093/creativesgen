@@ -215,39 +215,6 @@ if (!GEMINI_KEY) {
   process.exit(1);
 }
 
-// ── Admin: update user plan ────────────────────────────────────────────────
-app.post('/api/admin/update-user', async (req, res) => {
-  const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
-  if (secret !== ADMIN_SECRET) return res.status(403).json({ error: 'Unauthorized' });
-  if (!uid) return res.status(400).json({ error: 'uid required' });
-
-  try {
-    const update = {};
-    if (plan !== undefined) update.plan = plan;
-    if (imagesAllowance !== undefined) update.imagesAllowance = imagesAllowance;
-    if (imagesUsed !== undefined) update.imagesUsed = imagesUsed;
-    if (planRenewalDate !== undefined) update.planRenewalDate = planRenewalDate;
-
-    const patchBody = { fields: {} };
-    if (update.plan !== undefined) patchBody.fields.plan = { stringValue: update.plan };
-    if (update.imagesAllowance !== undefined) patchBody.fields.imagesAllowance = { integerValue: String(update.imagesAllowance) };
-    if (update.imagesUsed !== undefined) patchBody.fields.imagesUsed = { integerValue: String(update.imagesUsed) };
-    if (update.planRenewalDate !== undefined) patchBody.fields.planRenewalDate = update.planRenewalDate
-      ? { timestampValue: new Date(update.planRenewalDate).toISOString() }
-      : { nullValue: null };
-
-    const fields = Object.keys(patchBody.fields).join(',');
-    const r = await fetch(
-      `${FS_BASE}/users/${uid}?updateMask.fieldPaths=${fields.split(',').join('&updateMask.fieldPaths=')}&key=${FIREBASE_API_KEY}`,
-      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patchBody) }
-    );
-    const data = await r.json();
-    if (!r.ok) return res.status(r.status).json(data);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
 
 // ── Text: plan slides / regen ──────────────────────────────────────────────
 app.post('/api/plan', async (req, res) => {
@@ -327,8 +294,7 @@ app.post('/api/image', async (req, res) => {
 
 // ── /api/admin/update-user ────────────────────────────────────────────────
 app.post('/api/admin/update-user', async (req, res) => {
-  console.log('update-user body keys:', Object.keys(req.body || {}), 'secret match:', req.body?.secret === 'cg-admin-2026-secure');
-  const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
+const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
   if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
   if (!uid) return res.status(400).json({ error: 'uid required' });
 
