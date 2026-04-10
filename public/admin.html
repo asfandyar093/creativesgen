@@ -759,17 +759,24 @@ async function saveUser() {
   const allowance = parseInt(document.getElementById('editAllowance').value)||0;
   const used = parseInt(document.getElementById('editUsed').value)||0;
   const renewalVal = document.getElementById('editRenewal').value;
-  const update = {
-    plan,
-    imagesAllowance: allowance,
-    imagesUsed: used,
-    planRenewalDate: renewalVal ? firebase.firestore.Timestamp.fromDate(new Date(renewalVal)) : firebase.firestore.FieldValue.delete()
-  };
   try {
-    await fbDb.collection('users').doc(editingUid).update(update);
+    const r = await fetch('/api/admin/update-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: 'cg-admin-2026-secure',
+        uid: editingUid,
+        plan,
+        imagesAllowance: allowance,
+        imagesUsed: used,
+        planRenewalDate: renewalVal || null
+      })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || 'Server error');
     // Update local cache
     const idx = allUsers.findIndex(u => u.id === editingUid);
-    if (idx !== -1) Object.assign(allUsers[idx], update);
+    if (idx !== -1) Object.assign(allUsers[idx], { plan, imagesAllowance: allowance, imagesUsed: used });
     showToast('User updated successfully!', 'success');
     closeEdit();
     renderStats();

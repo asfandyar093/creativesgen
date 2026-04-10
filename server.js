@@ -185,6 +185,7 @@ app.use((req, res, next) => {
 // Serve static files, fallback to .html extension
 app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'] }));
 
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'cg-admin-2026-secure';
 const GEMINI_KEY  = process.env.GEMINI_API_KEY;
 const TEXT_MODEL  = process.env.TEXT_MODEL  || 'gemini-2.5-flash';
 const IMAGE_MODEL = process.env.IMAGE_MODEL || 'gemini-2.5-flash-image';
@@ -193,6 +194,40 @@ if (!GEMINI_KEY) {
   console.error('❌  GEMINI_API_KEY is not set. Create a .env file. See .env.example');
   process.exit(1);
 }
+
+// ── Admin: update user plan ────────────────────────────────────────────────
+app.post('/api/admin/update-user', async (req, res) => {
+  const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
+  if (secret !== ADMIN_SECRET) return res.status(403).json({ error: 'Unauthorized' });
+  if (!uid) return res.status(400).json({ error: 'uid required' });
+
+  try {
+    const update = {};
+    if (plan !== undefined) update.plan = plan;
+    if (imagesAllowance !== undefined) update.imagesAllowance = imagesAllowance;
+    if (imagesUsed !== undefined) update.imagesUsed = imagesUsed;
+    if (planRenewalDate !== undefined) update.planRenewalDate = planRenewalDate;
+
+    const patchBody = { fields: {} };
+    if (update.plan !== undefined) patchBody.fields.plan = { stringValue: update.plan };
+    if (update.imagesAllowance !== undefined) patchBody.fields.imagesAllowance = { integerValue: String(update.imagesAllowance) };
+    if (update.imagesUsed !== undefined) patchBody.fields.imagesUsed = { integerValue: String(update.imagesUsed) };
+    if (update.planRenewalDate !== undefined) patchBody.fields.planRenewalDate = update.planRenewalDate
+      ? { timestampValue: new Date(update.planRenewalDate).toISOString() }
+      : { nullValue: null };
+
+    const fields = Object.keys(patchBody.fields).join(',');
+    const r = await fetch(
+      `${FS_BASE}/users/${uid}?updateMask.fieldPaths=${fields.split(',').join('&updateMask.fieldPaths=')}&key=${FIREBASE_API_KEY}`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patchBody) }
+    );
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json(data);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 
 // ── Text: plan slides / regen ──────────────────────────────────────────────
 app.post('/api/plan', async (req, res) => {
@@ -207,7 +242,7 @@ app.post('/api/plan', async (req, res) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.9, responseMimeType: 'application/json' }
+          generationConfig: { temperature: 0.9 }
         })
       }
     );
