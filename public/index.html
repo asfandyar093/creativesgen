@@ -118,9 +118,24 @@
     /* IMAGE PLACEHOLDERS */
     .img-ph { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #94a3b8; font-size: 0.82rem; font-weight: 600; text-align: center; }
     .img-ph .ph-icon { font-size: 1.6rem; opacity: .5; }
-    /* HERO SCREENSHOT */
-    .hero-screenshot { max-width: 900px; margin: 52px auto 0; position: relative; }
+    /* HERO VIDEO / SCREENSHOT */
+    .hero-screenshot { max-width: 960px; margin: 52px auto 0; position: relative; }
     .hero-screenshot .img-ph { height: 420px; background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.15); color: rgba(255,255,255,.35); border-radius: 18px; }
+    .demo-frame { border-radius: 16px; overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08); position: relative; background: #0d1117; }
+    .demo-frame-bar { background: #1e2028; padding: 10px 16px; display: flex; align-items: center; gap: 7px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .demo-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .demo-dot.r { background: #ff5f57; }
+    .demo-dot.y { background: #febc2e; }
+    .demo-dot.g { background: #28c840; }
+    .demo-url { flex: 1; text-align: center; background: rgba(255,255,255,.07); border-radius: 6px; padding: 3px 12px; font-size: 0.72rem; color: rgba(255,255,255,.35); font-family: monospace; }
+    .demo-video-wrap { position: relative; width: 100%; padding-top: 56.25%; /* 16:9 */ background: #000; }
+    .demo-video-wrap iframe,
+    .demo-video-wrap video { position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: block; }
+    .demo-play-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35); cursor: pointer; transition: background .2s; }
+    .demo-play-overlay:hover { background: rgba(0,0,0,.2); }
+    .demo-play-btn { width: 72px; height: 72px; background: rgba(255,255,255,.95); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0,0,0,.4); transition: transform .2s; }
+    .demo-play-btn:hover { transform: scale(1.08); }
+    .demo-play-btn svg { width: 28px; height: 28px; fill: #5b5ef4; margin-left: 4px; }
     /* HOW IT WORKS */
     .how-bg { background: var(--surface); }
     .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
@@ -293,9 +308,47 @@
   </div>
   <p class="hero-note"><strong>15 free images</strong> · No credit card required · Cancel anytime</p>
   <div class="hero-screenshot">
-    <div class="img-ph">
-      <span class="ph-icon">🖼️</span>
-      <span>Add product screenshot here</span>
+    <div class="demo-frame">
+      <div class="demo-frame-bar">
+        <span class="demo-dot r"></span>
+        <span class="demo-dot y"></span>
+        <span class="demo-dot g"></span>
+        <span class="demo-url">creativesgen.com/app</span>
+      </div>
+      <div class="demo-video-wrap" id="demoWrap">
+        <!-- ─────────────────────────────────────────────────────────────────
+             TO ADD YOUR VIDEO:
+             Option A — YouTube/Loom:
+               Replace YOUR_VIDEO_ID below with the YouTube video ID
+               e.g. for https://youtube.com/watch?v=abc123 → use abc123
+               For Loom: use the share embed URL from Loom's "Share" → "Embed"
+             Option B — Self-hosted (upload to /public/videos/demo.mp4):
+               Comment out the iframe and uncomment the <video> tag below
+        ──────────────────────────────────────────────────────────────────── -->
+
+        <!-- Option A: YouTube embed (replace YOUR_VIDEO_ID) -->
+        <iframe
+          id="demoIframe"
+          src="https://www.youtube.com/embed/YOUR_VIDEO_ID?autoplay=0&rel=0&modestbranding=1&color=white"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          style="display:none;">
+        </iframe>
+
+        <!-- Option B: Self-hosted video (uncomment when you have the file) -->
+        <!--
+        <video id="demoVideo" autoplay muted loop playsinline>
+          <source src="/videos/demo.mp4" type="video/mp4" />
+        </video>
+        -->
+
+        <!-- Placeholder shown until video is configured -->
+        <div id="demoPlaceholder" style="position:absolute;inset:0;background:linear-gradient(135deg,#1e1b4b,#1a0533);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+          <div style="font-size:3rem;">🎬</div>
+          <div style="color:rgba(255,255,255,.7);font-size:1rem;font-weight:700;">Product Demo</div>
+          <div style="color:rgba(255,255,255,.35);font-size:0.82rem;text-align:center;max-width:280px;">Upload your demo video to show it here — see the HTML comment above for instructions</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
