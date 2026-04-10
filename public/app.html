@@ -2211,21 +2211,21 @@ async function socialGenerateImages(regenInstruction) {
   document.getElementById('s-resTitle').textContent='Generating…';
   document.getElementById('s-resSub').textContent=`${count} slides · ${ratios['s']}`;
   showSkeletons('s',count,ratios['s']);
-  setStatus('s',`Generating ${count} image${count>1?'s':''}…`,'info');setProgress('s',5);
+  setStatus('s',`Generating ${count} image${count>1?'s':''} in parallel…`,'info');setProgress('s',5);
   let done=0,errors=[];
-  for(let i=0;i<count;i++){
-    setStatus('s',`Generating slide ${i+1} of ${count}…`,'info');
-    try{
-      const slide=slidePlan[i];
-      const prompt=buildSocialImagePrompt(slide,i,count,config,brand,colors,style,inspir,avoid);
-      generatedPrompts['s'][i]=prompt;
-      const parts=[];if(logos['s'])parts.push({mimeType:logos['s'].mimeType,data:logos['s'].b64});if(examples['s'])parts.push({mimeType:examples['s'].mimeType,data:examples['s'].b64});
-      const img=await callImageAPI(prompt,model,parts.length?parts:null,ratios['s']);
-      generatedImages['s'][i]=img;
-      renderCard('s',img,i,{label:slide.type==='hook'?'Hook':slide.type==='cta'?'CTA':'Content',dotColor:slide.type==='hook'?'#ec4899':slide.type==='cta'?'#10b981':'#6366f1',sub:`Slide ${i+1}`});
-      consumeImages(1);done++;setProgress('s',Math.round(((i+1)/count)*95));
-    }catch(err){errors.push(i+1);markError('s',i,err.message,()=>retrySocialSlide(i));console.error(`Slide ${i+1}:`,err);}
-  }
+  const parts_s=[];if(logos['s'])parts_s.push({mimeType:logos['s'].mimeType,data:logos['s'].b64});if(examples['s'])parts_s.push({mimeType:examples['s'].mimeType,data:examples['s'].b64});
+  await Promise.all(Array.from({length:count},(_,i)=>{
+    const slide=slidePlan[i];
+    const prompt=buildSocialImagePrompt(slide,i,count,config,brand,colors,style,inspir,avoid);
+    generatedPrompts['s'][i]=prompt;
+    return callImageAPI(prompt,model,parts_s.length?parts_s:null,ratios['s'])
+      .then(img=>{
+        generatedImages['s'][i]=img;
+        renderCard('s',img,i,{label:slide.type==='hook'?'Hook':slide.type==='cta'?'CTA':'Content',dotColor:slide.type==='hook'?'#ec4899':slide.type==='cta'?'#10b981':'#6366f1',sub:`Slide ${i+1}`});
+        consumeImages(1);done++;setProgress('s',Math.round((done/count)*95));
+      })
+      .catch(err=>{errors.push(i+1);markError('s',i,err.message,()=>retrySocialSlide(i));console.error(`Slide ${i+1}:`,err);});
+  }));
   document.getElementById('s-resTitle').textContent=`Your ${config.label}`;
   document.getElementById('s-resSub').textContent=`${done}/${count} generated · ${ratios['s']}`;
   if(errors.length===0){setStatus('s',`All ${done} images ready!`,'success');saveBrandMemory();showToast(`${done} slide${done>1?'s':''} generated!`,'success');showFeedbackPanel('s');}
@@ -2291,19 +2291,19 @@ async function websiteGenerate(regenInstruction) {
   document.getElementById('w-resTitle').textContent='Generating…';
   document.getElementById('w-resSub').textContent=`${total} image${total!==1?'s':''} · ${formatsArr.length} format${formatsArr.length!==1?'s':''}`;
   showGridSkeletons('w',tasks.map(t=>t.fInfo));
-  setStatus('w',`Generating ${total} website image${total!==1?'s':''}…`,'info');setProgress('w',5);
+  setStatus('w',`Generating ${total} website image${total!==1?'s':''} in parallel…`,'info');setProgress('w',5);
   let done=0,errors=[];
-  for(let i=0;i<tasks.length;i++){
-    const{fInfo,imgIdx}=tasks[i];setStatus('w',`Generating ${fInfo.label} image ${imgIdx+1}…`,'info');
-    try{
-      const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,imgIdx,perFormat);
-      generatedPrompts['w'][i]=prompt;
-      const parts=[];if(logos['w'])parts.push({mimeType:logos['w'].mimeType,data:logos['w'].b64});if(examples['w'])parts.push({mimeType:examples['w'].mimeType,data:examples['w'].b64});
-      const img=await callImageAPI(prompt,model,parts.length?parts:null,fInfo.ratio);
-      generatedImages['w'][i]=img;renderCard('w',img,i,{label:fInfo.label,dotColor:'#6366f1',sub:fInfo.dim,isAd:true});
-      consumeImages(1);done++;setProgress('w',Math.round(((i+1)/tasks.length)*95));
-    }catch(err){errors.push(i+1);markError('w',i,err.message,()=>retryWeb(i,tasks[i]));console.error(`Web img ${i+1}:`,err);}
-  }
+  const parts_w=[];if(logos['w'])parts_w.push({mimeType:logos['w'].mimeType,data:logos['w'].b64});if(examples['w'])parts_w.push({mimeType:examples['w'].mimeType,data:examples['w'].b64});
+  await Promise.all(tasks.map(({fInfo,imgIdx},i)=>{
+    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,imgIdx,perFormat);
+    generatedPrompts['w'][i]=prompt;
+    return callImageAPI(prompt,model,parts_w.length?parts_w:null,fInfo.ratio)
+      .then(img=>{
+        generatedImages['w'][i]=img;renderCard('w',img,i,{label:fInfo.label,dotColor:'#6366f1',sub:fInfo.dim,isAd:true});
+        consumeImages(1);done++;setProgress('w',Math.round((done/tasks.length)*95));
+      })
+      .catch(err=>{errors.push(i+1);markError('w',i,err.message,()=>retryWeb(i,tasks[i]));console.error(`Web img ${i+1}:`,err);});
+  }));
   document.getElementById('w-resTitle').textContent='Website Images';
   document.getElementById('w-resSub').textContent=`${done}/${total} generated · ${pageType}`;
   if(errors.length===0){setStatus('w',`All ${done} images ready!`,'success');showToast(`${done} website image${done>1?'s':''} ready!`,'success');showFeedbackPanel('w');}
@@ -2927,20 +2927,20 @@ async function adsGenerate(concept, regenInstruction) {
   document.getElementById('a-resSub').textContent=`${sizesToGen.length} ad size${sizesToGen.length>1?'s':''} · ${adsPlatform==='meta'?'Meta Ads':'Google Display'}`;
   if(concept) document.getElementById('a-res-concept').textContent=`Concept: ${concept.emoji} ${concept.title}`;
   showGridSkeletons('a',sizesToGen.map(k=>AD_SIZES[k]));
-  setStatus('a',`Generating ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''}…`,'info');setProgress('a',5);
+  setStatus('a',`Generating ${sizesToGen.length} ad creative${sizesToGen.length>1?'s':''} in parallel…`,'info');setProgress('a',5);
   let done=0,errors=[];
-  for(let i=0;i<sizesToGen.length;i++){
-    const sizeKey=sizesToGen[i];const sizeInfo=AD_SIZES[sizeKey];
-    setStatus('a',`Generating ${sizeInfo.label} (${sizeInfo.dim})…`,'info');
-    try{
-      const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir,concept,intelData);
-      generatedPrompts['a'][i]=prompt;
-      const parts=[];if(logos['a'])parts.push({mimeType:logos['a'].mimeType,data:logos['a'].b64});if(examples['a'])parts.push({mimeType:examples['a'].mimeType,data:examples['a'].b64});
-      const img=await callImageAPI(prompt,model,parts.length?parts:null,sizeInfo.ratio);
-      generatedImages['a'][i]=img;renderCard('a',img,i,{label:sizeInfo.label,dotColor:'#ec4899',sub:sizeInfo.dim,isAd:true});
-      consumeImages(1);done++;setProgress('a',Math.round(((i+1)/sizesToGen.length)*95));
-    }catch(err){errors.push(sizeInfo.label);markError('a',i,err.message,()=>retryAd(i,sizeKey));console.error(`Ad ${sizeKey}:`,err);}
-  }
+  const parts_a=[];if(logos['a'])parts_a.push({mimeType:logos['a'].mimeType,data:logos['a'].b64});if(examples['a'])parts_a.push({mimeType:examples['a'].mimeType,data:examples['a'].b64});
+  await Promise.all(sizesToGen.map((sizeKey,i)=>{
+    const sizeInfo=AD_SIZES[sizeKey];
+    const prompt=buildAdPrompt(product,sizeInfo,adsPlatform,objective,headline,bodyCopy,cta,audience,style,colors,brand,inspir,concept,intelData);
+    generatedPrompts['a'][i]=prompt;
+    return callImageAPI(prompt,model,parts_a.length?parts_a:null,sizeInfo.ratio)
+      .then(img=>{
+        generatedImages['a'][i]=img;renderCard('a',img,i,{label:sizeInfo.label,dotColor:'#ec4899',sub:sizeInfo.dim,isAd:true});
+        consumeImages(1);done++;setProgress('a',Math.round((done/sizesToGen.length)*95));
+      })
+      .catch(err=>{errors.push(sizeInfo.label);markError('a',i,err.message,()=>retryAd(i,sizeKey));console.error(`Ad ${sizeKey}:`,err);});
+  }));
   document.getElementById('a-resTitle').textContent=`Your ${adsPlatform==='meta'?'Meta':'Google'} Ad Creatives`;
   document.getElementById('a-resSub').textContent=`${done}/${sizesToGen.length} generated`;
   if(errors.length===0){setStatus('a',`All ${done} ads ready!`,'success');showToast(`${done} ad creative${done>1?'s':''} generated!`,'success');showFeedbackPanel('a');}
