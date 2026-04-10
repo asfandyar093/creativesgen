@@ -305,6 +305,35 @@ app.post('/api/image', async (req, res) => {
   }
 });
 
+// ── /api/admin/update-user ────────────────────────────────────────────────
+app.post('/api/admin/update-user', async (req, res) => {
+  const { secret, uid, plan, imagesAllowance, imagesUsed, planRenewalDate } = req.body;
+  if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
+  if (!uid) return res.status(400).json({ error: 'uid required' });
+
+  const fields = {};
+  if (plan !== undefined) fields.plan = { stringValue: plan };
+  if (imagesAllowance !== undefined) fields.imagesAllowance = { integerValue: String(imagesAllowance) };
+  if (imagesUsed !== undefined) fields.imagesUsed = { integerValue: String(imagesUsed) };
+  if (planRenewalDate) fields.planRenewalDate = { timestampValue: new Date(planRenewalDate).toISOString() };
+
+  const updateMask = Object.keys(fields).map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
+  const url = `${FS_BASE}/users/${uid}?${updateMask}&key=${FIREBASE_API_KEY}`;
+
+  try {
+    const r = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields })
+    });
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json({ error: data.error?.message || 'Firestore error' });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`✅  Creatives Gen  →  http://localhost:${PORT}`);

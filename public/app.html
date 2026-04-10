@@ -902,8 +902,8 @@
           </div>
           <div class="field"><label>Image Model</label>
             <select id="s-model" onchange="onModelChange('s')">
-              <option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option>
-              <option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option>
+              <option value="gemini-2.5-flash-image">CreativeGen Lite (free plan)</option>
+              <option value="gemini-3-pro-image-preview" selected>CreativeGen Fast (recommended)</option>
               <option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option>
               <option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option>
             </select>
@@ -1086,7 +1086,7 @@
             </select>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="a-model" onchange="onModelChange('a')"><option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option><option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <select id="a-model" onchange="onModelChange('a')"><option value="gemini-2.5-flash-image">CreativeGen Lite (free plan)</option><option value="gemini-3-pro-image-preview" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
             <div class="free-model-notice" id="a-free-notice"><strong>Free plan includes CreativeGen Lite only.</strong> For sharper, higher quality ads — <a onclick="showPaywall()">upgrade your plan</a>.</div>
           </div>
         </div>
@@ -1268,7 +1268,7 @@
             <div id="w-ctab-hex" class="ctab-pane"><div class="field"><label>Primary</label><input type="text" placeholder="#6366f1" maxlength="7" oninput="syncHex(this,'w-c1','w-h1')" /></div><div class="field"><label>Secondary</label><input type="text" placeholder="#ec4899" maxlength="7" oninput="syncHex(this,'w-c2','w-h2')" /></div></div>
           </div>
           <div class="field"><label>Image Model</label>
-            <select id="w-model" onchange="onModelChange('w')"><option value="gemini-2.5-flash-lite">CreativeGen Lite (free plan)</option><option value="gemini-2.5-flash-image" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
+            <select id="w-model" onchange="onModelChange('w')"><option value="gemini-2.5-flash-image">CreativeGen Lite (free plan)</option><option value="gemini-3-pro-image-preview" selected>CreativeGen Fast (recommended)</option><option value="gemini-3-pro-image-preview">CreativeGen Pro (higher quality)</option><option value="gemini-3.1-flash-image-preview">CreativeGen Ultra (best quality)</option></select>
             <div class="free-model-notice" id="w-free-notice"><strong>Free plan includes CreativeGen Lite only.</strong> For higher quality website images — <a onclick="showPaywall()">upgrade your plan</a>.</div>
           </div>
         </div>
@@ -2947,8 +2947,8 @@ function onModelChange(prefix) {
   const plan = userData?.plan || 'free';
   const sel = document.getElementById(`${prefix}-model`);
   const notice = document.getElementById(`${prefix}-free-notice`);
-  if (plan === 'free' && sel.value !== 'gemini-2.5-flash-lite') {
-    sel.value = 'gemini-2.5-flash-lite';
+  if (plan === 'free' && sel.value !== 'gemini-2.5-flash-image') {
+    sel.value = 'gemini-2.5-flash-image';
     if (notice) notice.style.display = 'block';
     showToast('Free plan only includes CreativeGen Lite. Upgrade for higher quality.', 'info', 4000);
   } else {
@@ -2962,7 +2962,7 @@ function enforceModelForPlan(prefix) {
   const notice = document.getElementById(`${prefix}-free-notice`);
   if (!sel) return;
   if (plan === 'free') {
-    sel.value = 'gemini-2.5-flash-lite';
+    sel.value = 'gemini-2.5-flash-image';
     if (notice) notice.style.display = 'block';
   } else {
     if (notice) notice.style.display = 'none';
@@ -3167,30 +3167,16 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Keyboard shortcut
   document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){if(activeTool==='social')socialPlan();else if(activeTool==='ads')showConceptPicker();else websiteGenerate();}});
 
-  // Hide login modal on load — Firebase needs a moment to restore session
-  document.getElementById('accountModal').classList.add('hidden');
+  // Always show login modal until Firebase confirms a real signed-in user
+  document.getElementById('accountModal').classList.remove('hidden');
 
   // Firebase auth state — fires once Firebase resolves persisted session
-  let authResolved = false;
   fbAuth.onAuthStateChanged(async user => {
     if (user) {
-      authResolved = true;
       await handleSignIn(user);
     } else {
-      // Only show login if this is a genuine logged-out state (not initial load delay)
-      if (!authResolved) {
-        // Give Firebase one extra tick to restore from localStorage
-        setTimeout(() => {
-          if (!authResolved) {
-            currentUser = null; userData = null;
-            document.getElementById('accountModal').classList.remove('hidden');
-          }
-        }, 1000);
-      } else {
-        currentUser = null; userData = null;
-        document.getElementById('accountModal').classList.remove('hidden');
-      }
-      authResolved = true;
+      currentUser = null; userData = null;
+      document.getElementById('accountModal').classList.remove('hidden');
     }
   });
 });
