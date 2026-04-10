@@ -5,19 +5,23 @@ const nodemailer = require('nodemailer');
 
 // ── FIREBASE ADMIN ─────────────────────────────────────────────────────────
 let adminDb = null;
+let adminAuth = null;
+let adminFieldValue = null;
 try {
   const admin = require('firebase-admin');
   if (!admin.apps.length) {
     const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (sa) {
       admin.initializeApp({ credential: admin.credential.cert(JSON.parse(sa)) });
-      adminDb = admin.firestore();
       console.log('✅  Firebase Admin SDK initialized');
     } else {
       console.warn('⚠️   FIREBASE_SERVICE_ACCOUNT not set — admin user updates disabled');
     }
-  } else {
-    adminDb = admin.apps[0].firestore();
+  }
+  if (admin.apps.length) {
+    adminDb = admin.firestore();
+    adminAuth = admin.auth();
+    adminFieldValue = admin.firestore.FieldValue;
   }
 } catch(e) {
   console.error('Firebase Admin init error:', e.message);
@@ -193,6 +197,31 @@ function emailInviteTemplate(email, plan, note) {
 </table></td></tr></table></body></html>`;
 }
 
+function emailLimitTemplate(email, plan, used, allowance) {
+  const planLabel = (plan||'free').charAt(0).toUpperCase()+(plan||'free').slice(1);
+  const appUrl = process.env.APP_URL || 'https://creativesgen.com/app';
+  return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f0f2f8;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:40px 20px">
+<table width="480" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08)">
+  <tr><td style="background:linear-gradient(135deg,#f59e0b,#ef4444);padding:32px;text-align:center">
+    <div style="font-size:28px;margin-bottom:8px">⚡</div>
+    <div style="color:#fff;font-size:1.3rem;font-weight:900">Creatives Gen</div>
+  </td></tr>
+  <tr><td style="padding:36px 40px">
+    <h2 style="margin:0 0 12px;font-size:1.3rem;color:#0d1117">You've used all your images</h2>
+    <p style="margin:0 0 20px;color:#374151;font-size:0.9rem;line-height:1.6">
+      You've reached your <strong>${planLabel} plan</strong> limit of <strong>${allowance} images</strong>. Upgrade your plan to keep creating.
+    </p>
+    <div style="background:#fef3c7;border-radius:10px;padding:16px 20px;margin-bottom:28px;text-align:center">
+      <div style="font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#d97706;margin-bottom:4px">Images Used</div>
+      <div style="font-size:2rem;font-weight:900;color:#0d1117">${used} / ${allowance}</div>
+    </div>
+    <a href="${appUrl}" style="display:block;background:linear-gradient(135deg,#5b5ef4,#ec4899);color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:10px;font-weight:800;font-size:0.95rem;margin-bottom:12px">Upgrade My Plan →</a>
+    <p style="margin:0;color:#8b95a7;font-size:0.78rem;text-align:center">Questions? <a href="mailto:hello@creativesgen.com" style="color:#5b5ef4">hello@creativesgen.com</a></p>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+}
+
 // Redirect /page.html → /page (clean URLs)
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
@@ -324,7 +353,7 @@ app.post('/api/admin/quick-cancel', async (req, res) => {
   if (!adminDb) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
   try {
     await adminDb.collection('users').doc(uid).update({
-      plan: 'free', imagesAllowance: 15, planRenewalDate: require('firebase-admin').firestore.FieldValue.delete()
+      plan: 'free', imagesAllowance: 15, planRenewalDate: adminFieldValue.delete()
     });
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
@@ -350,7 +379,7 @@ app.post('/api/admin/preauthorize', async (req, res) => {
     const docId = email.replace(/[.#$[\]]/g, '_');
     await adminDb.collection('preauth').doc(docId).set({
       email, plan, note: note || '', addedBy: addedBy || '',
-      addedAt: require('firebase-admin').firestore.FieldValue.serverTimestamp(),
+      addedAt: adminFieldValue.serverTimestamp(),
       claimed: false
     });
     res.json({ success: true });
@@ -366,6 +395,97 @@ app.post('/api/admin/delete-preauth', async (req, res) => {
     await adminDb.collection('preauth').doc(docId).delete();
     res.json({ success: true });
   } catch(e) { res.status(500).json({ error: e.message || String(e) }); }
+});
+
+// ── /api/user/sync — read/create user doc via Admin SDK (bypasses security rules) ──
+app.post('/api/user/sync', async (req, res) => {
+  if (!adminDb || !adminAuth) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  const { idToken } = req.body;
+  if (!idToken) return res.status(400).json({ error: 'idToken required' });
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const email = decoded.email || '';
+    const ref = adminDb.collection('users').doc(uid);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      let plan = 'free', imagesAllowance = 15;
+      const PLAN_ALLOWANCE = { free:15, starter:200, pro:1000, agency:5000, enterprise:15000 };
+      try {
+        const docId = email.toLowerCase().replace(/[.#$[\]]/g, '_');
+        const pa = await adminDb.collection('preauth').doc(docId).get();
+        if (pa.exists && !pa.data().claimed) {
+          plan = pa.data().plan || 'free';
+          imagesAllowance = PLAN_ALLOWANCE[plan] || 15;
+          await adminDb.collection('preauth').doc(docId).update({ claimed: true, claimedAt: adminFieldValue.serverTimestamp(), claimedUid: uid });
+        }
+      } catch(e) {}
+      const renewal = new Date(); renewal.setDate(renewal.getDate() + 30);
+      await ref.set({ email, plan, imagesAllowance, imagesUsed: 0, imagesUsedAllTime: 0,
+        createdAt: adminFieldValue.serverTimestamp(), lastLoginAt: adminFieldValue.serverTimestamp(),
+        planRenewalDate: renewal });
+      return res.json({ plan, imagesUsed: 0, imagesAllowance, imagesUsedAllTime: 0, planRenewalDate: renewal.toISOString() });
+    } else {
+      await ref.update({ lastLoginAt: adminFieldValue.serverTimestamp() });
+      const d = snap.data();
+      return res.json({
+        plan: d.plan || 'free',
+        imagesUsed: d.imagesUsed || 0,
+        imagesAllowance: d.imagesAllowance || 15,
+        imagesUsedAllTime: d.imagesUsedAllTime || 0,
+        planRenewalDate: d.planRenewalDate?.toDate ? d.planRenewalDate.toDate().toISOString() : null
+      });
+    }
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── /api/user/consume — atomically increment imagesUsed, check limit, email if hit ──
+const PLAN_ALLOWANCE = { free:15, starter:200, pro:1000, agency:5000, enterprise:15000 };
+app.post('/api/user/consume', async (req, res) => {
+  if (!adminDb || !adminAuth) return res.status(503).json({ error: 'Firebase Admin SDK not configured' });
+  const { idToken, n, toolType } = req.body;
+  if (!idToken) return res.status(400).json({ error: 'idToken required' });
+  const count = parseInt(n) || 1;
+  try {
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const uid = decoded.uid;
+    const email = decoded.email || '';
+    const ref = adminDb.collection('users').doc(uid);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ error: 'User not found' });
+    const d = snap.data();
+    const oldUsed = d.imagesUsed || 0;
+    const allowance = d.imagesAllowance || 15;
+    const plan = d.plan || 'free';
+    const newUsed = oldUsed + count;
+    await ref.update({
+      imagesUsed: adminFieldValue.increment(count),
+      imagesUsedAllTime: adminFieldValue.increment(count)
+    });
+    try {
+      await adminDb.collection('generations').add({
+        userId: uid, userEmail: email, tool: toolType || 'unknown',
+        count, plan, createdAt: adminFieldValue.serverTimestamp()
+      });
+    } catch(e) {}
+    const limitReached = newUsed >= allowance;
+    const justHitLimit = oldUsed < allowance && newUsed >= allowance;
+    if (justHitLimit) {
+      const mailer = getMailer();
+      if (mailer && email) {
+        mailer.sendMail({
+          from: FROM(), to: email,
+          subject: 'You\'ve reached your Creatives Gen image limit',
+          html: emailLimitTemplate(email, plan, newUsed, allowance)
+        }).catch(() => {});
+      }
+    }
+    return res.json({ success: true, imagesUsed: newUsed, imagesAllowance: allowance, limitReached });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

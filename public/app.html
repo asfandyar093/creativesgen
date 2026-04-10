@@ -26,29 +26,18 @@
     fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
     async function ensureUserDoc(user) {
-      const ref = fbDb.collection('users').doc(user.uid);
-      const snap = await ref.get();
-      if (!snap.exists) {
-        const renewal = new Date(); renewal.setDate(renewal.getDate()+30);
-        // Check if admin pre-authorized this email with a paid plan
-        let plan = 'free', allowance = 15;
-        try {
-          const docId = (user.email||'').toLowerCase().replace(/[.#$[\]]/g,'_');
-          const pa = await fbDb.collection('preauth').doc(docId).get();
-          if (pa.exists && !pa.data().claimed) {
-            plan = pa.data().plan || 'free';
-            const PLAN_ALLOWANCE = { free:15, starter:200, pro:1000, agency:5000, enterprise:15000 };
-            allowance = PLAN_ALLOWANCE[plan] || 15;
-            // Mark preauth as claimed
-            await fbDb.collection('preauth').doc(docId).update({ claimed:true, claimedAt:firebase.firestore.FieldValue.serverTimestamp(), claimedUid:user.uid });
-          }
-        } catch(e) { /* preauth check failed silently, proceed with free */ }
-        await ref.set({ email:user.email, name:user.displayName, photoURL:user.photoURL, provider:user.providerData[0]?.providerId||'google.com', plan, imagesAllowance:allowance, imagesUsed:0, imagesUsedAllTime:0, createdAt:firebase.firestore.FieldValue.serverTimestamp(), lastLoginAt:firebase.firestore.FieldValue.serverTimestamp(), planRenewalDate:firebase.firestore.Timestamp.fromDate(renewal) });
-      } else {
-        await ref.update({ lastLoginAt:firebase.firestore.FieldValue.serverTimestamp() });
+      // Use server endpoint (Admin SDK) so Firestore security rules never block the read
+      const idToken = await user.getIdToken();
+      const r = await fetch('/api/user/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `Sync failed: ${r.status}`);
       }
-      const data = (await ref.get()).data();
-      return data;
+      return r.json();
     }
   </script>
   <style>
@@ -334,6 +323,7 @@
     .toast.success { background:#065f46; border-left:4px solid #10b981; }
     .toast.error { background:#7f1d1d; border-left:4px solid #ef4444; }
     .toast.info { background:#1e1b4b; border-left:4px solid #6366f1; }
+    .toast.warning { background:#78350f; border-left:4px solid #f59e0b; }
     @keyframes toastIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 
     /* ═══ IMAGE PREVIEW MODAL ═══ */
@@ -1662,8 +1652,6 @@ function updateTrialUI(used, allowance) {
 function canGenerate(n) {
   // If userData not loaded yet, allow — don't block new users
   if (!userData) return true;
-  const plan = userData.plan || 'free';
-  if (plan !== 'free') return true;
   const used = userData.imagesUsed || 0;
   const allowance = userData.imagesAllowance || 15;
   return used + n <= allowance;
@@ -1671,23 +1659,32 @@ function canGenerate(n) {
 
 async function consumeImages(n, toolType) {
   if (!currentUser || !userData) return;
-  const ref = fbDb.collection('users').doc(currentUser.uid);
-  await ref.update({
-    imagesUsed: firebase.firestore.FieldValue.increment(n),
-    imagesUsedAllTime: firebase.firestore.FieldValue.increment(n)
-  });
-  userData.imagesUsed = (userData.imagesUsed || 0) + n;
-  updateTrialUI(userData.imagesUsed, userData.imagesAllowance || 15);
   try {
-    await fbDb.collection('generations').add({
-      userId: currentUser.uid,
-      userEmail: currentUser.email,
-      tool: toolType || activeTool || 'unknown',
-      count: n,
-      plan: userData.plan || 'free',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    const idToken = await currentUser.getIdToken();
+    const r = await fetch('/api/user/consume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, n, toolType: toolType || activeTool || 'unknown' })
     });
-  } catch(e) {}
+    const data = await r.json();
+    if (r.ok) {
+      userData.imagesUsed = data.imagesUsed;
+      userData.imagesAllowance = data.imagesAllowance;
+      updateTrialUI(data.imagesUsed, data.imagesAllowance);
+      if (data.limitReached) {
+        showToast('You\'ve reached your image limit. Upgrade to keep creating.', 'warning', 6000);
+        showPaywall();
+      }
+    } else {
+      // Server error fallback — update locally so UI stays responsive
+      userData.imagesUsed = (userData.imagesUsed || 0) + n;
+      updateTrialUI(userData.imagesUsed, userData.imagesAllowance || 15);
+    }
+  } catch(e) {
+    // Network error fallback
+    userData.imagesUsed = (userData.imagesUsed || 0) + n;
+    updateTrialUI(userData.imagesUsed, userData.imagesAllowance || 15);
+  }
 }
 
 function showPaywall() { document.getElementById('paywallModal').classList.remove('hidden'); }
@@ -2588,7 +2585,7 @@ function showToast(msg, type='info', duration=3500) {
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = `toast ${type}`;
-  const icon = type==='success'?'✓':type==='error'?'✕':'ℹ';
+  const icon = type==='success'?'✓':type==='error'?'✕':type==='warning'?'⚡':'ℹ';
   t.innerHTML = `<span style="flex-shrink:0;font-weight:900;">${icon}</span><span>${msg}</span>`;
   container.appendChild(t);
   setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(10px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),320); }, duration);
