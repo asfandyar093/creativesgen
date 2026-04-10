@@ -3,6 +3,26 @@ const express = require('express');
 const path = require('path');
 const nodemailer = require('nodemailer');
 
+// ── FIREBASE ADMIN ─────────────────────────────────────────────────────────
+let adminDb = null;
+try {
+  const admin = require('firebase-admin');
+  if (!admin.apps.length) {
+    const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (sa) {
+      admin.initializeApp({ credential: admin.credential.cert(JSON.parse(sa)) });
+      adminDb = admin.firestore();
+      console.log('✅  Firebase Admin SDK initialized');
+    } else {
+      console.warn('⚠️   FIREBASE_SERVICE_ACCOUNT not set — admin user updates disabled');
+    }
+  } else {
+    adminDb = admin.apps[0].firestore();
+  }
+} catch(e) {
+  console.error('Firebase Admin init error:', e.message);
+}
+
 const app = express();
 app.use(express.json({ limit: '25mb' }));
 
@@ -311,26 +331,21 @@ app.post('/api/admin/update-user', async (req, res) => {
   if (secret !== 'cg-admin-2026-secure') return res.status(403).json({ error: 'Forbidden' });
   if (!uid) return res.status(400).json({ error: 'uid required' });
 
-  const fields = {};
-  if (plan !== undefined) fields.plan = { stringValue: plan };
-  if (imagesAllowance !== undefined) fields.imagesAllowance = { integerValue: String(imagesAllowance) };
-  if (imagesUsed !== undefined) fields.imagesUsed = { integerValue: String(imagesUsed) };
-  if (planRenewalDate) fields.planRenewalDate = { timestampValue: new Date(planRenewalDate).toISOString() };
-
-  const updateMask = Object.keys(fields).map(f => `updateMask.fieldPaths=${encodeURIComponent(f)}`).join('&');
-  const url = `${FS_BASE}/users/${uid}?${updateMask}&key=${FIREBASE_API_KEY}`;
+  if (!adminDb) {
+    return res.status(503).json({ error: 'Firebase Admin SDK not configured. Add FIREBASE_SERVICE_ACCOUNT to Vercel environment variables.' });
+  }
 
   try {
-    const r = await fetch(url, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields })
-    });
-    const data = await r.json();
-    if (!r.ok) return res.status(r.status).json({ error: data.error?.message || 'Firestore error' });
+    const update = {};
+    if (plan !== undefined) update.plan = plan;
+    if (imagesAllowance !== undefined) update.imagesAllowance = imagesAllowance;
+    if (imagesUsed !== undefined) update.imagesUsed = imagesUsed;
+    if (planRenewalDate) update.planRenewalDate = new Date(planRenewalDate);
+
+    await adminDb.collection('users').doc(uid).update(update);
     res.json({ success: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    res.status(500).json({ error: e.message || String(e) });
   }
 });
 

@@ -773,7 +773,7 @@ async function saveUser() {
       })
     });
     const data = await r.json();
-    if (!r.ok) throw new Error(data.error || 'Server error');
+    if (!r.ok) throw new Error(typeof data.error === 'string' ? data.error : (data.error?.message || data.message || `HTTP ${r.status}`));
     // Update local cache
     const idx = allUsers.findIndex(u => u.id === editingUid);
     if (idx !== -1) Object.assign(allUsers[idx], { plan, imagesAllowance: allowance, imagesUsed: used });
@@ -784,7 +784,9 @@ async function saveUser() {
     filterUsers();
     renderRevenue();
   } catch(e) {
-    showToast('Error: '+e.message, 'error');
+    const msg = typeof e === 'string' ? e : (e?.message || JSON.stringify(e) || 'Unknown error');
+    showToast('Error: ' + msg, 'error');
+    console.error('saveUser error:', e);
   }
 }
 
