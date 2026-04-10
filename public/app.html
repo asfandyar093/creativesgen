@@ -3170,13 +3170,26 @@ window.addEventListener('DOMContentLoaded', ()=>{
   // Always show login modal until Firebase confirms a real signed-in user
   document.getElementById('accountModal').classList.remove('hidden');
 
-  // Firebase auth state — fires once Firebase resolves persisted session
+  // Firebase auth state — fires once Firebase resolves persisted session.
+  // We debounce the null event: Firebase can briefly fire null during token
+  // refresh while the user is actively using the app. Without debouncing,
+  // this would flash the login modal over the app mid-session.
+  let authNullTimer = null;
   fbAuth.onAuthStateChanged(async user => {
     if (user) {
+      // Cancel any pending "show modal" from a transient null event
+      if (authNullTimer) { clearTimeout(authNullTimer); authNullTimer = null; }
       await handleSignIn(user);
     } else {
       currentUser = null; userData = null;
-      document.getElementById('accountModal').classList.remove('hidden');
+      // Delay before showing modal — if Firebase immediately fires user again
+      // (token refresh), we cancel and the user never sees the interruption.
+      clearTimeout(authNullTimer);
+      authNullTimer = setTimeout(() => {
+        if (!currentUser) {
+          document.getElementById('accountModal').classList.remove('hidden');
+        }
+      }, 2000);
     }
   });
 });
