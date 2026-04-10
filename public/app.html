@@ -299,10 +299,14 @@
     .btn-outline { padding: 9px 16px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); color: var(--text2); font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all .15s; font-family: inherit; }
     .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
     .image-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill,minmax(200px,1fr)); }
+    .image-grid.uniform-grid { grid-template-columns: repeat(auto-fill,minmax(180px,1fr)); align-items: start; }
     .image-card { background: var(--surface); border: 2px solid var(--border); border-radius: 13px; overflow: hidden; position: relative; box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s, border-color .2s; cursor: pointer; }
     .image-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
     .image-card.focused { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-m), var(--shadow-md); }
-    .image-card img { width: 100%; display: block; object-fit: cover; }
+    .image-card img { width: 100%; display: block; }
+    /* Social carousel: lock all cards to same aspect ratio via inner wrapper */
+    .card-ratio-wrap { position: relative; width: 100%; }
+    .card-ratio-wrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .card-overlay { position: absolute; inset: 0; background: rgba(10,16,30,.55); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity .2s; }
     .image-card:hover .card-overlay { opacity: 1; }
     .card-btn { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.38); border-radius: 8px; color: #fff; cursor: pointer; padding: 8px 12px; font-size: 0.74rem; font-weight: 700; backdrop-filter: blur(4px); transition: background .15s; font-family: inherit; }
@@ -1228,14 +1232,27 @@
         <hr class="divider" />
         <div class="sec">
           <div class="sec-title">4 · Image Style</div>
+          <div class="field">
+            <label>Content Type</label>
+            <div class="ratio-row" id="w-contentTypeRow" style="grid-template-columns:1fr 1fr;">
+              <button class="ratio-btn active" id="w-ct-photos" onclick="setWebContentType('photos',this)"><div class="ri" style="width:22px;height:16px;border-radius:3px;"></div><div class="rl">Real Photos</div><div class="rs">People, places, lifestyle</div></button>
+              <button class="ratio-btn" id="w-ct-graphics" onclick="setWebContentType('graphics',this)"><div style="font-size:18px;margin-bottom:3px;">🎨</div><div class="rl">Graphics</div><div class="rs">Illustrations, design, 3D</div></button>
+            </div>
+          </div>
           <div class="field"><label>Visual Style</label>
             <select id="w-imgtype">
-              <option value="photorealistic, professional photography, cinematic lighting, sharp details">Photorealistic Photography</option>
-              <option value="clean graphic illustration, modern flat design, bold shapes">Graphic / Illustration</option>
-              <option value="modern 3D render, soft lighting, premium product quality">3D Render</option>
-              <option value="abstract geometric art, artistic background, dynamic composition">Abstract / Background</option>
-              <option value="lifestyle photography, real people, warm and approachable, candid">Lifestyle Photography</option>
-              <option value="minimalist, generous white space, clean composition, elegant">Minimalist / Clean</option>
+              <optgroup label="── Real Photos ──" id="w-opts-photos">
+                <option value="photorealistic, professional photography, cinematic lighting, sharp details">Professional Photography</option>
+                <option value="lifestyle photography, real people, warm and approachable, candid">Lifestyle Photography</option>
+                <option value="editorial photography, journalistic, authentic, documentary style">Editorial / Authentic</option>
+                <option value="product photography, clean background, studio lighting, commercial quality">Product Photography</option>
+              </optgroup>
+              <optgroup label="── Graphics &amp; Design ──" id="w-opts-graphics">
+                <option value="clean graphic illustration, modern flat design, bold shapes, vector art">Graphic / Illustration</option>
+                <option value="modern 3D render, soft lighting, premium product quality">3D Render</option>
+                <option value="abstract geometric art, artistic background, dynamic composition">Abstract / Background</option>
+                <option value="minimalist, generous white space, clean composition, elegant">Minimalist / Clean</option>
+              </optgroup>
             </select>
           </div>
           <div class="field"><label>Style Inspiration <span class="opt-tag">Optional</span></label><input id="w-inspiration" type="text" placeholder="e.g. Clean like Stripe, bold like Shopify" /></div>
@@ -1773,6 +1790,16 @@ function getWebPageType() { const val=document.getElementById('w-pagetype').valu
 // ════════════════════════════════════════
 // WEBSITE FORMAT MULTI-SELECT
 // ════════════════════════════════════════
+let webContentType = 'photos'; // 'photos' or 'graphics'
+function setWebContentType(type, btn) {
+  webContentType = type;
+  document.querySelectorAll('#w-contentTypeRow .ratio-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  // Auto-select a sensible default style for the content type
+  const sel = document.getElementById('w-imgtype');
+  if (type === 'photos') sel.value = 'photorealistic, professional photography, cinematic lighting, sharp details';
+  else sel.value = 'clean graphic illustration, modern flat design, bold shapes, vector art';
+}
 function toggleWebFormat(cb,key) { cb.checked?selectedWebFormats.add(key):selectedWebFormats.delete(key);cb.closest('.size-check').classList.toggle('checked',cb.checked);updateWebTotal(); }
 function updateWebTotal() { const count=parseInt(document.getElementById('w-count').value)||2,formats=selectedWebFormats.size,total=count*formats,hint=document.getElementById('w-totalHint');if(hint){if(!formats) hint.textContent='Select at least one format above';else hint.textContent=`Total: ${total} image${total!==1?'s':''} (${formats} format${formats!==1?'s':''} × ${count} each)`;} }
 
@@ -1880,7 +1907,15 @@ function selectSocialType(btn) {
   const config=SOCIAL_TYPES[socialType];
   document.getElementById('s-slideWrap').style.display=config.multi?'block':'none';
   if(config.multi){document.getElementById('s-slideCount').value=btn.dataset.slides;document.getElementById('s-slideVal').textContent=btn.dataset.slides;}
-  document.querySelectorAll('#s-ratioRow .ratio-btn').forEach(b=>{const match=b.getAttribute('onclick').includes(`'${btn.dataset.ratio}'`);b.classList.toggle('active',match);if(match)ratios['s']=btn.dataset.ratio;});
+  // Lock the ratio to the type's fixed ratio — carousel/tips always lock to their ratio
+  const fixedRatio=btn.dataset.ratio;
+  ratios['s']=fixedRatio;
+  document.querySelectorAll('#s-ratioRow .ratio-btn').forEach(b=>{
+    const match=b.getAttribute('onclick').includes(`'${fixedRatio}'`);
+    b.classList.toggle('active',match);
+  });
+  // For multi-slide types, hide ratio picker (all slides must be same ratio — no override)
+  document.getElementById('s-ratioRow').closest('.field').style.display=config.multi?'none':'block';
 }
 
 // ════════════════════════════════════════
@@ -2055,7 +2090,8 @@ ${logos['a'] ? 'Brand logo provided — include prominently and professionally' 
 ${examples['a'] ? 'Reference ad provided — closely match this visual style and approach' : ''}`;
 }
 
-function buildWebsiteImagePrompt(pageType, headline, copy, brand, colors, imgType, inspir, fInfo, imgIdx, perFormat) {
+function buildWebsiteImagePrompt(pageType, headline, copy, brand, colors, imgType, inspir, fInfo, imgIdx, perFormat, contentType) {
+  contentType = contentType || webContentType || 'photos';
   const pageContext = {
     'homepage hero': 'The most important image on the site — creates the first impression and establishes brand credibility immediately',
     'about us / team': 'Builds human connection and trust — warm, authentic, professional',
@@ -2086,6 +2122,7 @@ ${copy ? `Page content: "${copy.slice(0,500)}"` : ''}
 Brand: ${brand.name||'Company'} | Industry: ${brand.industry||'Business'}
 
 ═══ VISUAL REQUIREMENTS ═══
+Content type: ${webContentType === 'photos' ? 'REAL PHOTOGRAPHY — use realistic photographic style with natural lighting, real-world settings, and authentic human subjects if applicable' : 'GRAPHIC / DESIGN — use illustration, vector art, 3D render, or digital design — NOT photography'}
 Image style: ${imgType}
 ${inspir ? `Style inspiration: ${inspir}` : ''}
 Color palette:
@@ -2098,7 +2135,7 @@ CRITICAL RULES:
 2. Compose specifically for ${fInfo.ratio} aspect ratio — key elements must be centered or safely within crop zones
 3. Leave visual "breathing room" where text overlays will be placed (typically center or bottom third)
 4. This is for a PROFESSIONAL BUSINESS WEBSITE — credibility and polish are paramount
-5. ${imgType.includes('photo') ? 'Professional photography quality — sharp, well-lit, editorial standard' : 'Clean graphic design quality — modern, scalable, contemporary'}
+5. ${webContentType === 'photos' ? 'REAL PHOTOS: photographic realism — sharp, well-lit, editorial/commercial standard. People should look natural and authentic.' : 'GRAPHICS: clean digital design — modern shapes, vector-quality precision, no photographic elements'}
 6. Visual consistency with other images in this set — same mood, palette, and quality level
 
 ${logos['w'] ? 'Brand logo provided for style reference — use its color language and aesthetic throughout' : ''}
@@ -2295,7 +2332,7 @@ async function websiteGenerate(regenInstruction) {
   let done=0,errors=[];
   const parts_w=[];if(logos['w'])parts_w.push({mimeType:logos['w'].mimeType,data:logos['w'].b64});if(examples['w'])parts_w.push({mimeType:examples['w'].mimeType,data:examples['w'].b64});
   await Promise.all(tasks.map(({fInfo,imgIdx},i)=>{
-    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,imgIdx,perFormat);
+    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,imgIdx,perFormat,webContentType);
     generatedPrompts['w'][i]=prompt;
     return callImageAPI(prompt,model,parts_w.length?parts_w:null,fInfo.ratio)
       .then(img=>{
@@ -2318,7 +2355,7 @@ async function retryWeb(idx,task) {
     const pageType=getWebPageType();const headline=document.getElementById('w-headline').value.trim();
     const copy=document.getElementById('w-copy').value.trim();const brand={name:document.getElementById('w-brand').value.trim(),industry:document.getElementById('w-industry').value.trim()};
     const colors=getColors('w');const imgType=document.getElementById('w-imgtype').value;const inspir=document.getElementById('w-inspiration').value.trim();
-    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,task?.imgIdx||0,2);
+    const prompt=buildWebsiteImagePrompt(pageType,headline,copy,brand,colors,imgType,inspir,fInfo,task?.imgIdx||0,2,webContentType);
     generatedPrompts['w'][idx]=prompt;
     const img=await callImageAPI(prompt,model,null,fInfo.ratio);
     generatedImages['w'][idx]=img;renderCard('w',img,idx,{label:fInfo.label,dotColor:'#6366f1',sub:fInfo.dim,isAd:true});consumeImages(1);setStatus('w','Image regenerated!','success');
@@ -2343,6 +2380,8 @@ async function callImageAPI(prompt,model,logoParts,aspectRatio,attempt=0) {
 // ════════════════════════════════════════
 function showSkeletons(prefix,count,ratio) {
   const grid=document.getElementById(`${prefix}-grid`);grid.innerHTML='';
+  // Social: uniform grid so all slides same size
+  if(prefix==='s') grid.classList.add('uniform-grid'); else grid.classList.remove('uniform-grid');
   const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};const pt=am[ratio]||'100%';
   for(let i=0;i<count;i++){const card=document.createElement('div');card.className='image-card';card.id=`${prefix}-ic-${i}`;card.innerHTML=`<div class="skeleton" style="padding-top:${pt}"></div>`;grid.appendChild(card);}
 }
@@ -2357,7 +2396,15 @@ function renderCard(prefix,img,idx,meta) {
   const src=`data:${img.mimeType};base64,${img.b64}`;
   const isFocused=focusedImage&&focusedImage.prefix===prefix&&focusedImage.idx===idx;
   card.className='image-card'+(isFocused?' focused':'');
-  card.innerHTML=`<img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" /><div class="slide-badge"><span class="sdot" style="background:${meta.dotColor}"></span>${meta.label}</div>${meta.isAd?`<div class="ad-size-label">${meta.sub}</div>`:''}${isFocused?'<div class="focused-badge">✎ Selected</div>':''}<div class="card-overlay"><button class="card-btn" onclick="event.stopPropagation();openPreview('${prefix}',${idx})">🔍 Preview</button><button class="card-btn" onclick="event.stopPropagation();dlSingle('${prefix}',${idx})">⬇ Save</button><button class="card-btn" onclick="event.stopPropagation();selectImageForEdit('${prefix}',${idx})">✎ Edit</button></div>`;
+  // Social cards: lock to aspect ratio so all slides are uniform size
+  // Ad/web cards: let natural image dimensions show (different sizes are expected)
+  const am={'1:1':'100%','4:5':'125%','9:16':'177.8%','16:9':'56.25%'};
+  const useRatioWrap = prefix==='s';
+  const pt = useRatioWrap ? (am[ratios['s']]||'100%') : null;
+  const imgHtml = useRatioWrap
+    ? `<div class="card-ratio-wrap" style="padding-top:${pt}"><img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" /></div>`
+    : `<img src="${src}" alt="${meta.label} ${idx+1}" loading="lazy" style="width:100%;display:block;" />`;
+  card.innerHTML=`${imgHtml}<div class="slide-badge"><span class="sdot" style="background:${meta.dotColor}"></span>${meta.label}</div>${meta.isAd?`<div class="ad-size-label">${meta.sub}</div>`:''}${isFocused?'<div class="focused-badge">✎ Selected</div>':''}<div class="card-overlay"><button class="card-btn" onclick="event.stopPropagation();openPreview('${prefix}',${idx})">🔍 Preview</button><button class="card-btn" onclick="event.stopPropagation();dlSingle('${prefix}',${idx})">⬇ Save</button><button class="card-btn" onclick="event.stopPropagation();selectImageForEdit('${prefix}',${idx})">✎ Edit</button></div>`;
   card.onclick=()=>selectImageForEdit(prefix,idx);
   card.ondblclick=()=>openPreview(prefix,idx);
 }
