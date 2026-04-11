@@ -151,6 +151,11 @@
     .mob-cta:hover { background: var(--accent-h) !important; }
     a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
     @media (max-width: 900px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
+    .wa-btn { display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+    .plan-btn.outline.wa-btn { color: #25D366; border-color: #25D366; }
+    .plan-btn.outline.wa-btn:hover { background: #f0fff4; }
+    .plan-btn.primary.wa-btn { background: #25D366; }
+    .plan-btn.primary.wa-btn:hover { background: #128C7E; }
   </style>
 </head>
 <body>
@@ -161,9 +166,9 @@
     
   </a>
   <div class="nav-links">
-    <a href="/social-posts.html">Social Posts</a>
-    <a href="/ad-creatives.html">Ad Creatives</a>
-    <a href="/website-images.html">Website Images</a>
+    <a href="/ai-instagram-carousel-generator.html">Social Posts</a>
+    <a href="/ai-ad-creative-generator.html">Ad Creatives</a>
+    <a href="/ai-website-image-generator.html">Website Images</a>
     <a href="/how-it-works.html">How It Works</a>
     <a href="/pricing.html" class="active">Pricing</a>
     <a href="/about.html">About</a>
@@ -177,9 +182,9 @@
   </button>
 </nav>
 <div class="nav-mobile" id="navMobile">
-  <a href="/social-posts.html">📱 Social Posts</a>
-  <a href="/ad-creatives.html">📣 Ad Creatives</a>
-  <a href="/website-images.html">🖼️ Website Images</a>
+  <a href="/ai-instagram-carousel-generator.html">📱 Social Posts</a>
+  <a href="/ai-ad-creative-generator.html">📣 Ad Creatives</a>
+  <a href="/ai-website-image-generator.html">🖼️ Website Images</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/pricing.html" style="color:var(--accent);background:var(--accent-l)">Pricing</a>
   <a href="/about.html">About</a>
@@ -232,7 +237,10 @@
         <li class="no">Multiple brand profiles</li>
         <li class="no">Team access</li>
       </ul>
-      <button class="plan-btn outline" onclick="alert('Redirecting to checkout… (Connect Stripe)')">Get Starter</button>
+      <a href="https://wa.me/923090156674?text=Hi%2C%20I%27m%20interested%20in%20the%20Starter%20plan%20(%2419%2Fmonth%20-%20200%20images%2Fmonth).%20Please%20let%20me%20know%20how%20to%20activate%20my%20account." target="_blank" rel="noopener" class="plan-btn outline wa-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Contact on WhatsApp
+      </a>
     </div>
 
     <div class="plan popular">
@@ -256,7 +264,10 @@
         <li class="no">Multiple brand profiles</li>
         <li class="no">Team access</li>
       </ul>
-      <button class="plan-btn primary" onclick="alert('Redirecting to checkout… (Connect Stripe)')">Get Pro</button>
+      <a href="https://wa.me/923090156674?text=Hi%2C%20I%27m%20interested%20in%20the%20Pro%20plan%20(%2459%2Fmonth%20-%201%2C000%20images%2Fmonth).%20Please%20let%20me%20know%20how%20to%20activate%20my%20account." target="_blank" rel="noopener" class="plan-btn primary wa-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Contact on WhatsApp
+      </a>
     </div>
 
     <div class="plan">
@@ -277,7 +288,10 @@
         <li>Dedicated account manager</li>
         <li>Priority support + SLA</li>
       </ul>
-      <button class="plan-btn outline" onclick="alert('Redirecting to checkout… (Connect Stripe)')">Get Agency</button>
+      <a href="https://wa.me/923090156674?text=Hi%2C%20I%27m%20interested%20in%20the%20Agency%20plan%20(%24199%2Fmonth%20-%205%2C000%20images%2Fmonth).%20Please%20let%20me%20know%20how%20to%20activate%20my%20account." target="_blank" rel="noopener" class="plan-btn outline wa-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Contact on WhatsApp
+      </a>
     </div>
   </div>
 
@@ -290,7 +304,13 @@
     <div class="enterprise-meta">
       <div class="price">$499<span>+/mo</span></div>
       <div class="desc">15,000+ images / month · $0.033/image</div>
-      <a href="mailto:hello@creativesgen.com" class="enterprise-btn">Contact Us →</a>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+        <a href="https://wa.me/923090156674?text=Hi%2C%20I%27m%20interested%20in%20Enterprise%20pricing%20for%20Creatives%20Gen%20(15%2C000%2B%20images%2Fmonth).%20Please%20let%20me%20know%20about%20custom%20plans." target="_blank" rel="noopener" class="enterprise-btn" style="display:flex;align-items:center;gap:8px;background:#25D366;border-color:#25D366;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp Us
+        </a>
+        <a href="mailto:hello@creativesgen.com" class="enterprise-btn">Email Us →</a>
+      </div>
     </div>
   </div>
 

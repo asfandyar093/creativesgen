@@ -9,10 +9,10 @@
   <meta name="description" content="Generate professional website images with AI — hero banners, feature section visuals, testimonial backgrounds, about page images, and more. Multiple formats generated simultaneously for your web design." />
   <meta name="keywords" content="AI website image generator, hero banner creator, website visual generator, AI web design images, feature section images, landing page image generator, website background creator, AI UX image tool, website illustration generator" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://creativesgen.com/website-images.html" />
+  <link rel="canonical" href="https://creativesgen.com/ai-website-image-generator.html" />
   <meta property="og:title" content="AI Website Image Generator — Hero, Features & More | Creatives Gen" />
   <meta property="og:description" content="Create hero banners, feature visuals, and website section images with AI. Multiple formats generated at once. Fully on-brand." />
-  <meta property="og:url" content="https://creativesgen.com/website-images.html" />
+  <meta property="og:url" content="https://creativesgen.com/ai-website-image-generator.html" />
   <meta property="og:type" content="website" />
   <script type="application/ld+json">
   {
@@ -21,7 +21,7 @@
     "name": "Creatives Gen — Website Images Tool",
     "applicationCategory": "DesignApplication",
     "description": "AI-powered website image generator. Creates hero banners, feature visuals, and section images in multiple formats simultaneously.",
-    "url": "https://creativesgen.com/website-images.html",
+    "url": "https://creativesgen.com/ai-website-image-generator.html",
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
@@ -176,6 +176,22 @@
     .mob-cta:hover { background: var(--accent-h) !important; }
     a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
     @media (max-width: 900px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
+    /* GALLERY */
+    .gallery-section { background: var(--bg); padding: 80px 48px; }
+    .gallery-inner { max-width: 1160px; margin: 0 auto; }
+    .gallery-header { text-align: center; margin-bottom: 48px; }
+    .gallery-badge { display: inline-block; background: var(--accent-l); color: var(--accent); border: 1.5px solid var(--accent-m); border-radius: 99px; font-size: 0.8rem; font-weight: 800; padding: 5px 16px; margin-bottom: 14px; }
+    .gallery-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
+    .gallery-header p { color: var(--muted); font-size: 1rem; max-width: 580px; margin: 0 auto; }
+    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .gallery-item { border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--surface); aspect-ratio: 16/9; position: relative; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+    .gallery-item:hover img { transform: scale(1.04); }
+    .gallery-item .gallery-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(135deg, var(--accent-l), #fdf2ff); color: var(--accent); font-size: 0.85rem; font-weight: 700; text-align: center; padding: 24px; }
+    .gallery-item .gallery-ph .ph-icon { font-size: 2.4rem; }
+    .gallery-item .gallery-ph span { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
+    @media (max-width: 900px) { .gallery-section { padding: 60px 24px; } .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .gallery-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
 
     /* RESULTS / STORIES */
     .results-bg { background: #f8fffe; }
@@ -203,9 +219,9 @@
     
   </a>
   <div class="nav-links">
-    <a href="/social-posts.html">Social Posts</a>
-    <a href="/ad-creatives.html">Ad Creatives</a>
-    <a href="/website-images.html" class="active">Website Images</a>
+    <a href="/ai-instagram-carousel-generator.html">Social Posts</a>
+    <a href="/ai-ad-creative-generator.html">Ad Creatives</a>
+    <a href="/ai-website-image-generator.html" class="active">Website Images</a>
     <a href="/how-it-works.html">How It Works</a>
     <a href="/pricing.html">Pricing</a>
     <a href="/about.html">About</a>
@@ -219,9 +235,9 @@
   </button>
 </nav>
 <div class="nav-mobile" id="navMobile">
-  <a href="/social-posts.html">📱 Social Posts</a>
-  <a href="/ad-creatives.html">📣 Ad Creatives</a>
-  <a href="/website-images.html" style="color:var(--green);background:var(--green-l)">🖼️ Website Images</a>
+  <a href="/ai-instagram-carousel-generator.html">📱 Social Posts</a>
+  <a href="/ai-ad-creative-generator.html">📣 Ad Creatives</a>
+  <a href="/ai-website-image-generator.html" style="color:var(--green);background:var(--green-l)">🖼️ Website Images</a>
   <a href="/how-it-works.html">How It Works</a>
   <a href="/pricing.html">Pricing</a>
   <a href="/about.html">About</a>
@@ -542,21 +558,58 @@
   </div>
 </section>
 
+<!-- GALLERY -->
+<section class="gallery-section">
+  <div class="gallery-inner">
+    <div class="gallery-header">
+      <div class="gallery-badge">Real AI Outputs</div>
+      <h2>Website Images Created With Creatives Gen</h2>
+      <p>Hero banners, feature section visuals, testimonial backgrounds — real website images made by AI, ready to drop straight into your pages.</p>
+    </div>
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="/images/gallery/website/hero-saas-1.jpg" alt="AI-generated SaaS hero banner image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">🖼️</div>SaaS Hero Banner<span>Drop hero-saas-1.jpg here</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="/images/gallery/website/feature-ecomm-1.jpg" alt="AI-generated e-commerce feature section image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">🛍️</div>E-commerce Feature<span>Drop feature-ecomm-1.jpg here</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="/images/gallery/website/hero-agency-1.jpg" alt="AI-generated digital agency website hero image" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">🏢</div>Agency Hero<span>Drop hero-agency-1.jpg here</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="/images/gallery/website/banner-product-1.jpg" alt="AI-generated product landing page banner" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">🚀</div>Product Banner<span>Drop banner-product-1.jpg here</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="/images/gallery/website/feature-app-1.jpg" alt="AI-generated mobile app feature illustration" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">📱</div>App Feature Image<span>Drop feature-app-1.jpg here</span></div>
+      </div>
+      <div class="gallery-item">
+        <img src="/images/gallery/website/cta-section-1.jpg" alt="AI-generated CTA section background visual" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="gallery-ph" style="display:none"><div class="ph-icon">🎯</div>CTA Section Image<span>Drop cta-section-1.jpg here</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="/" class="nav-logo">
         <img src="/images/logo.png" alt="Creatives Gen" style="height:38px;width:auto;display:block;">
-        
+
       </a>
       <p>AI-powered image generation for social media, ads, and websites. Professional visuals in seconds.</p>
     </div>
     <div class="footer-col">
       <h5>Tools</h5>
-      <a href="/social-posts.html">Social Posts</a>
-      <a href="/ad-creatives.html">Ad Creatives</a>
-      <a href="/website-images.html">Website Images</a>
+      <a href="/ai-instagram-carousel-generator.html">Social Posts</a>
+      <a href="/ai-ad-creative-generator.html">Ad Creatives</a>
+      <a href="/ai-website-image-generator.html">Website Images</a>
       <a href="/app.html">Open App</a>
     </div>
     <div class="footer-col">
