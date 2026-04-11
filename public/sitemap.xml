@@ -26,6 +26,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://creativesgen.com/blog.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://creativesgen.com/blog/instagram-carousel-ideas-for-business.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creativesgen.com/blog/how-to-create-facebook-ad-creatives-without-designer.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://creativesgen.com/how-it-works.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
