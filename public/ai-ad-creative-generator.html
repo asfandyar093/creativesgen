@@ -196,12 +196,11 @@
     .gallery-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
     .gallery-header p { color: var(--muted); font-size: 1rem; max-width: 580px; margin: 0 auto; }
     .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .gallery-item { border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--surface); aspect-ratio: 16/9; position: relative; }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+    .gallery-item { border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); background: #f8f9fc; height: 300px; position: relative; display: flex; align-items: center; justify-content: center; }
+    .gallery-item img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .3s; padding: 8px; }
     .gallery-item:hover img { transform: scale(1.04); }
     .gallery-item .gallery-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(135deg, var(--accent-l), #fdf2ff); color: var(--accent); font-size: 0.85rem; font-weight: 700; text-align: center; padding: 24px; }
     .gallery-item .gallery-ph .ph-icon { font-size: 2.4rem; }
-    .gallery-item .gallery-ph span { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
     @media (max-width: 900px) { .gallery-section { padding: 60px 24px; } .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 540px) { .gallery-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
 
@@ -651,7 +650,7 @@
         <div class="gallery-ph" style="display:none"><div class="ph-icon">🖥️</div>Google Display Ad</div>
       </div>
       <div class="gallery-item">
-        <img src="/images/gallery/ads/ad-instagram-story-1..jpeg" alt="AI-generated Instagram Story ad — 9:16 format" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <img src="/images/gallery/ads/ad-instagram-story-1.jpeg" alt="AI-generated Instagram Story ad — 9:16 format" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
         <div class="gallery-ph" style="display:none"><div class="ph-icon">📲</div>Instagram Story Ad</div>
       </div>
       <div class="gallery-item">
