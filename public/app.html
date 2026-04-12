@@ -80,8 +80,8 @@
       --shadow-md: 0 4px 20px rgba(0,0,0,.12), 0 2px 6px rgba(0,0,0,.05);
       --chat-w: 400px;
     }
-    html { font-size: 18px; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+    html { font-size: 18px; overflow-x: hidden; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; overflow-x: hidden; max-width: 100vw; }
 
     /* ═══ MODALS ═══ */
     .overlay { position: fixed; inset: 0; background: rgba(10,16,30,.72); display: flex; align-items: center; justify-content: center; z-index: 900; backdrop-filter: blur(8px); }
@@ -485,8 +485,11 @@
     .history-item .hi-preview { font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .history-empty { padding: 40px 20px; text-align: center; color: var(--muted); font-size: 0.85rem; }
 
+    @media (max-width: 1200px) {
+      .tool-wrapper { grid-template-columns: 420px 1fr; }
+    }
     @media (max-width: 1000px) {
-      .tool-wrapper { grid-template-columns: 480px 1fr; }
+      .tool-wrapper { grid-template-columns: 360px 1fr; }
       body.chat-open .tool-wrapper { margin-right: 0; }
     }
 
@@ -494,7 +497,8 @@
     .mob-tool-switcher { display: none; }
 
     @media (max-width: 768px) {
-      html { font-size: 16px; }
+      html, body { font-size: 16px; overflow-x: hidden; max-width: 100vw; }
+      .paywall { width: 100% !important; max-width: calc(100vw - 32px); }
 
       /* Mobile tool switcher bar */
       .mob-tool-switcher {

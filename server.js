@@ -222,15 +222,6 @@ function emailLimitTemplate(email, plan, used, allowance) {
 </table></td></tr></table></body></html>`;
 }
 
-// Redirect trailing slashes: /blog/ → /blog
-app.use((req, res, next) => {
-  if (req.path.endsWith('/') && req.path !== '/') {
-    const clean = req.path.slice(0, -1) + (req._parsedUrl.search || '');
-    return res.redirect(301, clean);
-  }
-  next();
-});
-
 // Redirect /page.html → /page (clean URLs)
 app.use((req, res, next) => {
   if (req.path.endsWith('.html')) {
