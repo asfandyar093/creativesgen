@@ -2,7 +2,10 @@ User-agent: *
 Allow: /
 
 Disallow: /app.html
+Disallow: /app
 Disallow: /admin.html
+Disallow: /admin
+Disallow: /data-deletion.html
 Disallow: /api/
 
 Sitemap: https://creativesgen.com/sitemap.xml

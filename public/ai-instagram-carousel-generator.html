@@ -14,6 +14,22 @@
   <meta property="og:description" content="Create Instagram carousels, LinkedIn posts, and Facebook content in seconds with AI. Fully on-brand, no design skills needed." />
   <meta property="og:url" content="https://creativesgen.com/ai-instagram-carousel-generator.html" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://creativesgen.com/images/og-image.png" />
+  <meta property="og:site_name" content="Creatives Gen" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AI Instagram Carousel Generator — Multi-Slide Posts in Seconds | Creatives Gen" />
+  <meta name="twitter:description" content="Create Instagram carousels, LinkedIn posts, and Facebook content in seconds with AI. Fully on-brand, no design skills needed." />
+  <meta name="twitter:image" content="https://creativesgen.com/images/og-image.png" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://creativesgen.com/"},
+      {"@type": "ListItem", "position": 2, "name": "AI Instagram Carousel Generator", "item": "https://creativesgen.com/ai-instagram-carousel-generator.html"}
+    ]
+  }
+  </script>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -167,22 +183,48 @@
     .mob-divider { height: 1px; background: var(--border); margin: 8px 4px; }
     .mob-cta { background: var(--accent) !important; color: #fff !important; text-align: center; font-weight: 800 !important; border-radius: 9px; }
     .mob-cta:hover { background: var(--accent-h) !important; }
-    /* GALLERY */
-    .gallery-section { background: var(--bg); padding: 80px 48px; }
-    .gallery-inner { max-width: 1160px; margin: 0 auto; }
-    .gallery-header { text-align: center; margin-bottom: 48px; }
+    /* GALLERY SLIDER */
+    .gallery-section { background: var(--bg); padding: 80px 0; }
+    .gallery-inner { max-width: 1160px; margin: 0 auto; padding: 0 56px; }
+    .gallery-header { text-align: center; margin-bottom: 44px; }
     .gallery-badge { display: inline-block; background: var(--accent-l); color: var(--accent); border: 1.5px solid var(--accent-m); border-radius: 99px; font-size: 0.8rem; font-weight: 800; padding: 5px 16px; margin-bottom: 14px; }
     .gallery-header h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
     .gallery-header p { color: var(--muted); font-size: 1rem; max-width: 580px; margin: 0 auto; }
-    .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .gallery-item { border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--surface); aspect-ratio: 1/1; position: relative; }
-    .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
-    .gallery-item:hover img { transform: scale(1.04); }
-    .gallery-item .gallery-ph { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(135deg, var(--accent-l), #fdf2ff); color: var(--accent); font-size: 0.85rem; font-weight: 700; text-align: center; padding: 24px; }
-    .gallery-item .gallery-ph .ph-icon { font-size: 2.4rem; }
-    .gallery-item .gallery-ph span { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
-    @media (max-width: 900px) { .gallery-section { padding: 60px 24px; } .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 540px) { .gallery-grid { grid-template-columns: 1fr 1fr; gap: 12px; } }
+    /* Slider */
+    .slider-wrap { position: relative; }
+    .slider-viewport { overflow: hidden; border-radius: 20px; }
+    .slider-track { display: flex; gap: 20px; transition: transform .45s cubic-bezier(.4,0,.2,1); will-change: transform; }
+    .slide { flex: 0 0 calc((100% - 40px) / 3); min-width: 0; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); background: var(--surface); aspect-ratio: 1/1; position: relative; cursor: default; }
+    .slide img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s; }
+    .slide img[style*="display:none"] + .gallery-ph { display: flex !important; }
+    .slide:hover img { transform: scale(1.04); }
+    .slide .gallery-ph { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: linear-gradient(135deg, var(--accent-l), #fdf2ff); color: var(--accent); font-size: 0.85rem; font-weight: 700; text-align: center; padding: 24px; }
+    .slide .gallery-ph .ph-icon { font-size: 2.4rem; }
+    .slide .gallery-ph span { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
+    /* Arrows */
+    .slider-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; background: var(--surface); border: 1.5px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,.12); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: all .2s; font-size: 1.1rem; color: var(--text); }
+    .slider-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 18px rgba(91,94,244,.3); }
+    .slider-btn:disabled { opacity: .35; pointer-events: none; }
+    .slider-prev { left: -23px; }
+    .slider-next { right: -23px; }
+    /* Dots */
+    .slider-dots { display: flex; justify-content: center; gap: 8px; margin-top: 28px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: all .25s; flex-shrink: 0; }
+    .dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+    @media (max-width: 900px) {
+      .gallery-section { padding: 60px 0; }
+      .gallery-inner { padding: 0 40px; }
+      .slide { flex: 0 0 calc((100% - 20px) / 2); }
+      .slider-prev { left: -18px; }
+      .slider-next { right: -18px; }
+    }
+    @media (max-width: 540px) {
+      .gallery-inner { padding: 0 28px; }
+      .slide { flex: 0 0 82%; }
+      .slider-btn { width: 36px; height: 36px; font-size: 0.9rem; }
+      .slider-prev { left: -12px; }
+      .slider-next { right: -12px; }
+    }
     a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
     @media (max-width: 900px) { .nav-hamburger { display: flex; } .nav-actions .btn-ghost { display: none; } }
 
@@ -532,32 +574,77 @@
       <h2>Carousels Generated by Our Users</h2>
       <p>Every image below was created with Creatives Gen — no designer, no templates, just your brand and a prompt.</p>
     </div>
-    <div class="gallery-grid">
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-1.jpg" alt="AI-generated Instagram carousel — fitness tips" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">📱</div>Instagram Carousel<span>Drop carousel-1.jpg here</span></div>
+
+    <!-- ============================================================
+         USER GALLERY SLIDER
+         To add a new image: drop the file into /images/gallery/social/
+         then copy any <div class="slide"> block below and update the
+         src and alt. Images can be .jpg, .png, or .webp.
+         ============================================================ -->
+    <div class="slider-wrap" id="gallerySlider">
+      <button class="slider-btn slider-prev" id="sliderPrev" aria-label="Previous">&#8592;</button>
+      <div class="slider-viewport">
+        <div class="slider-track" id="sliderTrack">
+
+          <!-- SLIDE 1 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-1.jpg" alt="AI-generated Instagram carousel — fitness tips"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">📱</div>Instagram Carousel<span>Add carousel-1.jpg</span></div>
+          </div>
+
+          <!-- SLIDE 2 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-2.jpg" alt="AI-generated Instagram carousel — fashion brand"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">🎨</div>Fashion Carousel<span>Add carousel-2.jpg</span></div>
+          </div>
+
+          <!-- SLIDE 3 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-3.jpg" alt="AI-generated social post — food and recipe"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">🍽️</div>Food Post<span>Add carousel-3.jpg</span></div>
+          </div>
+
+          <!-- SLIDE 4 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-4.jpg" alt="AI-generated LinkedIn thought leadership post"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">💼</div>LinkedIn Post<span>Add carousel-4.jpg</span></div>
+          </div>
+
+          <!-- SLIDE 5 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-5.jpg" alt="AI-generated Instagram carousel — real estate"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">🏠</div>Real Estate Post<span>Add carousel-5.jpg</span></div>
+          </div>
+
+          <!-- SLIDE 6 -->
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-6.jpg" alt="AI-generated Instagram carousel — e-commerce product"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">🛍️</div>E-commerce Post<span>Add carousel-6.jpg</span></div>
+          </div>
+
+          <!-- ── ADD MORE SLIDES BELOW ──────────────────────────────
+               Copy a slide block, drop your image in /images/gallery/social/
+               and update src + alt. The slider JS picks it up automatically.
+
+          <div class="slide">
+            <img src="/images/gallery/social/carousel-7.jpg" alt="describe your image here"
+                 onerror="this.style.display='none'">
+            <div class="gallery-ph"><div class="ph-icon">✨</div>Your Post<span>Add carousel-7.jpg</span></div>
+          </div>
+          ────────────────────────────────────────────────────────── -->
+
+        </div>
       </div>
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-2.jpg" alt="AI-generated Instagram carousel — fashion brand" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">🎨</div>Fashion Carousel<span>Drop carousel-2.jpg here</span></div>
-      </div>
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-3.jpg" alt="AI-generated social post — food and recipe" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">🍽️</div>Food Post<span>Drop carousel-3.jpg here</span></div>
-      </div>
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-4.jpg" alt="AI-generated LinkedIn thought leadership post" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">💼</div>LinkedIn Post<span>Drop carousel-4.jpg here</span></div>
-      </div>
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-5.jpg" alt="AI-generated Instagram carousel — real estate" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">🏠</div>Real Estate Post<span>Drop carousel-5.jpg here</span></div>
-      </div>
-      <div class="gallery-item">
-        <img src="/images/gallery/social/carousel-6.jpg" alt="AI-generated Instagram carousel — e-commerce product" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="gallery-ph" style="display:none"><div class="ph-icon">🛍️</div>E-commerce Post<span>Drop carousel-6.jpg here</span></div>
-      </div>
+      <button class="slider-btn slider-next" id="sliderNext" aria-label="Next">&#8594;</button>
     </div>
+
+    <div class="slider-dots" id="sliderDots"></div>
   </div>
 </section>
 
@@ -611,6 +698,103 @@ function toggleMobileNav() {
   document.getElementById('navHamburger').classList.toggle('open');
   document.getElementById('navMobile').classList.toggle('open');
 }
+
+/* ── Gallery Slider ── */
+(function() {
+  const track    = document.getElementById('sliderTrack');
+  const prevBtn  = document.getElementById('sliderPrev');
+  const nextBtn  = document.getElementById('sliderNext');
+  const dotsWrap = document.getElementById('sliderDots');
+  if (!track) return;
+
+  const slides     = Array.from(track.querySelectorAll('.slide'));
+  const totalSlides = slides.length;
+  let current      = 0;
+  let autoTimer    = null;
+
+  /* How many visible at a time based on viewport */
+  function visibleCount() {
+    if (window.innerWidth <= 540) return 1;
+    if (window.innerWidth <= 900) return 2;
+    return 3;
+  }
+
+  /* Max index we can scroll to */
+  function maxIndex() {
+    return Math.max(0, totalSlides - visibleCount());
+  }
+
+  /* Build dot buttons */
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    const count = maxIndex() + 1;
+    for (let i = 0; i < count; i++) {
+      const d = document.createElement('button');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+      d.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(d);
+    }
+  }
+
+  /* Translate the track */
+  function goTo(idx) {
+    current = Math.max(0, Math.min(idx, maxIndex()));
+
+    /* Calculate offset: slide width + gap */
+    const gap       = 20;
+    const slideW    = slides[0] ? slides[0].offsetWidth : 0;
+    const offset    = current * (slideW + gap);
+    track.style.transform = `translateX(-${offset}px)`;
+
+    /* Update dots */
+    dotsWrap.querySelectorAll('.dot').forEach((d, i) =>
+      d.classList.toggle('active', i === current));
+
+    /* Update buttons */
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current >= maxIndex();
+  }
+
+  function next() { goTo(current >= maxIndex() ? 0 : current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(next, 4000);
+  }
+  function stopAuto() {
+    clearInterval(autoTimer);
+  }
+
+  /* Init */
+  buildDots();
+  goTo(0);
+  startAuto();
+
+  prevBtn.addEventListener('click', () => { stopAuto(); prev(); startAuto(); });
+  nextBtn.addEventListener('click', () => { stopAuto(); next(); startAuto(); });
+
+  /* Pause on hover */
+  track.addEventListener('mouseenter', stopAuto);
+  track.addEventListener('mouseleave', startAuto);
+
+  /* Touch/swipe support */
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; stopAuto(); }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
+    startAuto();
+  }, { passive: true });
+
+  /* Recalculate on resize */
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { buildDots(); goTo(Math.min(current, maxIndex())); }, 150);
+  });
+})();
 </script>
 </body>
 </html>
