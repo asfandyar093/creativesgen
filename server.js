@@ -121,6 +121,53 @@ app.post('/api/verify-otp', async (req, res) => {
   res.json({ valid: true });
 });
 
+// ── /api/contact ─────────────────────────────────────────────────────────
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message, plan } = req.body;
+  if (!name || !email || !message) return res.status(400).json({ error: 'Name, email, and message are required.' });
+  if (!email.includes('@')) return res.status(400).json({ error: 'Valid email required.' });
+
+  const to = 'support@creativesgen.com';
+  const subject = plan
+    ? `[Contact] ${name} — interested in ${plan} plan`
+    : `[Contact] New message from ${name}`;
+  const html = `
+    <h2 style="margin:0 0 16px;font-size:1.1rem">New contact form submission</h2>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
+    ${plan ? `<p><strong>Plan of interest:</strong> ${plan}</p>` : ''}
+    <p style="margin-top:16px"><strong>Message:</strong></p>
+    <p style="background:#f4f4f4;padding:16px;border-radius:8px;white-space:pre-wrap;margin:0">${message.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+  `;
+
+  const mailer = getMailer();
+  if (!mailer) {
+    console.log(`\n📧  Contact from ${name} <${email}>:\n${message}\n`);
+    return res.json({ sent: true });
+  }
+  try {
+    await mailer.sendMail({ from: FROM(), to, subject, html });
+    // Auto-reply
+    await mailer.sendMail({
+      from: FROM(),
+      to: email,
+      subject: "We got your message — Creatives Gen",
+      html: `<p style="font-family:sans-serif">Hi ${name},</p>
+<p style="font-family:sans-serif">Thanks for reaching out! We'll get back to you within 24 hours.</p>
+<p style="font-family:sans-serif">You can also reach us directly:</p>
+<ul style="font-family:sans-serif">
+  <li>Email: <a href="mailto:support@creativesgen.com">support@creativesgen.com</a></li>
+  <li>WhatsApp: <a href="https://wa.me/923090156674">+92 309 015 6674</a></li>
+</ul>
+<p style="font-family:sans-serif">— The Creatives Gen Team</p>`
+    });
+    res.json({ sent: true });
+  } catch (e) {
+    console.error('Contact email error:', e.message);
+    res.status(500).json({ error: 'Could not send message.' });
+  }
+});
+
 // ── /api/send-invite ─────────────────────────────────────────────────────
 app.post('/api/send-invite', async (req, res) => {
   const { email, plan, note } = req.body;
