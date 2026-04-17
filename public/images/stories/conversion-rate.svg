@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 220" width="600" height="220">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#052e16"/>
+      <stop offset="100%" style="stop-color:#064e3b"/>
+    </linearGradient>
+    <linearGradient id="barG1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.4"/>
+      <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.2"/>
+    </linearGradient>
+    <linearGradient id="barG2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#10b981"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="220" fill="url(#bg)"/>
+  <!-- Title -->
+  <text x="300" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13" font-weight="700" fill="rgba(255,255,255,0.45)" text-anchor="middle">LANDING PAGE CONVERSION RATE</text>
+  <!-- Grid -->
+  <line x1="80" y1="170" x2="520" y2="170" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="80" y1="100" x2="520" y2="100" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+  <!-- Before bar: 1.8% of 4.2% ≈ 43% height = 74px out of 130px available -->
+  <rect x="160" y="113" width="90" height="57" rx="8" fill="url(#barG1)"/>
+  <text x="205" y="107" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="20" font-weight="900" fill="rgba(255,255,255,0.35)" text-anchor="middle">1.8%</text>
+  <text x="205" y="192" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.35)" text-anchor="middle">Before</text>
+  <!-- After bar: 4.2% = full height ~130px -->
+  <rect x="350" y="40" width="90" height="130" rx="8" fill="url(#barG2)"/>
+  <text x="395" y="33" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="28" font-weight="900" fill="#6ee7b7" text-anchor="middle">4.2%</text>
+  <text x="395" y="192" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,0.55)" text-anchor="middle">After redesign</text>
+  <!-- Badge -->
+  <rect x="200" y="200" width="200" height="16" rx="8" fill="rgba(16,185,129,0.2)"/>
+  <text x="300" y="212" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11" font-weight="700" fill="#6ee7b7" text-anchor="middle">2.3× more conversions · No other changes</text>
+</svg>
